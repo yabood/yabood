@@ -117,6 +117,12 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     transform: translateY(-50%);
     z-index: 30;
     transition: opacity 0.3s ease;
+    pointer-events: auto;
+  }
+  
+  .toc-sidebar.toc-hidden {
+    opacity: 0;
+    pointer-events: none;
   }
 
   /* Toggle button - always visible with indicators */
@@ -340,6 +346,7 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     
     // Track visible full-width images
     const visibleFullWidthImages = new Set();
+    let animationFrame = null;
     
     // Observer for full-width images - much tighter margins for precise detection
     const imageObserverOptions = {
@@ -347,14 +354,32 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
       threshold: [0, 0.01, 0.99, 1]  // More precise thresholds
     };
     
+    // Debounced update function using requestAnimationFrame
+    function updateTOCVisibility() {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+      }
+      
+      animationFrame = requestAnimationFrame(() => {
+        if (tocSidebar) {
+          const shouldHide = visibleFullWidthImages.size > 0;
+          tocSidebar.classList.toggle('toc-hidden', shouldHide);
+        }
+      });
+    }
+    
     const imageObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         const img = entry.target;
-        const imgWidth = img.getBoundingClientRect().width;
-        const viewportWidth = window.innerWidth;
+        // Cache the width calculation
+        if (!img.dataset.isFullWidth) {
+          const imgWidth = img.getBoundingClientRect().width;
+          const viewportWidth = window.innerWidth;
+          img.dataset.isFullWidth = (imgWidth / viewportWidth > 0.8).toString();
+        }
         
-        // Check if this is a full-width image (more than 80% of viewport)
-        if (imgWidth / viewportWidth > 0.8) {
+        // Check if this is a full-width image
+        if (img.dataset.isFullWidth === 'true') {
           if (entry.isIntersecting && entry.intersectionRatio > 0.01) {
             // Image is entering view
             visibleFullWidthImages.add(img);
@@ -362,21 +387,9 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
             // Image is leaving view
             visibleFullWidthImages.delete(img);
           }
+          updateTOCVisibility();
         }
       });
-      
-      // Update TOC visibility based on whether any full-width images are visible
-      if (tocSidebar) {
-        if (visibleFullWidthImages.size > 0) {
-          tocSidebar.style.opacity = '0';
-          tocSidebar.style.transition = 'opacity 0.3s ease';
-          tocSidebar.style.pointerEvents = 'none';
-        } else {
-          tocSidebar.style.opacity = '1';
-          tocSidebar.style.transition = 'opacity 0.3s ease';
-          tocSidebar.style.pointerEvents = 'auto';
-        }
-      }
     }, imageObserverOptions);
     
     // Observe all images in the content
