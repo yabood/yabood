@@ -1,0 +1,501 @@
+---
+export interface Props {
+  headings: {
+    depth: number;
+    slug: string;
+    text: string;
+  }[];
+  title?: string;
+}
+
+const { headings, title = "Contents" } = Astro.props;
+
+// Filter out h1 headings (usually the main title) and limit to h2-h4
+const filteredHeadings = headings.filter(heading => heading.depth >= 2 && heading.depth <= 4);
+---
+
+{filteredHeadings.length > 0 && (
+  <>
+    {/* Mobile TOC - collapsible at top */}
+    <details class="toc-mobile lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+      <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+        📋 {title}
+      </summary>
+      <nav class="px-4 pb-4" aria-label="Table of contents">
+        <ul class="space-y-2 text-sm">
+          {filteredHeadings.map((heading) => (
+            <li 
+              class:list={[
+                "relative",
+                {
+                  "ml-0": heading.depth === 2,
+                  "ml-4": heading.depth === 3,
+                  "ml-8": heading.depth === 4,
+                }
+              ]}
+            >
+              <a 
+                href={`#${heading.slug}`}
+                data-depth={heading.depth}
+                class="block py-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
+
+    {/* Desktop TOC - Substack style collapsible sidebar */}
+    <aside class="toc-sidebar hidden lg:block" id="toc-sidebar">
+      <button 
+        class="toc-toggle"
+        id="toc-toggle"
+        aria-label="Toggle table of contents"
+        aria-expanded="false"
+      >
+        <div class="toc-indicators">
+          {filteredHeadings.map((heading) => (
+            <div 
+              class:list={[
+                "toc-indicator",
+                {
+                  "depth-2": heading.depth === 2,
+                  "depth-3": heading.depth === 3,
+                  "depth-4": heading.depth === 4,
+                }
+              ]}
+              data-target={heading.slug}
+            >
+            </div>
+          ))}
+        </div>
+      </button>
+      
+      <div class="toc-content" id="toc-content">
+        <div class="toc-header">
+          <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+            {title}
+          </h2>
+          <button class="toc-close" id="toc-close" aria-label="Close table of contents">×</button>
+        </div>
+        <nav class="toc-nav" aria-label="Table of contents">
+          <ul class="space-y-1 text-sm">
+            {filteredHeadings.map((heading) => (
+              <li 
+                class:list={[
+                  "relative",
+                  {
+                    "ml-0": heading.depth === 2,
+                    "ml-3": heading.depth === 3,
+                    "ml-6": heading.depth === 4,
+                  }
+                ]}
+              >
+                <a 
+                  href={`#${heading.slug}`}
+                  data-depth={heading.depth}
+                  class="toc-link block py-1.5 px-2 leading-tight text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 rounded"
+                >
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </aside>
+  </>
+)}
+
+<style>
+  .toc-sidebar {
+    position: fixed;
+    left: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 30;
+  }
+
+  /* Toggle button - always visible with indicators */
+  .toc-toggle {
+    background: transparent;
+    border: none;
+    border-radius: 16px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .toc-toggle:hover {
+    /* Removed scale transform */
+  }
+
+  /* Indicators - dots/lines for each section */
+  .toc-indicators {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .toc-indicator {
+    width: 12px;
+    height: 2px;
+    border-radius: 1px;
+    background: rgb(156, 163, 175);
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .toc-indicator.depth-2 {
+    width: 16px;
+    height: 3px;
+  }
+
+  .toc-indicator.depth-3 {
+    width: 12px;
+    height: 2px;
+  }
+
+  .toc-indicator.depth-4 {
+    width: 8px;
+    height: 1px;
+  }
+
+  .toc-indicator.active {
+    background: rgb(59, 130, 246);
+  }
+
+  .dark .toc-indicator {
+    background: rgb(75, 85, 99);
+  }
+
+  .dark .toc-indicator.active {
+    background: rgb(96, 165, 250);
+  }
+
+  /* Content panel - hidden by default */
+  .toc-content {
+    position: absolute;
+    left: 60px;
+    top: 50%;
+    transform: translateY(-50%) translateX(-10px);
+    width: 280px;
+    max-height: 60vh;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgb(229, 231, 235);
+    border-radius: 12px;
+    padding: 16px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(12px);
+    overflow-y: auto;
+  }
+
+  .dark .toc-content {
+    background: rgba(31, 41, 55, 0.95);
+    border-color: rgb(75, 85, 99);
+  }
+
+  .toc-content.expanded {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0);
+  }
+
+  /* Header with close button */
+  .toc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgb(229, 231, 235);
+  }
+
+  .dark .toc-header {
+    border-bottom-color: rgb(75, 85, 99);
+  }
+
+  .toc-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: rgb(107, 114, 128);
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+  }
+
+  .toc-close:hover {
+    background: rgb(243, 244, 246);
+    color: rgb(17, 24, 39);
+  }
+
+  .dark .toc-close:hover {
+    background: rgb(55, 65, 81);
+    color: rgb(243, 244, 246);
+  }
+
+  /* Navigation links */
+  .toc-link[aria-current="true"] {
+    background: rgb(239, 246, 255);
+    color: rgb(37, 99, 235);
+    font-weight: 500;
+  }
+
+  .dark .toc-link[aria-current="true"] {
+    background: rgb(30, 58, 138);
+    color: rgb(147, 197, 253);
+  }
+
+  .toc-link:hover {
+    background: rgb(249, 250, 251);
+  }
+
+  .dark .toc-link:hover {
+    background: rgb(55, 65, 81);
+  }
+
+  /* Scrollbar styling */
+  .toc-content::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .toc-content::-webkit-scrollbar-track {
+    background: rgba(243, 244, 246, 0.5);
+    border-radius: 3px;
+    margin: 4px;
+  }
+  
+  .toc-content::-webkit-scrollbar-thumb {
+    background: rgb(156, 163, 175);
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .toc-content::-webkit-scrollbar-thumb:hover {
+    background: rgb(107, 114, 128);
+  }
+  
+  .dark .toc-content::-webkit-scrollbar-track {
+    background: rgba(55, 65, 81, 0.5);
+  }
+  
+  .dark .toc-content::-webkit-scrollbar-thumb {
+    background: rgb(75, 85, 99);
+    border-color: rgba(0, 0, 0, 0.2);
+  }
+  
+  .dark .toc-content::-webkit-scrollbar-thumb:hover {
+    background: rgb(107, 114, 128);
+  }
+
+  /* Mobile TOC styling */
+  .toc-mobile summary {
+    list-style: none;
+  }
+  
+  .toc-mobile summary::-webkit-details-marker {
+    display: none;
+  }
+  
+  .toc-mobile[open] summary {
+    border-bottom: 1px solid rgb(229, 231, 235);
+  }
+  
+  .dark .toc-mobile[open] summary {
+    border-bottom-color: rgb(75, 85, 99);
+  }
+</style>
+
+<script>
+  function initTableOfContents() {
+    const observerOptions = {
+      rootMargin: '-20% 0px -70% 0px',
+      threshold: 0
+    };
+
+    const headingElements = document.querySelectorAll('h2[id], h3[id], h4[id]');
+    const tocLinks = document.querySelectorAll('.toc-nav a[href^="#"], .toc-mobile a[href^="#"]');
+    const tocIndicators = document.querySelectorAll('.toc-indicator');
+    const tocToggle = document.getElementById('toc-toggle');
+    const tocContent = document.getElementById('toc-content');
+    const tocClose = document.getElementById('toc-close');
+    
+    if (!headingElements.length) return;
+
+    // Track which headings are currently visible
+    const visibleHeadings = new Set();
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const id = entry.target.getAttribute('id');
+        
+        if (entry.isIntersecting) {
+          visibleHeadings.add(id);
+        } else {
+          visibleHeadings.delete(id);
+        }
+      });
+      
+      // Update active states
+      updateActiveStates();
+    }, observerOptions);
+
+    function updateActiveStates() {
+      // Remove all active states
+      tocLinks.forEach(link => link.removeAttribute('aria-current'));
+      tocIndicators.forEach(indicator => indicator.classList.remove('active'));
+      
+      // Find the first visible heading
+      let activeId = null;
+      for (const heading of headingElements) {
+        const id = heading.getAttribute('id');
+        if (visibleHeadings.has(id)) {
+          activeId = id;
+          break;
+        }
+      }
+      
+      // If no headings are visible, highlight based on scroll position
+      if (!activeId && visibleHeadings.size === 0) {
+        const scrollPosition = window.scrollY;
+        let activeHeading = null;
+        
+        // Find the last heading that's above the current scroll position
+        for (const heading of headingElements) {
+          const rect = heading.getBoundingClientRect();
+          const absoluteTop = rect.top + window.scrollY;
+          
+          if (absoluteTop <= scrollPosition + 100) {
+            activeHeading = heading;
+          } else {
+            break;
+          }
+        }
+        
+        if (activeHeading) {
+          activeId = activeHeading.getAttribute('id');
+        }
+      }
+
+      // Update active states for both links and indicators
+      if (activeId) {
+        const activeLinks = document.querySelectorAll(`.toc-nav a[href="#${activeId}"], .toc-mobile a[href="#${activeId}"]`);
+        activeLinks.forEach(link => link.setAttribute('aria-current', 'true'));
+        
+        const activeIndicator = document.querySelector(`.toc-indicator[data-target="${activeId}"]`);
+        if (activeIndicator) {
+          activeIndicator.classList.add('active');
+        }
+      }
+    }
+
+    // Toggle TOC visibility
+    function toggleTOC() {
+      const isExpanded = tocToggle.getAttribute('aria-expanded') === 'true';
+      
+      if (isExpanded) {
+        closeTOC();
+      } else {
+        openTOC();
+      }
+    }
+
+    function openTOC() {
+      tocContent.classList.add('expanded');
+      tocToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeTOC() {
+      tocContent.classList.remove('expanded');
+      tocToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    // Event listeners for toggle
+    if (tocToggle) {
+      tocToggle.addEventListener('click', toggleTOC);
+    }
+
+    if (tocClose) {
+      tocClose.addEventListener('click', closeTOC);
+    }
+
+    // Click indicator to go to section
+    tocIndicators.forEach(indicator => {
+      indicator.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetId = indicator.getAttribute('data-target');
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          const offset = 80;
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          closeTOC();
+        }
+      });
+    });
+
+    // Observe all headings
+    headingElements.forEach(heading => observer.observe(heading));
+    
+    // Smooth scrolling for TOC links
+    tocLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href').slice(1);
+        const targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          const offset = 80;
+          const elementPosition = targetElement.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - offset;
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+          
+          closeTOC();
+        }
+      });
+    });
+    
+    // Close TOC when clicking outside
+    document.addEventListener('click', (e) => {
+      if (tocContent && !tocContent.contains(e.target) && !tocToggle.contains(e.target)) {
+        closeTOC();
+      }
+    });
+
+    // Update on scroll for better accuracy
+    let scrollTimeout;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(updateActiveStates, 10);
+    }, { passive: true });
+
+    // Initial update
+    updateActiveStates();
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', initTableOfContents);
+  
+  // Re-initialize for view transitions (if using Astro's view transitions)
+  document.addEventListener('astro:page-load', initTableOfContents);
+</script>

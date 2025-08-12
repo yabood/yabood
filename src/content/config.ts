@@ -11,6 +11,7 @@ const blog = defineCollection({
     tags: z.array(z.string()).default([]),
     author: z.string().default('Yousif Abood'),
     draft: z.boolean().default(false),
+    showToc: z.boolean().default(false),
   }),
 });
 

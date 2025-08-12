@@ -60,6 +60,10 @@
           "type": "boolean",
           "default": false
         },
+        "showToc": {
+          "type": "boolean",
+          "default": false
+        },
         "$schema": {
           "type": "string"
         }
