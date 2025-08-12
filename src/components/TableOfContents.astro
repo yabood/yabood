@@ -343,7 +343,7 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     
     // Observer for full-width images - much tighter margins for precise detection
     const imageObserverOptions = {
-      rootMargin: '-400px 0px -400px 0px',  // 400px inside the image boundaries for tighter detection
+      rootMargin: '-300px 0px -300px 0px',  // 300px inside the image boundaries for tighter detection
       threshold: [0, 0.01, 0.99, 1]  // More precise thresholds
     };
     
