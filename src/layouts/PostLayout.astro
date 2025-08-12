@@ -37,9 +37,9 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
 >
   <Header />
   
-  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
-    <article class="mx-auto max-w-prose">
-      <header class="mb-8 text-center">
+  <main id="main" class="py-12">
+    <article>
+      <header class="container mx-auto max-w-4xl px-4 mb-8 text-center">
         <time datetime={pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
           {articleDate}
         </time>
@@ -78,7 +78,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
       </header>
       
       {heroImage && (
-        <div class="mb-8 overflow-hidden rounded-lg">
+        <div class="container mx-auto max-w-4xl px-4 mb-8 overflow-hidden rounded-lg">
           <Image
             src={heroImage}
             alt={`Hero image for ${title}`}
@@ -90,9 +90,13 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
         </div>
       )}
       
-      <Prose>
-        <slot />
-      </Prose>
+      <div class="container mx-auto max-w-4xl px-4">
+        <div class="mx-auto max-w-prose">
+          <Prose>
+            <slot />
+          </Prose>
+        </div>
+      </div>
     </article>
   </main>
   

@@ -60,4 +60,41 @@
   .prose :where(code):not(:where([class~="not-prose"] *)):not(pre code) {
     @apply rounded bg-gray-100 px-1 py-0.5 text-sm dark:bg-gray-800;
   }
+
+  /* Image layout utilities */
+  .img-full-width {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    right: 50%;
+    margin-left: -50vw;
+    margin-right: -50vw;
+    max-width: none;
+  }
+
+  .img-breakout {
+    width: calc(100% + 8rem);
+    position: relative;
+    left: -4rem;
+    right: -4rem;
+    max-width: none;
+  }
+
+  @media (max-width: 768px) {
+    .img-breakout {
+      width: calc(100% + 2rem);
+      left: -1rem;
+      right: -1rem;
+    }
+  }
+
+  /* Gallery grid */
+  .gallery-grid {
+    @apply grid gap-4;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .gallery-grid img {
+    @apply aspect-square object-cover rounded-lg transition-transform duration-300 hover:scale-105;
+  }
 }

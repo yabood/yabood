@@ -64,8 +64,8 @@ One of the most impactful performance optimizations is proper image handling. As
 <Image 
   src={heroImage} 
   alt="Astro development environment showing code and terminal"
-  width={800}
-  height={400}
+  widths={[400, 600, 800, 1200]}
+  sizes="(max-width: 480px) 400px, (max-width: 768px) 600px, (max-width: 1024px) 800px, 1200px"
   quality={80}
   format="webp"
   loading="lazy"
