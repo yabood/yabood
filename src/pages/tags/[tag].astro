@@ -61,43 +61,52 @@ const posts = (await getCollection('blog'))
     <div class="space-y-12">
       {posts.map((post) => (
         <article class="group">
-          <a href={`/blog/${post.slug}`} class="block">
-            <time datetime={post.data.pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
-              {post.data.pubDate.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </time>
-            <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-              {post.data.title}
-            </h2>
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-              {post.data.description}
-            </p>
+          <div>
+            <a href={`/blog/${post.slug}`} class="block">
+              <time datetime={post.data.pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
+                {post.data.pubDate.toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                })}
+              </time>
+              <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                {post.data.title}
+              </h2>
+              <p class="mt-2 text-gray-600 dark:text-gray-400">
+                {post.data.description}
+              </p>
+            </a>
+            
             {post.data.tags && post.data.tags.length > 0 && (
               <div class="mt-4 flex flex-wrap gap-2">
                 {post.data.tags.map((postTag) => (
-                  <span 
+                  <a
+                    href={`/tags/${postTag}`}
                     class:list={[
-                      "rounded-full px-3 py-1 text-xs font-medium",
+                      "rounded-full px-3 py-1 text-xs font-medium transition-all",
                       postTag === tag 
-                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
-                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md hover:shadow-lg hover:scale-105"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                     ]}
+                    onclick={(e) => e.stopPropagation()}
                   >
                     #{postTag}
-                  </span>
+                  </a>
                 ))}
               </div>
             )}
-            <span class="mt-4 inline-flex items-center text-sm font-medium text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
+            
+            <a 
+              href={`/blog/${post.slug}`}
+              class="mt-4 inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent transition-colors"
+            >
               Read article
               <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
-            </span>
-          </a>
+            </a>
+          </div>
         </article>
       ))}
     </div>
