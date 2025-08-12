@@ -1,0 +1,136 @@
+---
+import { getCollection, type CollectionEntry } from 'astro:content';
+
+export interface Props {
+  currentPost: CollectionEntry<'blog'>;
+  maxArticles?: number;
+}
+
+const { currentPost, maxArticles = 3 } = Astro.props;
+
+// Get all blog posts
+const allPosts = await getCollection('blog');
+
+// Filter out current post and published posts only
+const otherPosts = allPosts
+  .filter(post => post.slug !== currentPost.slug)
+  .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime());
+
+// Find related posts based on shared tags
+const currentTags = currentPost.data.tags || [];
+let relatedPosts: CollectionEntry<'blog'>[] = [];
+
+if (currentTags.length > 0) {
+  // Score posts by number of shared tags
+  const scoredPosts = otherPosts.map(post => {
+    const postTags = post.data.tags || [];
+    const sharedTags = currentTags.filter(tag => postTags.includes(tag));
+    return {
+      post,
+      score: sharedTags.length,
+      sharedTags
+    };
+  });
+
+  // Get posts with shared tags, sorted by score
+  relatedPosts = scoredPosts
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .map(item => item.post)
+    .slice(0, maxArticles);
+}
+
+// If we don't have enough related posts, fill with recent posts
+if (relatedPosts.length < maxArticles) {
+  const recentPosts = otherPosts
+    .filter(post => !relatedPosts.includes(post))
+    .slice(0, maxArticles - relatedPosts.length);
+  
+  relatedPosts = [...relatedPosts, ...recentPosts];
+}
+
+// Format dates
+const formatDate = (date: Date) => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+---
+
+{relatedPosts.length > 0 && (
+  <section class="related-articles mt-16 pt-8 border-t border-gray-200 dark:border-gray-700">
+    <div class="container mx-auto max-w-4xl px-4">
+      <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+        Related Articles
+      </h2>
+      
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {relatedPosts.map((post) => (
+          <article class="group">
+            <a href={`/blog/${post.slug}`} class="block">
+              {post.data.heroImage && (
+                <div class="aspect-video mb-4 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                  <img
+                    src={typeof post.data.heroImage === 'string' ? post.data.heroImage : post.data.heroImage.src}
+                    alt={`Hero image for ${post.data.title}`}
+                    class="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
+              )}
+              
+              <time 
+                datetime={post.data.pubDate.toISOString()} 
+                class="text-sm text-gray-600 dark:text-gray-400"
+              >
+                {formatDate(post.data.pubDate)}
+              </time>
+              
+              <h3 class="mt-2 text-lg font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light line-clamp-2">
+                {post.data.title}
+              </h3>
+              
+              <p class="mt-2 text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                {post.data.description}
+              </p>
+              
+              {post.data.tags && post.data.tags.length > 0 && (
+                <div class="mt-3 flex flex-wrap gap-1">
+                  {post.data.tags.slice(0, 3).map((tag) => (
+                    <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                      #{tag}
+                    </span>
+                  ))}
+                  {post.data.tags.length > 3 && (
+                    <span class="text-xs text-gray-500 dark:text-gray-500">
+                      +{post.data.tags.length - 3} more
+                    </span>
+                  )}
+                </div>
+              )}
+              
+              <span class="mt-4 inline-flex items-center text-sm font-medium text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
+                Read more
+                <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </span>
+            </a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<style>
+  /* Line clamp utility for text truncation */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+</style>
