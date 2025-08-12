@@ -1,0 +1,119 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const tags = [...new Set(posts.flatMap(post => post.data.tags))];
+  
+  return tags.map(tag => ({
+    params: { tag },
+    props: { tag },
+  }));
+}
+
+type Props = {
+  tag: string;
+};
+
+const { tag } = Astro.props;
+const posts = (await getCollection('blog'))
+  .filter(post => !post.data.draft && post.data.tags.includes(tag))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+---
+
+<BaseLayout
+  title={`Posts tagged "${tag}"`}
+  description={`Blog posts about ${tag}`}
+>
+  <Header />
+  
+  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
+    <div class="mb-12">
+      <nav class="mb-6">
+        <a
+          href="/tags"
+          class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+        >
+          <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          All Tags
+        </a>
+      </nav>
+      
+      <div class="text-center">
+        <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          Posts tagged
+          <span class="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-white shadow-lg">
+            #{tag}
+          </span>
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-400">
+          {posts.length} {posts.length === 1 ? 'post' : 'posts'} found
+        </p>
+      </div>
+    </div>
+    
+    <div class="space-y-12">
+      {posts.map((post) => (
+        <article class="group">
+          <a href={`/blog/${post.slug}`} class="block">
+            <time datetime={post.data.pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
+              {post.data.pubDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </time>
+            <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+              {post.data.title}
+            </h2>
+            <p class="mt-2 text-gray-600 dark:text-gray-400">
+              {post.data.description}
+            </p>
+            {post.data.tags && post.data.tags.length > 0 && (
+              <div class="mt-4 flex flex-wrap gap-2">
+                {post.data.tags.map((postTag) => (
+                  <span 
+                    class:list={[
+                      "rounded-full px-3 py-1 text-xs font-medium",
+                      postTag === tag 
+                        ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300"
+                    ]}
+                  >
+                    #{postTag}
+                  </span>
+                ))}
+              </div>
+            )}
+            <span class="mt-4 inline-flex items-center text-sm font-medium text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
+              Read article
+              <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </span>
+          </a>
+        </article>
+      ))}
+    </div>
+    
+    {posts.length === 0 && (
+      <div class="text-center">
+        <p class="text-gray-600 dark:text-gray-400">No posts found for tag "#{tag}".</p>
+        <a
+          href="/tags"
+          class="mt-4 inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+        >
+          Browse all tags
+        </a>
+      </div>
+    )}
+  </main>
+  
+  <Footer />
+</BaseLayout>

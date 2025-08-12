@@ -1,0 +1,40 @@
+---
+const navItems = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/blog', label: 'Blog' },
+  { href: '/tags', label: 'Tags' },
+  { href: '/contact', label: 'Contact' },
+];
+
+const currentPath = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-40 w-full border-b border-gray-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:border-gray-800 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
+  <nav class="container mx-auto flex h-16 max-w-4xl items-center justify-between px-4">
+    <a href="/" class="text-xl font-semibold text-gray-900 hover:text-accent dark:text-white dark:hover:text-accent-light">
+      Yabood
+    </a>
+    
+    <ul class="flex items-center gap-6">
+      {navItems.map(({ href, label }) => (
+        <li>
+          <a
+            href={href}
+            class:list={[
+              'text-sm font-medium transition-colors hover:text-accent dark:hover:text-accent-light',
+              {
+                'text-accent dark:text-accent-light': currentPath === href || (href !== '/' && currentPath.startsWith(href)),
+                'text-gray-600 dark:text-gray-400': currentPath !== href && !(href !== '/' && currentPath.startsWith(href)),
+              },
+            ]}
+            aria-current={currentPath === href ? 'page' : undefined}
+          >
+            {label}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+</header>

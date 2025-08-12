@@ -1,0 +1,169 @@
+---
+export interface Props {
+  title: string;
+  description: string;
+  image?: string | { src: string };
+  canonical?: string;
+  type?: 'website' | 'article';
+  publishedDate?: Date;
+  modifiedDate?: Date;
+  author?: string;
+  tags?: string[];
+}
+
+const {
+  title,
+  description,
+  image = '/og-image.jpg',
+  canonical,
+  type = 'website',
+  publishedDate,
+  modifiedDate,
+  author = 'Yousif Abood',
+  tags = [],
+} = Astro.props;
+
+const siteUrl = 'https://yabood.com';
+const siteName = 'Yabood';
+const twitterHandle = '@yabood';
+
+const canonicalURL = canonical || new URL(Astro.url.pathname, siteUrl).toString();
+const imageURL = typeof image === 'string' 
+  ? new URL(image, siteUrl).toString()
+  : image?.src 
+    ? new URL(image.src, siteUrl).toString()
+    : new URL('/og-image.jpg', siteUrl).toString();
+
+const jsonLdBase = {
+  '@context': 'https://schema.org',
+};
+
+let jsonLd: any[] = [];
+
+if (type === 'website') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'WebSite',
+    name: siteName,
+    url: siteUrl,
+    description: description,
+    author: {
+      '@type': 'Person',
+      name: author,
+      url: `${siteUrl}/about`,
+    },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  });
+} else if (type === 'article' && publishedDate) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'BlogPosting',
+    headline: title,
+    description: description,
+    image: imageURL,
+    datePublished: publishedDate.toISOString(),
+    dateModified: (modifiedDate || publishedDate).toISOString(),
+    author: {
+      '@type': 'Person',
+      name: author,
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: siteName,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${siteUrl}/favicon.svg`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalURL,
+    },
+    keywords: tags.join(', '),
+  });
+
+  if (Astro.url.pathname !== '/' && Astro.url.pathname !== '/404') {
+    const pathParts = Astro.url.pathname.split('/').filter(Boolean);
+    const breadcrumbItems = pathParts.map((part, index) => {
+      const url = `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`;
+      const name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+      return {
+        '@type': 'ListItem',
+        position: index + 2,
+        name: name,
+        item: url,
+      };
+    });
+
+    jsonLd.push({
+      ...jsonLdBase,
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Home',
+          item: siteUrl,
+        },
+        ...breadcrumbItems,
+      ],
+    });
+  }
+}
+
+const personSchema = {
+  ...jsonLdBase,
+  '@type': 'Person',
+  name: author,
+  url: `${siteUrl}/about`,
+  sameAs: [
+    `https://twitter.com/${twitterHandle.replace('@', '')}`,
+    `https://github.com/yabood`,
+  ],
+};
+
+if (Astro.url.pathname === '/about' || Astro.url.pathname === '/about/') {
+  jsonLd.push(personSchema);
+}
+---
+
+<title>{title} | {siteName}</title>
+<meta name="description" content={description} />
+<meta name="author" content={author} />
+<link rel="canonical" href={canonicalURL} />
+
+<meta property="og:type" content={type} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:site_name" content={siteName} />
+<meta property="og:image" content={imageURL} />
+<meta property="og:locale" content="en_US" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageURL} />
+<meta name="twitter:site" content={twitterHandle} />
+<meta name="twitter:creator" content={twitterHandle} />
+
+{type === 'article' && publishedDate && (
+  <>
+    <meta property="article:published_time" content={publishedDate.toISOString()} />
+    <meta property="article:modified_time" content={(modifiedDate || publishedDate).toISOString()} />
+    <meta property="article:author" content={author} />
+    {tags.map(tag => <meta property="article:tag" content={tag} />)}
+  </>
+)}
+
+{jsonLd.map(schema => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema, null, 2)} />
+))}

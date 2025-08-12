@@ -1,0 +1,266 @@
+---
+title: 'Astro Performance Guide: Achieving Perfect Lighthouse Scores'
+description: 'A comprehensive guide to optimizing your Astro website for maximum performance, covering image optimization, bundle splitting, and Core Web Vitals'
+pubDate: 2025-08-11
+heroImage: '../../assets/astro-performance.jpg'
+tags: ['astro', 'performance', 'web-development', 'optimization']
+author: 'Yousif Abood'
+---
+
+import { Image } from 'astro:assets';
+import heroImage from '../../assets/hero-astro-blog.jpg';
+
+Performance is crucial for modern web applications, and Astro makes it easier than ever to build lightning-fast websites. In this comprehensive guide, we'll explore the key strategies to achieve perfect Lighthouse scores and excellent Core Web Vitals.
+
+## Why Performance Matters
+
+Before diving into the technical details, let's understand why performance optimization is essential:
+
+- **User Experience**: Faster sites lead to higher engagement and lower bounce rates
+- **SEO Benefits**: Google uses Core Web Vitals as ranking factors
+- **Conversion Rates**: Every 100ms delay can reduce conversions by 1%
+- **Accessibility**: Better performance helps users on slower connections
+
+## Astro's Performance Advantages
+
+### 1. Zero JavaScript by Default
+
+Astro's most significant performance benefit is shipping zero JavaScript to the client by default. This means:
+
+```astro
+---
+// This runs at build time, not in the browser
+const posts = await getCollection('blog');
+const latestPosts = posts.slice(0, 5);
+---
+
+<!-- This HTML is completely static -->
+<div class="posts">
+  {latestPosts.map(post => (
+    <article>
+      <h2>{post.data.title}</h2>
+      <p>{post.data.description}</p>
+    </article>
+  ))}
+</div>
+```
+
+### 2. Partial Hydration with Islands
+
+When you do need interactivity, Astro's Islands Architecture allows you to hydrate only specific components:
+
+```astro
+<!-- Only this component will be interactive -->
+<SearchWidget client:load />
+
+<!-- This remains static -->
+<BlogPost title="My Post" content="..." />
+```
+
+## Image Optimization Strategies
+
+One of the most impactful performance optimizations is proper image handling. Astro's built-in `<Image />` component provides automatic optimization:
+
+<Image 
+  src={heroImage} 
+  alt="Astro development environment showing code and terminal"
+  width={800}
+  height={400}
+  quality={80}
+  format="webp"
+  loading="lazy"
+  class="my-8 rounded-lg shadow-lg"
+/>
+
+### Responsive Images
+
+The `<Image />` component automatically generates multiple sizes and formats:
+
+```astro
+import { Image } from 'astro:assets';
+import myImage from '../assets/photo.jpg';
+
+<Image 
+  src={myImage}
+  alt="Description"
+  widths={[240, 540, 720, 1080]}
+  sizes="(max-width: 360px) 240px, (max-width: 720px) 540px, (max-width: 1600px) 720px, 1080px"
+  loading="lazy"
+/>
+```
+
+This generates multiple image variants optimized for different screen sizes and automatically serves the best format (WebP, AVIF) based on browser support.
+
+## Core Web Vitals Optimization
+
+### Largest Contentful Paint (LCP)
+
+Target: < 2.5 seconds
+
+**Optimization strategies:**
+- Optimize hero images with `loading="eager"`
+- Use `<link rel="preload">` for critical resources
+- Minimize render-blocking resources
+
+```astro
+---
+// In your layout
+---
+<head>
+  <!-- Preload critical images -->
+  <link rel="preload" as="image" href="/hero-image.webp" />
+  
+  <!-- Preload critical fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+</head>
+```
+
+### First Input Delay (FID)
+
+Target: < 100ms
+
+**Optimization strategies:**
+- Minimize JavaScript execution time
+- Use Astro's Islands for selective hydration
+- Defer non-critical scripts
+
+### Cumulative Layout Shift (CLS)
+
+Target: < 0.1
+
+**Optimization strategies:**
+- Always specify image dimensions
+- Reserve space for dynamic content
+- Avoid inserting content above existing content
+
+```astro
+<!-- Good: Explicit dimensions prevent layout shift -->
+<Image 
+  src={image}
+  alt="Description"
+  width={800}
+  height={600}
+/>
+
+<!-- Bad: No dimensions can cause layout shift -->
+<img src="image.jpg" alt="Description" />
+```
+
+## Bundle Optimization
+
+### Code Splitting
+
+Astro automatically splits your code, but you can optimize further:
+
+```astro
+---
+// Dynamic imports for heavy components
+const HeavyChart = lazy(() => import('../components/HeavyChart.jsx'));
+---
+
+<!-- Only loads when needed -->
+<HeavyChart client:visible />
+```
+
+### CSS Optimization
+
+Astro automatically:
+- Removes unused CSS
+- Inlines critical CSS
+- Minifies stylesheets
+
+```css
+/* Astro scoped styles are automatically optimized */
+<style>
+  .card {
+    padding: 1rem;
+    border-radius: 8px;
+  }
+</style>
+```
+
+## Monitoring Performance
+
+### Lighthouse CI
+
+Add Lighthouse CI to your GitHub Actions:
+
+```yaml
+name: Lighthouse CI
+on: [push]
+jobs:
+  lhci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci && npm run build
+      - run: npx @lhci/cli@0.12.x autorun
+```
+
+### Real User Monitoring
+
+Consider implementing RUM with tools like:
+- Google Analytics 4 (Core Web Vitals)
+- Vercel Analytics
+- Cloudflare Web Analytics
+
+## Performance Checklist
+
+- ✅ Optimize images with `<Image />` component
+- ✅ Use appropriate loading strategies (`eager` vs `lazy`)
+- ✅ Minimize JavaScript with Islands Architecture
+- ✅ Implement proper caching headers
+- ✅ Compress assets (Brotli/Gzip)
+- ✅ Use a CDN for static assets
+- ✅ Optimize fonts with preload/prefetch
+- ✅ Monitor Core Web Vitals regularly
+
+## Advanced Optimizations
+
+### Service Workers
+
+For even better performance, consider implementing a service worker:
+
+```javascript
+// sw.js
+const CACHE_NAME = 'astro-site-v1';
+const urlsToCache = [
+  '/',
+  '/styles/main.css',
+  '/assets/hero-image.webp'
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.addAll(urlsToCache))
+  );
+});
+```
+
+### Edge Functions
+
+For dynamic content, consider edge functions with providers like:
+- Vercel Edge Functions
+- Netlify Edge Functions
+- Cloudflare Workers
+
+## Conclusion
+
+Astro provides excellent performance out of the box, but following these optimization strategies can help you achieve perfect Lighthouse scores and provide an exceptional user experience.
+
+Remember to:
+1. Measure performance regularly
+2. Optimize for your specific use case
+3. Test on real devices and connections
+4. Monitor Core Web Vitals in production
+
+With these techniques, you'll have a blazing-fast website that delights users and ranks well in search engines.
+
+---
+
+*Want to dive deeper into Astro performance? Check out the [official Astro performance guide](https://docs.astro.build/en/guides/performance/) and feel free to reach out with questions!*

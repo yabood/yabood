@@ -1,0 +1,58 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+
+const posts = (await getCollection('blog')).filter(post => !post.data.draft);
+
+// Get all unique tags with post counts
+const tagCounts = posts.reduce((acc, post) => {
+  post.data.tags.forEach(tag => {
+    acc[tag] = (acc[tag] || 0) + 1;
+  });
+  return acc;
+}, {} as Record<string, number>);
+
+const sortedTags = Object.entries(tagCounts).sort(([,a], [,b]) => b - a);
+---
+
+<BaseLayout
+  title="Tags"
+  description="Browse blog posts by tags"
+>
+  <Header />
+  
+  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
+    <div class="mb-12 text-center">
+      <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+        Tags
+      </h1>
+      <p class="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
+        Explore blog posts organized by topics and technologies.
+      </p>
+    </div>
+    
+    <div class="flex flex-wrap gap-3 justify-center">
+      {sortedTags.map(([tag, count]) => (
+        <a
+          href={`/tags/${tag}`}
+          class="group inline-flex items-center gap-2 rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-accent hover:text-white dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-accent-light dark:hover:text-gray-900"
+        >
+          #{tag}
+          <span class="rounded-full bg-gray-200 px-2 py-0.5 text-xs text-gray-600 group-hover:bg-white/20 group-hover:text-current dark:bg-gray-700 dark:text-gray-400">
+            {count}
+          </span>
+        </a>
+      ))}
+    </div>
+    
+    {sortedTags.length === 0 && (
+      <div class="text-center">
+        <p class="text-gray-600 dark:text-gray-400">No tags found.</p>
+      </div>
+    )}
+  </main>
+  
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,120 @@
+---
+title: 'Hello World: Building a Modern Blog with Astro'
+description: 'Exploring the journey of creating a fast, SEO-optimized blog using Astro, Tailwind CSS, and modern web technologies'
+pubDate: 2025-08-10
+heroImage: '../../assets/hero-astro-blog.jpg'
+tags: ['astro', 'web-development', 'jamstack', 'performance']
+author: 'Yousif Abood'
+---
+
+import Prose from '../../components/Prose.astro';
+
+Welcome to my new blog! This is the first post on a site built with **Astro**, a modern static site generator that delivers lightning-fast performance and excellent developer experience.
+
+## Why Astro?
+
+After evaluating various static site generators and frameworks, I chose Astro for several compelling reasons:
+
+### 1. Zero JavaScript by Default
+
+Astro ships zero JavaScript to the client by default, resulting in incredibly fast page loads. When you do need interactivity, Astro's **Islands Architecture** allows you to hydrate only the components that need it.
+
+```astro
+---
+// This runs at build time
+const data = await fetch('https://api.example.com/data').then(r => r.json());
+---
+
+<!-- This HTML is static -->
+<div>{data.title}</div>
+
+<!-- This component is interactive only when needed -->
+<InteractiveComponent client:visible />
+```
+
+### 2. Content-First Approach
+
+With built-in support for Markdown and MDX, Astro makes it easy to focus on writing content while still having the flexibility to include interactive components when needed.
+
+### 3. Framework Agnostic
+
+Astro supports components from React, Vue, Svelte, and more. You can even mix and match frameworks in the same project!
+
+## Tech Stack Overview
+
+This blog is built with a carefully selected tech stack optimized for performance and developer experience:
+
+- **Astro** - Static site generation with partial hydration
+- **Tailwind CSS v4** - Utility-first CSS with minimal bundle size
+- **MDX** - Markdown with JSX components for rich content
+- **TypeScript** - Type safety and better developer experience
+
+## Performance Optimizations
+
+### Image Optimization
+
+Using Astro's built-in `<Image />` component, all images are automatically optimized:
+
+```astro
+import { Image } from 'astro:assets';
+import heroImage from '../assets/hero.jpg';
+
+<Image 
+  src={heroImage} 
+  alt="Hero" 
+  widths={[240, 540, 720, 1080]}
+  sizes="(max-width: 360px) 240px, (max-width: 720px) 540px, (max-width: 1600px) 720px, 1080px"
+/>
+```
+
+### SEO & Structured Data
+
+Every page includes comprehensive SEO metadata and JSON-LD structured data for rich snippets:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hello World: Building a Modern Blog with Astro",
+  "author": {
+    "@type": "Person",
+    "name": "Yousif Abood"
+  },
+  "datePublished": "2025-08-10T08:00:00+00:00"
+}
+```
+
+## Core Web Vitals
+
+This site achieves excellent Core Web Vitals scores:
+
+- **LCP (Largest Contentful Paint)**: < 2.5s
+- **FID (First Input Delay)**: < 100ms
+- **CLS (Cumulative Layout Shift)**: < 0.1
+
+<div class="my-8 rounded-lg border-l-4 border-accent bg-accent/10 p-4">
+  <p class="font-semibold">💡 Pro Tip</p>
+  <p class="mt-2">Use Astro's built-in `prefetch` directive to preload links on hover, making navigation feel instant:</p>
+  <code class="mt-2 block rounded bg-gray-900 p-2 text-sm text-gray-100">
+    {`<a href="/about" data-astro-prefetch>About</a>`}
+  </code>
+</div>
+
+## What's Next?
+
+In upcoming posts, I'll dive deeper into:
+
+1. **Advanced Astro Patterns** - Component composition and data fetching strategies
+2. **Tailwind CSS v4 Features** - Exploring the latest improvements and optimizations
+3. **MDX Components** - Building reusable components for rich content
+4. **Deployment Strategies** - Optimizing for GitHub Pages and CDN delivery
+
+## Conclusion
+
+Building this blog with Astro has been a fantastic experience. The combination of excellent performance, developer experience, and flexibility makes it an ideal choice for content-focused websites.
+
+Stay tuned for more posts about web development, performance optimization, and modern tooling!
+
+---
+
+*Have questions or feedback? Feel free to reach out on [Twitter](https://twitter.com/yabood) or [GitHub](https://github.com/yabood).*

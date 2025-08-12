@@ -1,0 +1,100 @@
+---
+import { type CollectionEntry } from 'astro:content';
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Prose from '../components/Prose.astro';
+import { Image } from 'astro:assets';
+
+type Props = CollectionEntry<'blog'>['data'] & {
+  readingTime?: string;
+};
+
+const { title, description, pubDate, updatedDate, heroImage, tags, author } = Astro.props;
+
+const articleDate = pubDate.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  type="article"
+  publishedDate={pubDate}
+  modifiedDate={updatedDate}
+  author={author}
+  tags={tags}
+  image={typeof heroImage === 'object' ? heroImage.src : heroImage}
+>
+  <Header />
+  
+  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
+    <article class="mx-auto max-w-prose">
+      <header class="mb-8 text-center">
+        <time datetime={pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
+          {articleDate}
+        </time>
+        {updatedDate && updatedDateFormatted && (
+          <span class="text-sm text-gray-600 dark:text-gray-400">
+            {' '}• Updated {updatedDateFormatted}
+          </span>
+        )}
+        
+        <h1 class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          {title}
+        </h1>
+        
+        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+          {description}
+        </p>
+        
+        {author && (
+          <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            By <span class="font-medium">{author}</span>
+          </div>
+        )}
+        
+        {tags && tags.length > 0 && (
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
+            {tags.map((tag) => (
+              <a
+                href={`/tags/${tag}`}
+                class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+              >
+                #{tag}
+              </a>
+            ))}
+          </div>
+        )}
+      </header>
+      
+      {heroImage && (
+        <div class="mb-8 overflow-hidden rounded-lg">
+          <Image
+            src={heroImage}
+            alt={`Hero image for ${title}`}
+            width={1200}
+            height={630}
+            loading="eager"
+            class="h-auto w-full object-cover"
+          />
+        </div>
+      )}
+      
+      <Prose>
+        <slot />
+      </Prose>
+    </article>
+  </main>
+  
+  <Footer />
+</BaseLayout>
