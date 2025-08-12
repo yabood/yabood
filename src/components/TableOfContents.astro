@@ -116,6 +116,7 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     top: 50%;
     transform: translateY(-50%);
     z-index: 30;
+    transition: opacity 0.3s ease;
   }
 
   /* Toggle button - always visible with indicators */
@@ -186,7 +187,7 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     max-height: 60vh;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgb(229, 231, 235);
-    border-radius: 12px;
+    border-radius: 4px;
     padding: 16px;
     opacity: 0;
     visibility: hidden;
@@ -330,11 +331,57 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     const tocToggle = document.getElementById('toc-toggle');
     const tocContent = document.getElementById('toc-content');
     const tocClose = document.getElementById('toc-close');
+    const tocSidebar = document.getElementById('toc-sidebar');
     
     if (!headingElements.length) return;
 
     // Track which headings are currently visible
     const visibleHeadings = new Set();
+    
+    // Track visible full-width images
+    const visibleFullWidthImages = new Set();
+    
+    // Observer for full-width images - much tighter margins for precise detection
+    const imageObserverOptions = {
+      rootMargin: '-400px 0px -400px 0px',  // 400px inside the image boundaries for tighter detection
+      threshold: [0, 0.01, 0.99, 1]  // More precise thresholds
+    };
+    
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const img = entry.target;
+        const imgWidth = img.getBoundingClientRect().width;
+        const viewportWidth = window.innerWidth;
+        
+        // Check if this is a full-width image (more than 80% of viewport)
+        if (imgWidth / viewportWidth > 0.8) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.01) {
+            // Image is entering view
+            visibleFullWidthImages.add(img);
+          } else {
+            // Image is leaving view
+            visibleFullWidthImages.delete(img);
+          }
+        }
+      });
+      
+      // Update TOC visibility based on whether any full-width images are visible
+      if (tocSidebar) {
+        if (visibleFullWidthImages.size > 0) {
+          tocSidebar.style.opacity = '0';
+          tocSidebar.style.transition = 'opacity 0.3s ease';
+          tocSidebar.style.pointerEvents = 'none';
+        } else {
+          tocSidebar.style.opacity = '1';
+          tocSidebar.style.transition = 'opacity 0.3s ease';
+          tocSidebar.style.pointerEvents = 'auto';
+        }
+      }
+    }, imageObserverOptions);
+    
+    // Observe all images in the content
+    const contentImages = document.querySelectorAll('article img, .prose img, main img');
+    contentImages.forEach(img => imageObserver.observe(img));
     
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
