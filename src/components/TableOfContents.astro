@@ -17,13 +17,13 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
 {filteredHeadings.length > 0 && (
   <>
     {/* Mobile TOC - collapsible at top */}
-    <details class="toc-mobile lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800">
+    <details class="toc-mobile lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800" itemscope itemtype="https://schema.org/SiteNavigationElement">
       <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
         📋 {title}
       </summary>
-      <nav class="px-4 pb-4" aria-label="Table of contents">
+      <nav class="px-4 pb-4" aria-label="Table of contents" role="navigation">
         <ul class="space-y-2 text-sm">
-          {filteredHeadings.map((heading) => (
+          {filteredHeadings.map((heading, index) => (
             <li 
               class:list={[
                 "relative",
@@ -33,11 +33,14 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
                   "ml-8": heading.depth === 4,
                 }
               ]}
+              itemprop="name"
             >
               <a 
                 href={`#${heading.slug}`}
                 data-depth={heading.depth}
                 class="block py-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                itemprop="url"
+                title={`Navigate to ${heading.text}`}
               >
                 {heading.text}
               </a>
@@ -48,14 +51,15 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
     </details>
 
     {/* Desktop TOC - Substack style collapsible sidebar */}
-    <aside class="toc-sidebar hidden lg:block" id="toc-sidebar">
+    <aside class="toc-sidebar hidden lg:block" id="toc-sidebar" itemscope itemtype="https://schema.org/SiteNavigationElement">
       <button 
         class="toc-toggle"
         id="toc-toggle"
         aria-label="Toggle table of contents"
         aria-expanded="false"
+        aria-controls="toc-content"
       >
-        <div class="toc-indicators">
+        <div class="toc-indicators" aria-hidden="true">
           {filteredHeadings.map((heading) => (
             <div 
               class:list={[
@@ -73,16 +77,16 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
         </div>
       </button>
       
-      <div class="toc-content" id="toc-content">
+      <div class="toc-content" id="toc-content" role="complementary">
         <div class="toc-header">
           <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
             {title}
           </h2>
           <button class="toc-close" id="toc-close" aria-label="Close table of contents">×</button>
         </div>
-        <nav class="toc-nav" aria-label="Table of contents">
+        <nav class="toc-nav" aria-label="Table of contents" role="navigation">
           <ul class="space-y-1 text-sm">
-            {filteredHeadings.map((heading) => (
+            {filteredHeadings.map((heading, index) => (
               <li 
                 class:list={[
                   "relative",
@@ -92,11 +96,14 @@ const filteredHeadings = headings.filter(heading => heading.depth >= 2 && headin
                     "ml-6": heading.depth === 4,
                   }
                 ]}
+                itemprop="name"
               >
                 <a 
                   href={`#${heading.slug}`}
                   data-depth={heading.depth}
                   class="toc-link block py-1.5 px-2 leading-tight text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 rounded"
+                  itemprop="url"
+                  title={`Navigate to ${heading.text}`}
                 >
                   {heading.text}
                 </a>
