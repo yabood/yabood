@@ -1,4 +1,4 @@
-# Yabood Blog
+# Yabood
 
 A production-ready Astro blog with excellent SEO, performance, and developer experience.
 

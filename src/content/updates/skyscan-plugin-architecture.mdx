@@ -1,0 +1,242 @@
+---
+title: "Plugin architecture design deep-dive"
+date: "2025-02-05"
+phase: "research"
+project: "skyscan"
+tags: ["Architecture", "Plugins", "Design"]
+summary: "Designed the plugin system that will allow SkyScaN to support multiple cloud providers and custom security rules through a clean, extensible interface."
+---
+
+One of the key differentiators for SkyScaN will be its extensibility. After studying how other successful tools handle plugins (think VS Code, Terraform providers, kubectl plugins), I've designed an architecture that should scale well.
+
+## Core Plugin Interface
+
+The foundation is a simple trait that all plugins must implement:
+
+```rust
+#[async_trait]
+pub trait CloudProvider: Send + Sync {
+    // Discovery phase - find all resources
+    async fn discover(&self, config: &ProviderConfig) -> Result<Vec<Resource>>;
+    
+    // Analysis phase - check each resource for issues  
+    async fn analyze(&self, resource: &Resource) -> Result<Vec<Finding>>;
+    
+    // Metadata about the provider
+    fn provider_info(&self) -> ProviderInfo;
+    
+    // Configuration schema for this provider
+    fn config_schema(&self) -> serde_json::Value;
+}
+```
+
+## Resource Abstraction
+
+All cloud resources, regardless of provider, are normalized into a common structure:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Resource {
+    pub id: String,
+    pub resource_type: String,
+    pub provider: String,
+    pub region: Option<String>,
+    pub tags: HashMap<String, String>,
+    pub properties: serde_json::Value,
+    pub relationships: Vec<ResourceRelation>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResourceRelation {
+    pub relation_type: String, // "depends_on", "contains", "accesses"
+    pub target_resource_id: String,
+}
+```
+
+This abstraction allows:
+- **Cross-provider analysis** - detect issues that span AWS and Azure
+- **Relationship mapping** - understand how resources connect
+- **Unified reporting** - consistent output regardless of provider
+
+## Plugin Discovery & Loading
+
+Plugins are discovered through multiple mechanisms:
+
+### 1. **Built-in Plugins**
+Core providers (AWS, Azure, GCP) are compiled directly into the binary for performance and reliability.
+
+### 2. **Dynamic Loading**  
+External plugins can be loaded at runtime:
+
+```rust
+pub struct PluginManager {
+    providers: HashMap<String, Box<dyn CloudProvider>>,
+    plugin_paths: Vec<PathBuf>,
+}
+
+impl PluginManager {
+    pub fn load_plugin(&mut self, path: &Path) -> Result<()> {
+        // Load plugin from dynamic library
+        let lib = unsafe { Library::new(path)? };
+        let create_provider: Symbol<fn() -> Box<dyn CloudProvider>> = 
+            unsafe { lib.get(b"create_provider")? };
+        
+        let provider = create_provider();
+        self.providers.insert(
+            provider.provider_info().name.clone(), 
+            provider
+        );
+        Ok(())
+    }
+}
+```
+
+### 3. **WebAssembly Plugins**
+For security and portability, plugins can be WASM modules:
+
+```rust
+pub struct WasmPlugin {
+    instance: wasmtime::Instance,
+    store: wasmtime::Store,
+}
+
+impl WasmPlugin {
+    pub fn from_bytes(wasm_bytes: &[u8]) -> Result<Self> {
+        let engine = wasmtime::Engine::default();
+        let module = wasmtime::Module::new(&engine, wasm_bytes)?;
+        // Initialize WASM runtime
+    }
+}
+```
+
+## Rule Engine Integration
+
+Plugins don't just discover resources - they also define security rules:
+
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SecurityRule {
+    pub id: String,
+    pub title: String,
+    pub description: String,
+    pub severity: Severity,
+    pub resource_types: Vec<String>,
+    pub logic: RuleLogic,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum RuleLogic {
+    // Simple property checks
+    PropertyEquals { path: String, value: serde_json::Value },
+    PropertyExists { path: String },
+    
+    // Complex logic as embedded script
+    Script { language: String, code: String },
+    
+    // WebAssembly rule for performance
+    Wasm { bytes: Vec<u8> },
+}
+```
+
+## Configuration Management
+
+Each plugin defines its configuration requirements:
+
+```rust
+// AWS provider example
+impl CloudProvider for AwsProvider {
+    fn config_schema(&self) -> serde_json::Value {
+        json!({
+            "type": "object",
+            "properties": {
+                "regions": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "default": ["us-east-1"]
+                },
+                "profile": {
+                    "type": "string", 
+                    "description": "AWS profile to use"
+                },
+                "role_arn": {
+                    "type": "string",
+                    "description": "IAM role to assume"
+                }
+            }
+        })
+    }
+}
+```
+
+## Performance Considerations
+
+### **Parallel Execution**
+Multiple providers can run simultaneously:
+
+```rust
+pub async fn scan_all_providers(&self) -> Result<Vec<Finding>> {
+    let futures: Vec<_> = self.providers.values()
+        .map(|provider| provider.discover_and_analyze())
+        .collect();
+    
+    let results = futures::future::join_all(futures).await;
+    // Combine and deduplicate results
+}
+```
+
+### **Resource Caching**
+Expensive discovery operations are cached:
+
+```rust
+#[derive(Debug)]
+pub struct ResourceCache {
+    cache: HashMap<String, CachedResource>,
+    ttl: Duration,
+}
+
+struct CachedResource {
+    resource: Resource,
+    discovered_at: Instant,
+}
+```
+
+## Extensibility Examples
+
+This architecture enables powerful extensions:
+
+### **Custom Enterprise Rules**
+Companies can write organization-specific security checks:
+
+```rust
+// Check for compliance with internal tagging standards
+pub struct ComplianceTagRule;
+
+impl SecurityRule for ComplianceTagRule {
+    fn evaluate(&self, resource: &Resource) -> Result<Vec<Finding>> {
+        let required_tags = ["Environment", "Owner", "CostCenter"];
+        
+        for tag in required_tags {
+            if !resource.tags.contains_key(tag) {
+                return Ok(vec![Finding {
+                    rule_id: "COMPLIANCE_001".to_string(),
+                    severity: Severity::Medium,
+                    message: format!("Missing required tag: {}", tag),
+                }]);
+            }
+        }
+        Ok(vec![])
+    }
+}
+```
+
+### **Cross-Cloud Analysis**
+Detect security issues that span providers:
+
+```rust
+// Detect when the same service is exposed on multiple clouds
+pub fn find_duplicate_exposures(resources: &[Resource]) -> Vec<Finding> {
+    // Group by service ports and analyze exposure across providers
+}
+```
+
+The plugin architecture should provide the flexibility needed while maintaining performance and security. Ready to start implementing the core framework.

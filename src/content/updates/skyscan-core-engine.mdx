@@ -1,0 +1,446 @@
+---
+title: "Core scanning engine implementation"
+date: "2025-03-01"
+phase: "implementation"
+project: "skyscan"
+tags: ["Core Engine", "Rust", "Architecture"]
+summary: "Built the foundational scanning engine with plugin management, resource abstraction, and parallel processing capabilities."
+---
+
+Started implementation with the core scanning engine - the heart of SkyScaN that orchestrates discovery, analysis, and reporting. This is the foundation everything else builds on.
+
+## Core Architecture
+
+The main engine follows a clean pipeline architecture:
+
+```rust
+pub struct ScanEngine {
+    config: ScanConfig,
+    plugin_manager: PluginManager,
+    rule_engine: RuleEngine,
+    cache: ResourceCache,
+    reporter: ReportManager,
+}
+
+impl ScanEngine {
+    pub async fn scan(&mut self) -> Result<ScanReport> {
+        let scan_id = Uuid::new_v4();
+        
+        info!("Starting scan {} with {} providers", 
+              scan_id, self.plugin_manager.provider_count());
+        
+        // Phase 1: Discovery
+        let resources = self.discover_resources().await?;
+        info!("Discovered {} resources", resources.len());
+        
+        // Phase 2: Analysis  
+        let findings = self.analyze_resources(&resources).await?;
+        info!("Generated {} findings", findings.len());
+        
+        // Phase 3: Reporting
+        let report = self.generate_report(scan_id, resources, findings).await?;
+        
+        Ok(report)
+    }
+}
+```
+
+## Resource Discovery Pipeline
+
+Discovery happens in parallel across all enabled providers:
+
+```rust
+async fn discover_resources(&mut self) -> Result<Vec<Resource>> {
+    let providers = self.plugin_manager.get_enabled_providers();
+    
+    // Create discovery tasks for each provider
+    let discovery_futures: Vec<_> = providers.into_iter()
+        .map(|provider| {
+            let config = self.config.get_provider_config(&provider.name());
+            async move {
+                let start = Instant::now();
+                let resources = provider.discover(&config).await;
+                let duration = start.elapsed();
+                
+                match resources {
+                    Ok(res) => {
+                        info!("Provider {} discovered {} resources in {:?}", 
+                              provider.name(), res.len(), duration);
+                        Ok(res)
+                    }
+                    Err(e) => {
+                        error!("Provider {} failed discovery: {}", provider.name(), e);
+                        Err(e)
+                    }
+                }
+            }
+        })
+        .collect();
+    
+    // Execute all discoveries in parallel
+    let results = futures::future::join_all(discovery_futures).await;
+    
+    // Combine successful results, log failures
+    let mut all_resources = Vec::new();
+    for result in results {
+        match result {
+            Ok(resources) => all_resources.extend(resources),
+            Err(e) => warn!("Discovery failed: {}", e),
+        }
+    }
+    
+    // Apply global filters
+    let filtered = self.apply_resource_filters(all_resources)?;
+    
+    // Update cache
+    self.cache.update_resources(&filtered).await?;
+    
+    Ok(filtered)
+}
+```
+
+## Resource Abstraction Layer
+
+All resources get normalized into a common format regardless of provider:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Resource {
+    pub id: String,                    // Unique identifier
+    pub resource_type: String,         // e.g., "aws:ec2:instance"  
+    pub provider: String,              // e.g., "aws"
+    pub region: Option<String>,        // Geographic location
+    pub account_id: Option<String>,    // Account/subscription
+    pub name: Option<String>,          // Human-readable name
+    pub created_at: Option<DateTime<Utc>>,
+    pub tags: HashMap<String, String>, // Key-value tags
+    pub properties: serde_json::Value, // Provider-specific data
+    pub relationships: Vec<ResourceRelation>,
+}
+
+impl Resource {
+    pub fn get_property(&self, path: &str) -> Option<&serde_json::Value> {
+        // Support JSONPath-like queries: "SecurityGroups[0].GroupId"
+        let parts: Vec<&str> = path.split('.').collect();
+        let mut current = &self.properties;
+        
+        for part in parts {
+            // Handle array indexing
+            if let Some(idx_start) = part.find('[') {
+                let field = &part[..idx_start];
+                let idx_str = &part[idx_start+1..part.len()-1];
+                let idx: usize = idx_str.parse().ok()?;
+                
+                current = current.get(field)?.get(idx)?;
+            } else {
+                current = current.get(part)?;
+            }
+        }
+        
+        Some(current)
+    }
+    
+    pub fn has_tag(&self, key: &str) -> bool {
+        self.tags.contains_key(key)
+    }
+    
+    pub fn get_tag(&self, key: &str) -> Option<&String> {
+        self.tags.get(key)
+    }
+}
+```
+
+## Parallel Analysis Engine
+
+Security analysis runs in parallel with configurable concurrency:
+
+```rust
+use tokio::sync::Semaphore;
+use std::sync::Arc;
+
+async fn analyze_resources(&self, resources: &[Resource]) -> Result<Vec<Finding>> {
+    let semaphore = Arc::new(Semaphore::new(self.config.max_concurrent_analysis));
+    let rule_engine = Arc::new(&self.rule_engine);
+    
+    let analysis_futures: Vec<_> = resources.iter()
+        .map(|resource| {
+            let sem = semaphore.clone();
+            let rules = rule_engine.clone();
+            let res = resource.clone();
+            
+            async move {
+                let _permit = sem.acquire().await.unwrap();
+                
+                let start = Instant::now();
+                let findings = rules.evaluate_all(&res).await;
+                let duration = start.elapsed();
+                
+                if duration > Duration::from_millis(100) {
+                    warn!("Slow rule evaluation for {}: {:?}", res.id, duration);
+                }
+                
+                findings
+            }
+        })
+        .collect();
+    
+    let results = futures::future::join_all(analysis_futures).await;
+    
+    // Flatten and collect all findings
+    let mut all_findings = Vec::new();
+    for result in results {
+        match result {
+            Ok(findings) => all_findings.extend(findings),
+            Err(e) => error!("Analysis failed: {}", e),
+        }
+    }
+    
+    info!("Analysis complete: {} findings from {} resources", 
+          all_findings.len(), resources.len());
+    
+    Ok(all_findings)
+}
+```
+
+## Error Handling & Resilience
+
+The engine is designed to be resilient to partial failures:
+
+```rust
+#[derive(Debug, thiserror::Error)]
+pub enum ScanError {
+    #[error("Provider failed: {provider} - {message}")]
+    ProviderError { provider: String, message: String },
+    
+    #[error("Rule evaluation failed: {rule_id} - {message}")]  
+    RuleError { rule_id: String, message: String },
+    
+    #[error("Configuration error: {0}")]
+    ConfigError(String),
+    
+    #[error("Network error: {0}")]
+    NetworkError(#[from] reqwest::Error),
+    
+    #[error("IO error: {0}")]
+    IoError(#[from] std::io::Error),
+}
+
+impl ScanEngine {
+    // Partial failures don't stop the entire scan
+    async fn resilient_discovery(&mut self) -> Result<Vec<Resource>> {
+        let mut successful_resources = Vec::new();
+        let mut failed_providers = Vec::new();
+        
+        for provider in self.plugin_manager.get_enabled_providers() {
+            match provider.discover(&self.config).await {
+                Ok(resources) => {
+                    info!("Provider {} succeeded with {} resources", 
+                          provider.name(), resources.len());
+                    successful_resources.extend(resources);
+                },
+                Err(e) => {
+                    error!("Provider {} failed: {}", provider.name(), e);
+                    failed_providers.push(provider.name().to_string());
+                }
+            }
+        }
+        
+        if !failed_providers.is_empty() {
+            warn!("Some providers failed: {:?}", failed_providers);
+        }
+        
+        if successful_resources.is_empty() && !failed_providers.is_empty() {
+            return Err(ScanError::ConfigError(
+                "All providers failed - check configuration".to_string()
+            ));
+        }
+        
+        Ok(successful_resources)
+    }
+}
+```
+
+## Resource Caching System
+
+Expensive discovery operations are cached to improve performance on subsequent scans:
+
+```rust
+use serde::{Serialize, Deserialize};
+use std::time::{SystemTime, Duration};
+
+#[derive(Debug, Serialize, Deserialize)]
+struct CacheEntry {
+    resource: Resource,
+    discovered_at: SystemTime,
+    ttl: Duration,
+}
+
+pub struct ResourceCache {
+    cache_file: PathBuf,
+    entries: HashMap<String, CacheEntry>,
+    default_ttl: Duration,
+}
+
+impl ResourceCache {
+    pub async fn get_cached_resource(&self, resource_id: &str) -> Option<Resource> {
+        if let Some(entry) = self.entries.get(resource_id) {
+            let age = entry.discovered_at.elapsed().unwrap_or(Duration::MAX);
+            if age < entry.ttl {
+                return Some(entry.resource.clone());
+            }
+        }
+        None
+    }
+    
+    pub async fn update_resources(&mut self, resources: &[Resource]) -> Result<()> {
+        let now = SystemTime::now();
+        
+        for resource in resources {
+            self.entries.insert(resource.id.clone(), CacheEntry {
+                resource: resource.clone(),
+                discovered_at: now,
+                ttl: self.get_ttl_for_resource(&resource.resource_type),
+            });
+        }
+        
+        self.persist_cache().await?;
+        Ok(())
+    }
+    
+    fn get_ttl_for_resource(&self, resource_type: &str) -> Duration {
+        match resource_type {
+            // Static resources cache longer
+            "aws:iam:policy" => Duration::from_secs(3600),    // 1 hour
+            "aws:vpc:vpc" => Duration::from_secs(1800),       // 30 minutes
+            
+            // Dynamic resources cache shorter  
+            "aws:ec2:instance" => Duration::from_secs(300),   // 5 minutes
+            "aws:lambda:function" => Duration::from_secs(600), // 10 minutes
+            
+            _ => self.default_ttl,
+        }
+    }
+}
+```
+
+## Performance Monitoring
+
+Built-in performance monitoring helps identify bottlenecks:
+
+```rust
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+#[derive(Debug, Default)]
+pub struct ScanMetrics {
+    pub discovery_duration: Duration,
+    pub analysis_duration: Duration,  
+    pub total_resources: usize,
+    pub total_findings: usize,
+    pub provider_metrics: HashMap<String, ProviderMetrics>,
+}
+
+#[derive(Debug, Default)]
+pub struct ProviderMetrics {
+    pub discovery_duration: Duration,
+    pub resource_count: usize,
+    pub api_calls: usize,
+    pub cache_hits: usize,
+    pub errors: usize,
+}
+
+impl ScanEngine {
+    async fn scan_with_metrics(&mut self) -> Result<(ScanReport, ScanMetrics)> {
+        let mut metrics = ScanMetrics::default();
+        let total_start = Instant::now();
+        
+        // Discovery with timing
+        let discovery_start = Instant::now();
+        let resources = self.discover_resources().await?;
+        metrics.discovery_duration = discovery_start.elapsed();
+        metrics.total_resources = resources.len();
+        
+        // Analysis with timing  
+        let analysis_start = Instant::now();
+        let findings = self.analyze_resources(&resources).await?;
+        metrics.analysis_duration = analysis_start.elapsed();
+        metrics.total_findings = findings.len();
+        
+        let total_duration = total_start.elapsed();
+        
+        info!("Scan completed in {:?}: {} resources, {} findings", 
+              total_duration, metrics.total_resources, metrics.total_findings);
+        
+        let report = self.generate_report(Uuid::new_v4(), resources, findings).await?;
+        
+        Ok((report, metrics))
+    }
+}
+```
+
+## Configuration System
+
+Flexible configuration supports different scanning scenarios:
+
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ScanConfig {
+    pub providers: HashMap<String, ProviderConfig>,
+    pub rules: RuleConfig,
+    pub performance: PerformanceConfig,
+    pub output: OutputConfig,
+}
+
+#[derive(Debug, Serialize, Deserialize)]  
+pub struct PerformanceConfig {
+    pub max_concurrent_discovery: usize,
+    pub max_concurrent_analysis: usize,
+    pub cache_ttl_seconds: u64,
+    pub timeout_seconds: u64,
+}
+
+// Example configurations for different use cases
+impl ScanConfig {
+    pub fn developer_workstation() -> Self {
+        Self {
+            providers: HashMap::from([
+                ("aws".to_string(), ProviderConfig {
+                    enabled: true,
+                    regions: vec!["us-east-1".to_string()],
+                    services: vec!["ec2", "iam", "s3"],
+                }),
+            ]),
+            performance: PerformanceConfig {
+                max_concurrent_discovery: 5,
+                max_concurrent_analysis: 20,
+                cache_ttl_seconds: 300,  // 5 minutes
+                timeout_seconds: 30,
+            },
+            // ... other config
+        }
+    }
+    
+    pub fn production_monitoring() -> Self {
+        Self {
+            providers: HashMap::from([
+                ("aws".to_string(), ProviderConfig {
+                    enabled: true,
+                    regions: vec!["us-east-1", "us-west-2", "eu-west-1"],
+                    services: vec!["*"], // All services
+                }),
+            ]),
+            performance: PerformanceConfig {
+                max_concurrent_discovery: 20,
+                max_concurrent_analysis: 100,
+                cache_ttl_seconds: 900,  // 15 minutes  
+                timeout_seconds: 300,    // 5 minutes
+            },
+            // ... other config
+        }
+    }
+}
+```
+
+The core engine is solid and ready for the provider implementations. The architecture handles failures gracefully, scales well, and provides good observability into the scanning process.
+
+Next step: implement the AWS provider that plugs into this engine.

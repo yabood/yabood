@@ -1,0 +1,47 @@
+---
+title: "Prototype complete — first scans!"
+date: "2025-08-12"
+phase: "implementation"
+project: "skyscan"
+tags: ["Rust", "Edge Compute"]
+summary: "Hit the first end-to-end pass from ingest → parse → enrich → store."
+---
+
+Major milestone today! Got the first working end-to-end scan pipeline running locally. The architecture is coming together nicely:
+
+## What's Working
+
+- **Ingestion Layer**: Successfully pulling configuration data from AWS, Azure, and GCP
+- **Parser Engine**: Clean separation between cloud providers, each with their own parsing logic
+- **Enrichment Pipeline**: Basic vulnerability matching against CVE databases
+- **Storage Layer**: Fast SQLite backend for local development, with plans for distributed storage
+
+## Performance Numbers
+
+Initial benchmarks are promising:
+- **Scan Speed**: ~500 resources/second on my M2 MacBook
+- **Memory Usage**: Under 50MB for typical enterprise infrastructure
+- **Binary Size**: Just 8MB thanks to Rust's efficiency
+
+The WebAssembly compilation is working beautifully - same code runs natively and in browser environments.
+
+## Next Steps
+
+Planning to tackle the distributed architecture next week. The edge deployment story is crucial for the product vision, so that's where I'm focusing next.
+
+```rust
+// Clean separation of concerns
+pub trait CloudProvider {
+    async fn discover(&self) -> Result<Vec<Resource>>;
+    async fn scan(&self, resource: &Resource) -> Result<ScanResult>;
+}
+
+// Implementation stays isolated
+impl CloudProvider for AwsProvider {
+    async fn discover(&self) -> Result<Vec<Resource>> {
+        // AWS-specific discovery logic
+    }
+}
+```
+
+Really excited about where this is heading!

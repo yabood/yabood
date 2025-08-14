@@ -9,7 +9,7 @@ export async function GET(context: APIContext) {
     .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
   return rss({
-    title: 'Yabood Blog',
+    title: 'Yabood',
     description: 'A personal blog about technology, development, and creativity',
     site: context.site || 'https://www.yabood.com',
     items: sortedPosts.map((post) => ({

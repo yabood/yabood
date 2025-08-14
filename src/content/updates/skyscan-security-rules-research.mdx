@@ -1,0 +1,411 @@
+---
+title: "Security rules framework and vulnerability database integration"
+date: "2025-02-18"
+phase: "research"
+project: "skyscan"
+tags: ["Security Rules", "Vulnerability Database", "MITRE"]
+summary: "Researched and designed the security rules engine, including integration with CVE databases and mapping to security frameworks like MITRE ATT&CK."
+---
+
+The scanning engine is only as good as its security rules. Spent time researching how to build a comprehensive, maintainable, and extensible rule system that leverages existing security knowledge.
+
+## Security Framework Integration
+
+### **MITRE ATT&CK Mapping**
+Every security finding should map to the MITRE ATT&CK framework for consistent threat modeling:
+
+```rust
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SecurityFinding {
+    pub rule_id: String,
+    pub resource_id: String,
+    pub severity: Severity,
+    pub title: String,
+    pub description: String,
+    pub remediation: String,
+    
+    // MITRE ATT&CK integration
+    pub mitre_tactics: Vec<String>,      // e.g., ["Initial Access", "Persistence"]
+    pub mitre_techniques: Vec<String>,   // e.g., ["T1078", "T1098"]
+    
+    // Compliance framework mapping  
+    pub cis_controls: Vec<String>,       // e.g., ["CIS-3.1", "CIS-3.7"]
+    pub nist_controls: Vec<String>,      // e.g., ["AC-2", "AC-6"]
+    pub pci_requirements: Vec<String>,   // e.g., ["PCI-2.1", "PCI-8.1"]
+}
+```
+
+### **Rule Severity Classification**
+Based on CVSS-like scoring but adapted for infrastructure:
+
+```rust
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum Severity {
+    Critical,    // Immediate security risk (exposed credentials, public DBs)
+    High,        // Significant security risk (overpermissive policies)  
+    Medium,      // Moderate security risk (missing encryption)
+    Low,         // Best practice violations (missing tags)
+    Info,        // Informational findings (resource inventory)
+}
+
+impl Severity {
+    pub fn score(&self) -> f32 {
+        match self {
+            Severity::Critical => 9.0..=10.0,
+            Severity::High => 7.0..9.0,
+            Severity::Medium => 4.0..7.0,
+            Severity::Low => 0.1..4.0,
+            Severity::Info => 0.0,
+        }
+    }
+}
+```
+
+## Rule Categories & Examples
+
+### **1. Access Control Rules**
+```rust
+// IAM overpermissive policies
+pub struct OverpermissivePolicyRule;
+
+impl SecurityRule for OverpermissivePolicyRule {
+    fn evaluate(&self, resource: &Resource) -> Result<Vec<Finding>> {
+        if resource.resource_type != "AWS::IAM::Policy" {
+            return Ok(vec![]);
+        }
+        
+        let policy_doc: PolicyDocument = serde_json::from_value(
+            resource.properties.get("PolicyDocument").unwrap().clone()
+        )?;
+        
+        let mut findings = Vec::new();
+        
+        for statement in policy_doc.statements {
+            // Check for wildcard permissions
+            if statement.actions.contains("*") && statement.resources.contains("*") {
+                findings.push(Finding {
+                    rule_id: "IAM_001".to_string(),
+                    severity: Severity::Critical,
+                    title: "Overly permissive IAM policy".to_string(),
+                    description: "Policy grants wildcard permissions on all resources".to_string(),
+                    mitre_techniques: vec!["T1078.004".to_string()], // Valid Accounts: Cloud Accounts
+                    cis_controls: vec!["CIS-1.16".to_string()],
+                });
+            }
+        }
+        
+        Ok(findings)
+    }
+}
+```
+
+### **2. Network Security Rules**
+```rust
+// Security group analysis
+pub struct InsecureSecurityGroupRule;
+
+impl SecurityRule for InsecureSecurityGroupRule {
+    fn evaluate(&self, resource: &Resource) -> Result<Vec<Finding>> {
+        if resource.resource_type != "AWS::EC2::SecurityGroup" {
+            return Ok(vec![]);
+        }
+        
+        let sg: SecurityGroup = serde_json::from_value(resource.properties.clone())?;
+        let mut findings = Vec::new();
+        
+        for rule in sg.ingress_rules {
+            // Check for 0.0.0.0/0 on sensitive ports
+            if rule.cidr_blocks.contains("0.0.0.0/0") {
+                match rule.port {
+                    22 => findings.push(self.create_ssh_finding()),
+                    3389 => findings.push(self.create_rdp_finding()),
+                    1433 | 3306 | 5432 => findings.push(self.create_database_finding(rule.port)),
+                    _ => {}
+                }
+            }
+        }
+        
+        Ok(findings)
+    }
+}
+```
+
+### **3. Data Protection Rules**
+```rust
+// S3 bucket encryption and access
+pub struct S3SecurityRule;
+
+impl SecurityRule for S3SecurityRule {
+    fn evaluate(&self, resource: &Resource) -> Result<Vec<Finding>> {
+        let mut findings = Vec::new();
+        
+        // Check encryption
+        if !self.has_encryption_enabled(resource) {
+            findings.push(Finding {
+                rule_id: "S3_001".to_string(),
+                severity: Severity::Medium,
+                title: "S3 bucket encryption not enabled".to_string(),
+                mitre_techniques: vec!["T1530".to_string()], // Data from Cloud Storage
+                nist_controls: vec!["SC-28".to_string()],
+            });
+        }
+        
+        // Check public access
+        if self.is_publicly_accessible(resource) {
+            findings.push(Finding {
+                rule_id: "S3_002".to_string(),
+                severity: Severity::Critical,
+                title: "S3 bucket is publicly accessible".to_string(),
+                mitre_techniques: vec!["T1530".to_string()],
+                cis_controls: vec!["CIS-2.1.1".to_string()],
+            });
+        }
+        
+        Ok(findings)
+    }
+}
+```
+
+## Vulnerability Database Integration
+
+### **CVE Database Integration**
+```rust
+use reqwest::Client;
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Deserialize)]
+pub struct CveRecord {
+    pub cve_id: String,
+    pub description: String,
+    pub severity: String,
+    pub affected_products: Vec<String>,
+    pub references: Vec<String>,
+}
+
+pub struct VulnerabilityMatcher {
+    client: Client,
+    cache: HashMap<String, Vec<CveRecord>>,
+}
+
+impl VulnerabilityMatcher {
+    pub async fn check_vulnerabilities(&mut self, resource: &Resource) -> Result<Vec<Finding>> {
+        let product_identifiers = self.extract_product_info(resource);
+        let mut findings = Vec::new();
+        
+        for identifier in product_identifiers {
+            if let Some(cves) = self.get_cves_for_product(&identifier).await? {
+                for cve in cves {
+                    findings.push(Finding {
+                        rule_id: format!("CVE_{}", cve.cve_id),
+                        severity: self.cvss_to_severity(&cve.severity),
+                        title: format!("Known vulnerability: {}", cve.cve_id),
+                        description: cve.description,
+                        references: cve.references,
+                    });
+                }
+            }
+        }
+        
+        Ok(findings)
+    }
+    
+    async fn get_cves_for_product(&mut self, product: &str) -> Result<Option<Vec<CveRecord>>> {
+        // Check cache first
+        if let Some(cached) = self.cache.get(product) {
+            return Ok(Some(cached.clone()));
+        }
+        
+        // Query NIST NVD API
+        let url = format!(
+            "https://services.nvd.nist.gov/rest/json/cves/2.0?keywordSearch={}", 
+            product
+        );
+        
+        let response: NvdResponse = self.client.get(&url).send().await?.json().await?;
+        
+        let cves: Vec<CveRecord> = response.vulnerabilities
+            .into_iter()
+            .map(|vuln| CveRecord {
+                cve_id: vuln.cve.id,
+                description: vuln.cve.descriptions[0].value.clone(),
+                severity: vuln.impact.base_severity,
+                // ... map other fields
+            })
+            .collect();
+        
+        // Cache results
+        self.cache.insert(product.to_string(), cves.clone());
+        
+        Ok(Some(cves))
+    }
+}
+```
+
+## Rule Engine Architecture
+
+### **Rule Loading & Management**
+```rust
+pub struct RuleEngine {
+    rules: HashMap<String, Box<dyn SecurityRule>>,
+    rule_configs: HashMap<String, RuleConfig>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RuleConfig {
+    pub enabled: bool,
+    pub severity_override: Option<Severity>,
+    pub custom_parameters: HashMap<String, serde_json::Value>,
+}
+
+impl RuleEngine {
+    pub fn load_rules_from_config(&mut self, config_path: &Path) -> Result<()> {
+        let config: RuleSetConfig = serde_yaml::from_reader(
+            File::open(config_path)?
+        )?;
+        
+        for rule_config in config.rules {
+            if rule_config.enabled {
+                let rule = self.create_rule_instance(&rule_config)?;
+                self.rules.insert(rule_config.id.clone(), rule);
+                self.rule_configs.insert(rule_config.id, rule_config.config);
+            }
+        }
+        
+        Ok(())
+    }
+    
+    pub async fn evaluate_all(&self, resource: &Resource) -> Result<Vec<Finding>> {
+        let mut all_findings = Vec::new();
+        
+        for (rule_id, rule) in &self.rules {
+            if self.should_evaluate_rule(rule_id, resource) {
+                let mut findings = rule.evaluate(resource)?;
+                
+                // Apply rule configuration overrides
+                if let Some(config) = self.rule_configs.get(rule_id) {
+                    for finding in &mut findings {
+                        if let Some(severity_override) = &config.severity_override {
+                            finding.severity = severity_override.clone();
+                        }
+                    }
+                }
+                
+                all_findings.extend(findings);
+            }
+        }
+        
+        Ok(all_findings)
+    }
+}
+```
+
+### **Custom Rule Development**
+Users can write custom rules in multiple languages:
+
+```yaml
+# rules/custom_tagging.yaml
+rule:
+  id: "CUSTOM_001"
+  name: "Required Tags Check"
+  description: "Ensure all resources have required organizational tags"
+  severity: "Medium"
+  resource_types: ["*"]
+  
+  logic:
+    type: "script"
+    language: "lua"
+    code: |
+      required_tags = {"Environment", "Owner", "CostCenter"}
+      
+      for _, tag in ipairs(required_tags) do
+        if not resource.tags[tag] then
+          return {
+            severity = "Medium",
+            message = "Missing required tag: " .. tag,
+            remediation = "Add the '" .. tag .. "' tag to this resource"
+          }
+        end
+      end
+      
+      return nil -- No issues found
+```
+
+## Rule Testing Framework
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[tokio::test]
+    async fn test_overpermissive_policy_detection() {
+        let rule = OverpermissivePolicyRule;
+        
+        let resource = create_test_resource(json!({
+            "PolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [{
+                    "Effect": "Allow",
+                    "Action": "*",
+                    "Resource": "*"
+                }]
+            }
+        }));
+        
+        let findings = rule.evaluate(&resource).unwrap();
+        assert_eq!(findings.len(), 1);
+        assert_eq!(findings[0].rule_id, "IAM_001");
+        assert_eq!(findings[0].severity, Severity::Critical);
+    }
+}
+```
+
+## Performance Optimizations
+
+### **Rule Filtering**
+```rust
+impl RuleEngine {
+    fn should_evaluate_rule(&self, rule_id: &str, resource: &Resource) -> bool {
+        // Skip rules that don't apply to this resource type
+        if let Some(rule_meta) = self.get_rule_metadata(rule_id) {
+            if !rule_meta.resource_types.is_empty() && 
+               !rule_meta.resource_types.contains(&resource.resource_type) &&
+               !rule_meta.resource_types.contains("*") {
+                return false;
+            }
+        }
+        
+        // Skip disabled rules
+        if let Some(config) = self.rule_configs.get(rule_id) {
+            return config.enabled;
+        }
+        
+        true
+    }
+}
+```
+
+### **Parallel Rule Evaluation**
+```rust
+pub async fn evaluate_parallel(&self, resource: &Resource) -> Result<Vec<Finding>> {
+    let futures: Vec<_> = self.rules.iter()
+        .filter(|(id, _)| self.should_evaluate_rule(id, resource))
+        .map(|(_, rule)| rule.evaluate(resource))
+        .collect();
+    
+    let results = futures::future::join_all(futures).await;
+    
+    // Flatten results and handle errors
+    let mut all_findings = Vec::new();
+    for result in results {
+        match result {
+            Ok(findings) => all_findings.extend(findings),
+            Err(e) => log::warn!("Rule evaluation failed: {}", e),
+        }
+    }
+    
+    Ok(all_findings)
+}
+```
+
+The security rules framework provides the foundation for comprehensive, maintainable, and extensible security analysis. Ready to start implementing the core rule engine.

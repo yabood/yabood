@@ -1,0 +1,74 @@
+---
+title: "Market research: what's already out there"
+date: "2025-01-20"
+phase: "idea"
+project: "skyscan"
+tags: ["Market Research", "Competitive Analysis"]
+summary: "Analyzed existing cloud security tools to understand the competitive landscape and identify opportunities for differentiation."
+---
+
+Spent the weekend doing a deep dive into existing cloud security scanning tools. The landscape is more crowded than I initially thought, but also more opportunity than expected.
+
+## Major Players Analysis
+
+### **Scout Suite** (Open Source)
+- **Pros**: Multi-cloud support, active community, good AWS coverage
+- **Cons**: Python-based (slow), centralized architecture, limited customization
+- **Architecture**: Traditional pull-and-analyze model
+
+### **Prowler** (Open Source)  
+- **Pros**: Excellent AWS coverage, CIS benchmarks, growing popularity
+- **Cons**: Bash-heavy codebase, single-cloud focus, performance issues
+- **Architecture**: Command-line tool, runs centrally
+
+### **CloudSploit** (Commercial)
+- **Pros**: Clean UI, good reporting, multi-cloud
+- **Cons**: SaaS-only, expensive, limited customization
+- **Architecture**: Centralized SaaS platform
+
+### **Bridgecrew/Prisma** (Enterprise)
+- **Pros**: Comprehensive coverage, enterprise features, policy management
+- **Cons**: Very expensive, vendor lock-in, heavyweight
+- **Architecture**: Enterprise SaaS with complex deployment
+
+## Gap Analysis
+
+What's missing from the current market:
+
+### 1. **Performance at Scale**
+All existing tools struggle with large infrastructures. Even Prowler (considered fast) takes hours for enterprise scans.
+
+### 2. **Developer Experience**  
+Security scanning is divorced from development workflows. Developers can't easily scan their local Terraform before deploying.
+
+### 3. **Edge/Offline Capabilities**
+No tool works well in disconnected environments or provides real-time scanning at edge locations.
+
+### 4. **Customization & Extensions**
+Most tools have rigid rule sets. Enterprises need custom policies that match their specific requirements.
+
+## Opportunity Space
+
+The edge-native approach addresses **all** these gaps simultaneously:
+
+- **WebAssembly enables performance** - compiled code vs interpreted scripts
+- **Local execution improves developer experience** - scan before you deploy  
+- **Edge deployment enables offline/real-time** - no network dependencies
+- **Plugin architecture enables customization** - write rules in any language
+
+## Validation Points
+
+Market research confirms several key assumptions:
+1. **Performance is a real pain point** - multiple Reddit threads complaining about scan times
+2. **Developer adoption is limited** - security teams use these tools, not developers
+3. **Edge computing interest is growing** - but nobody's applying it to security yet
+
+## Strategic Positioning
+
+SkyScaN won't compete directly with enterprise tools like Prisma. Instead, focus on:
+
+- **Developer-first experience** like how Docker revolutionized deployment
+- **Performance leadership** through modern architecture choices
+- **Universal deployment** as a key differentiator
+
+The more I research, the more convinced I am this is a real opportunity.
