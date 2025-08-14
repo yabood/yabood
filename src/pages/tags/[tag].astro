@@ -91,8 +91,7 @@ const posts = (await getCollection('blog'))
                         postTag === tag
                           ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md hover:shadow-lg hover:scale-105'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
-                      ]}
-                      onclick={(e) => e.stopPropagation()}>
+                      ]}>
                       #{postTag}
                     </a>
                   ))}

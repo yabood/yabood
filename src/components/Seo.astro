@@ -171,6 +171,6 @@ if (Astro.url.pathname === '/about' || Astro.url.pathname === '/about/') {
 
 {
   jsonLd.map((schema) => (
-    <script type="application/ld+json" set:html={JSON.stringify(schema, null, 2)} />
+    <script is:inline type="application/ld+json" set:html={JSON.stringify(schema, null, 2)} />
   ))
 }

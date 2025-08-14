@@ -27,7 +27,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
         </summary>
         <nav class="px-4 pb-4" aria-label="Table of contents" role="navigation">
           <ul class="space-y-2 text-sm">
-            {filteredHeadings.map((heading, index) => (
+            {filteredHeadings.map((heading) => (
               <li
                 class:list={[
                   'relative',
@@ -92,7 +92,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
           </div>
           <nav class="toc-nav" aria-label="Table of contents" role="navigation">
             <ul class="space-y-1 text-sm">
-              {filteredHeadings.map((heading, index) => (
+              {filteredHeadings.map((heading) => (
                 <li
                   class:list={[
                     'relative',
@@ -358,7 +358,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
     // Track visible full-width images
     const visibleFullWidthImages = new Set();
-    let animationFrame = null;
+    let animationFrame: number | null = null;
 
     // Observer for full-width images - much tighter margins for precise detection
     const imageObserverOptions = {
@@ -384,20 +384,21 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
       entries.forEach((entry) => {
         const img = entry.target;
         // Cache the width calculation
-        if (!img.dataset.isFullWidth) {
-          const imgWidth = img.getBoundingClientRect().width;
+        const imgElement = img as HTMLImageElement;
+        if (!imgElement.dataset.isFullWidth) {
+          const imgWidth = imgElement.getBoundingClientRect().width;
           const viewportWidth = window.innerWidth;
-          img.dataset.isFullWidth = (imgWidth / viewportWidth > 0.8).toString();
+          imgElement.dataset.isFullWidth = (imgWidth / viewportWidth > 0.8).toString();
         }
 
         // Check if this is a full-width image
-        if (img.dataset.isFullWidth === 'true') {
+        if (imgElement.dataset.isFullWidth === 'true') {
           if (entry.isIntersecting && entry.intersectionRatio > 0.01) {
             // Image is entering view
-            visibleFullWidthImages.add(img);
+            visibleFullWidthImages.add(imgElement);
           } else {
             // Image is leaving view
-            visibleFullWidthImages.delete(img);
+            visibleFullWidthImages.delete(imgElement);
           }
           updateTOCVisibility();
         }
@@ -476,7 +477,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
     // Toggle TOC visibility
     function toggleTOC() {
-      const isExpanded = tocToggle.getAttribute('aria-expanded') === 'true';
+      const isExpanded = tocToggle?.getAttribute('aria-expanded') === 'true';
 
       if (isExpanded) {
         closeTOC();
@@ -486,13 +487,13 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     }
 
     function openTOC() {
-      tocContent.classList.add('expanded');
-      tocToggle.setAttribute('aria-expanded', 'true');
+      if (tocContent) tocContent.classList.add('expanded');
+      if (tocToggle) tocToggle.setAttribute('aria-expanded', 'true');
     }
 
     function closeTOC() {
-      tocContent.classList.remove('expanded');
-      tocToggle.setAttribute('aria-expanded', 'false');
+      if (tocContent) tocContent.classList.remove('expanded');
+      if (tocToggle) tocToggle.setAttribute('aria-expanded', 'false');
     }
 
     // Event listeners for toggle
@@ -509,7 +510,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
       indicator.addEventListener('click', (e) => {
         e.stopPropagation();
         const targetId = indicator.getAttribute('data-target');
-        const targetElement = document.getElementById(targetId);
+        const targetElement = targetId ? document.getElementById(targetId) : null;
         if (targetElement) {
           const offset = 80;
           const elementPosition = targetElement.getBoundingClientRect().top;
@@ -532,8 +533,9 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     tocLinks.forEach((link) => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        const targetId = link.getAttribute('href').slice(1);
-        const targetElement = document.getElementById(targetId);
+        const href = link.getAttribute('href');
+        const targetId = href ? href.slice(1) : null;
+        const targetElement = targetId ? document.getElementById(targetId) : null;
         if (targetElement) {
           const offset = 80;
           const elementPosition = targetElement.getBoundingClientRect().top;
@@ -551,13 +553,13 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
     // Close TOC when clicking outside
     document.addEventListener('click', (e) => {
-      if (tocContent && !tocContent.contains(e.target) && !tocToggle.contains(e.target)) {
+      if (tocContent && e.target instanceof Node && !tocContent.contains(e.target) && tocToggle && !tocToggle.contains(e.target)) {
         closeTOC();
       }
     });
 
     // Update on scroll for better accuracy
-    let scrollTimeout;
+    let scrollTimeout: ReturnType<typeof setTimeout>;
     window.addEventListener(
       'scroll',
       () => {
