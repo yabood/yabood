@@ -5,84 +5,89 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
 const posts = (await getCollection('blog'))
-  .filter(post => !post.data.draft)
+  .filter((post) => !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 ---
 
 <BaseLayout
   title="Home"
-  description="Welcome to Yabood - A personal blog about technology, development, and creativity"
->
+  description="Welcome to Yabood - A personal blog about technology, development, and creativity">
   <Header />
-  
+
   <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
     <section class="mb-16 text-center">
       <h1 class="mb-4 text-5xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl">
         Welcome to <span class="text-accent">Yabood</span>
       </h1>
       <p class="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-        A personal blog about technology, development, and creativity. 
-        Sharing insights, tutorials, and thoughts on building better software.
+        A personal blog about technology, development, and creativity. Sharing insights, tutorials,
+        and thoughts on building better software.
       </p>
       <div class="mt-8 flex justify-center gap-4">
         <a
           href="/about"
-          class="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
-        >
+          class="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
           Learn More
         </a>
         <a
           href="/blog"
-          class="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
+          class="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
           Read Blog
         </a>
       </div>
     </section>
-    
-    {posts.length > 0 && (
-      <section>
-        <div class="mb-8 flex items-center justify-between">
-          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Latest Posts</h2>
-          <a
-            href="/blog"
-            class="text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
-          >
-            View all →
-          </a>
-        </div>
-        
-        <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <article class="group">
-              <a href={`/blog/${post.slug}`} class="block">
-                <time datetime={post.data.pubDate.toISOString()} class="text-sm text-gray-600 dark:text-gray-400">
-                  {post.data.pubDate.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
-                </time>
-                <h3 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-                  {post.data.title}
-                </h3>
-                <p class="mt-2 line-clamp-3 text-gray-600 dark:text-gray-400">
-                  {post.data.description}
-                </p>
-                <span class="mt-4 inline-flex items-center text-sm font-medium text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
-                  Read more
-                  <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </a>
-            </article>
-          ))}
-        </div>
-      </section>
-    )}
+
+    {
+      posts.length > 0 && (
+        <section>
+          <div class="mb-8 flex items-center justify-between">
+            <h2 class="text-3xl font-bold text-gray-900 dark:text-white">Latest Posts</h2>
+            <a
+              href="/blog"
+              class="text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+              View all →
+            </a>
+          </div>
+
+          <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {posts.map((post) => (
+              <article class="group">
+                <a href={`/blog/${post.slug}`} class="block">
+                  <time
+                    datetime={post.data.pubDate.toISOString()}
+                    class="text-sm text-gray-600 dark:text-gray-400">
+                    {post.data.pubDate.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
+                  <h3 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                    {post.data.title}
+                  </h3>
+                  <p class="mt-2 line-clamp-3 text-gray-600 dark:text-gray-400">
+                    {post.data.description}
+                  </p>
+                  <span class="mt-4 inline-flex items-center text-sm font-medium text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
+                    Read more
+                    <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </span>
+                </a>
+              </article>
+            ))}
+          </div>
+        </section>
+      )
+    }
   </main>
-  
+
   <Footer />
 </BaseLayout>

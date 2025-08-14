@@ -22,7 +22,7 @@ Astro ships zero JavaScript to the client by default, resulting in incredibly fa
 ```astro
 ---
 // This runs at build time
-const data = await fetch('https://api.example.com/data').then(r => r.json());
+const data = await fetch('https://api.example.com/data').then((r) => r.json());
 ---
 
 <!-- This HTML is static -->
@@ -56,12 +56,11 @@ This blog is built with a carefully selected tech stack optimized for performanc
 Using Astro's built-in `<Image />` component, all images are automatically optimized:
 
 ```astro
-import { Image } from 'astro:assets';
-import heroImage from '../assets/hero.jpg';
+import {Image} from 'astro:assets'; import heroImage from '../assets/hero.jpg';
 
-<Image 
-  src={heroImage} 
-  alt="Hero" 
+<Image
+  src={heroImage}
+  alt="Hero"
   widths={[240, 540, 720, 1080]}
   sizes="(max-width: 360px) 240px, (max-width: 720px) 540px, (max-width: 1600px) 720px, 1080px"
 />
@@ -94,7 +93,10 @@ This site achieves excellent Core Web Vitals scores:
 
 <div class="my-8 rounded-lg border-l-4 border-accent bg-accent/10 p-4">
   <p class="font-semibold">💡 Pro Tip</p>
-  <p class="mt-2">Use Astro's built-in `prefetch` directive to preload links on hover, making navigation feel instant:</p>
+  <p class="mt-2">
+    Use Astro's built-in `prefetch` directive to preload links on hover, making navigation feel
+    instant:
+  </p>
   <code class="mt-2 block rounded bg-gray-900 p-2 text-sm text-gray-100">
     {`<a href="/about" data-astro-prefetch>About</a>`}
   </code>
@@ -117,4 +119,4 @@ Stay tuned for more posts about web development, performance optimization, and m
 
 ---
 
-*Have questions or feedback? Feel free to reach out on [Twitter](https://twitter.com/yabood) or [GitHub](https://github.com/yabood).*
+_Have questions or feedback? Feel free to reach out on [Twitter](https://twitter.com/yabood) or [GitHub](https://github.com/yabood)._

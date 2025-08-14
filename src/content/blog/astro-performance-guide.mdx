@@ -37,12 +37,14 @@ const latestPosts = posts.slice(0, 5);
 
 <!-- This HTML is completely static -->
 <div class="posts">
-  {latestPosts.map(post => (
-    <article>
-      <h2>{post.data.title}</h2>
-      <p>{post.data.description}</p>
-    </article>
-  ))}
+  {
+    latestPosts.map((post) => (
+      <article>
+        <h2>{post.data.title}</h2>
+        <p>{post.data.description}</p>
+      </article>
+    ))
+  }
 </div>
 ```
 
@@ -62,8 +64,8 @@ When you do need interactivity, Astro's Islands Architecture allows you to hydra
 
 One of the most impactful performance optimizations is proper image handling. Astro's built-in `<Image />` component provides automatic optimization:
 
-<Image 
-  src={heroImage} 
+<Image
+  src={heroImage}
   alt="Astro development environment showing code and terminal"
   widths={[400, 600, 800, 1200]}
   sizes="(max-width: 480px) 400px, (max-width: 768px) 600px, (max-width: 1024px) 800px, 1200px"
@@ -78,10 +80,9 @@ One of the most impactful performance optimizations is proper image handling. As
 The `<Image />` component automatically generates multiple sizes and formats:
 
 ```astro
-import { Image } from 'astro:assets';
-import myImage from '../assets/photo.jpg';
+import {Image} from 'astro:assets'; import myImage from '../assets/photo.jpg';
 
-<Image 
+<Image
   src={myImage}
   alt="Description"
   widths={[240, 540, 720, 1080]}
@@ -99,6 +100,7 @@ This generates multiple image variants optimized for different screen sizes and 
 Target: < 2.5 seconds
 
 **Optimization strategies:**
+
 - Optimize hero images with `loading="eager"`
 - Use `<link rel="preload">` for critical resources
 - Minimize render-blocking resources
@@ -107,10 +109,11 @@ Target: < 2.5 seconds
 ---
 // In your layout
 ---
+
 <head>
   <!-- Preload critical images -->
   <link rel="preload" as="image" href="/hero-image.webp" />
-  
+
   <!-- Preload critical fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -122,6 +125,7 @@ Target: < 2.5 seconds
 Target: < 100ms
 
 **Optimization strategies:**
+
 - Minimize JavaScript execution time
 - Use Astro's Islands for selective hydration
 - Defer non-critical scripts
@@ -131,18 +135,14 @@ Target: < 100ms
 Target: < 0.1
 
 **Optimization strategies:**
+
 - Always specify image dimensions
 - Reserve space for dynamic content
 - Avoid inserting content above existing content
 
 ```astro
 <!-- Good: Explicit dimensions prevent layout shift -->
-<Image 
-  src={image}
-  alt="Description"
-  width={800}
-  height={600}
-/>
+<Image src={image} alt="Description" width={800} height={600} />
 
 <!-- Bad: No dimensions can cause layout shift -->
 <img src="image.jpg" alt="Description" />
@@ -167,6 +167,7 @@ const HeavyChart = lazy(() => import('../components/HeavyChart.jsx'));
 ### CSS Optimization
 
 Astro automatically:
+
 - Removes unused CSS
 - Inlines critical CSS
 - Minifies stylesheets
@@ -205,6 +206,7 @@ jobs:
 ### Real User Monitoring
 
 Consider implementing RUM with tools like:
+
 - Google Analytics 4 (Core Web Vitals)
 - Vercel Analytics
 - Cloudflare Web Analytics
@@ -229,23 +231,17 @@ For even better performance, consider implementing a service worker:
 ```javascript
 // sw.js
 const CACHE_NAME = 'astro-site-v1';
-const urlsToCache = [
-  '/',
-  '/styles/main.css',
-  '/assets/hero-image.webp'
-];
+const urlsToCache = ['/', '/styles/main.css', '/assets/hero-image.webp'];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-  );
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache)));
 });
 ```
 
 ### Edge Functions
 
 For dynamic content, consider edge functions with providers like:
+
 - Vercel Edge Functions
 - Netlify Edge Functions
 - Cloudflare Workers
@@ -255,6 +251,7 @@ For dynamic content, consider edge functions with providers like:
 Astro provides excellent performance out of the box, but following these optimization strategies can help you achieve perfect Lighthouse scores and provide an exceptional user experience.
 
 Remember to:
+
 1. Measure performance regularly
 2. Optimize for your specific use case
 3. Test on real devices and connections
@@ -264,4 +261,4 @@ With these techniques, you'll have a blazing-fast website that delights users an
 
 ---
 
-*Want to dive deeper into Astro performance? Check out the [official Astro performance guide](https://docs.astro.build/en/guides/performance/) and feel free to reach out with questions!*
+_Want to dive deeper into Astro performance? Check out the [official Astro performance guide](https://docs.astro.build/en/guides/performance/) and feel free to reach out with questions!_

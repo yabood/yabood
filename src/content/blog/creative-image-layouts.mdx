@@ -21,8 +21,8 @@ Images are crucial for engaging web content, but standard inline images can feel
 
 First, let's see a standard image within the content container:
 
-<Image 
-  src={gallery1} 
+<Image
+  src={gallery1}
   alt="Modern workspace with laptop and code"
   widths={[400, 600, 800]}
   sizes="(max-width: 768px) 400px, (max-width: 1024px) 600px, 800px"
@@ -37,8 +37,8 @@ This image follows the normal content flow and stays within the article's readin
 
 Sometimes you want an image to have more presence without going full-width. The breakout layout extends beyond the content container:
 
-<Image 
-  src={gallery2} 
+<Image
+  src={gallery2}
   alt="Developer working on multiple screens"
   widths={[600, 800, 1000, 1200]}
   sizes="(max-width: 768px) calc(100vw - 2rem), (max-width: 1024px) calc(100vw - 4rem), 1200px"
@@ -53,8 +53,8 @@ The breakout layout creates visual interest by extending into the margins, givin
 
 For maximum impact, full-width images span the entire viewport width:
 
-<Image 
-  src={wideLandscape} 
+<Image
+  src={wideLandscape}
   alt="Scenic mountain landscape with pristine lake"
   widths={[800, 1200, 1600, 1920]}
   sizes="100vw"
@@ -70,32 +70,32 @@ Full-width images work exceptionally well for landscapes, architectural photogra
 Here's a responsive grid gallery that automatically adjusts to different screen sizes:
 
 <div class="gallery-grid my-12">
-  <Image 
-    src={gallery1} 
+  <Image
+    src={gallery1}
     alt="Workspace setup 1"
     widths={[300, 400, 500]}
     sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, 400px"
     quality={85}
     loading="lazy"
   />
-  <Image 
-    src={gallery2} 
+  <Image
+    src={gallery2}
     alt="Workspace setup 2"
     widths={[300, 400, 500]}
     sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, 400px"
     quality={85}
     loading="lazy"
   />
-  <Image 
-    src={gallery3} 
+  <Image
+    src={gallery3}
     alt="Workspace setup 3"
     widths={[300, 400, 500]}
     sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, 400px"
     quality={85}
     loading="lazy"
   />
-  <Image 
-    src={gallery4} 
+  <Image
+    src={gallery4}
     alt="Workspace setup 4"
     widths={[300, 400, 500]}
     sizes="(max-width: 768px) 250px, (max-width: 1024px) 300px, 400px"
@@ -192,7 +192,7 @@ Subtle animations enhance user experience:
 These techniques use modern CSS features with excellent browser support:
 
 - **CSS Grid**: 96%+ browser support
-- **calc()**: 97%+ browser support  
+- **calc()**: 97%+ browser support
 - **Viewport units**: 95%+ browser support
 - **object-fit**: 95%+ browser support
 
@@ -204,4 +204,4 @@ The key is choosing the right layout for your content - use full-width for impac
 
 ---
 
-*Try resizing your browser window to see how these responsive layouts adapt to different screen sizes!*
+_Try resizing your browser window to see how these responsive layouts adapt to different screen sizes!_

@@ -26,23 +26,26 @@ A production-ready Astro blog with excellent SEO, performance, and developer exp
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/yabood/yabood.git
 cd yabood
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -151,12 +154,12 @@ Pages can be created as `.astro` or `.mdx` files in `src/pages/`.
 
 ## Commands
 
-| Command | Action |
-|---------|--------|
-| `npm run dev` | Start development server at `localhost:4321` |
-| `npm run build` | Build production site to `./dist/` |
-| `npm run preview` | Preview production build locally |
-| `npm run astro` | Run Astro CLI commands |
+| Command           | Action                                       |
+| ----------------- | -------------------------------------------- |
+| `npm run dev`     | Start development server at `localhost:4321` |
+| `npm run build`   | Build production site to `./dist/`           |
+| `npm run preview` | Preview production build locally             |
+| `npm run astro`   | Run Astro CLI commands                       |
 
 ## SEO & Structured Data
 
@@ -174,6 +177,7 @@ The site automatically generates:
 ## Performance
 
 Target metrics:
+
 - Lighthouse Score: 95+ (all categories)
 - First Contentful Paint: < 1s
 - Largest Contentful Paint: < 2.5s
@@ -190,6 +194,7 @@ MIT
 ## Author
 
 **Yousif Abood**
+
 - Website: [yabood.com](https://yabood.com)
 - GitHub: [@yabood](https://github.com/yabood)
 - Twitter: [@yabood](https://twitter.com/yabood)

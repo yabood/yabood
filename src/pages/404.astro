@@ -4,12 +4,9 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 ---
 
-<BaseLayout
-  title="404 - Page Not Found"
-  description="The page you're looking for doesn't exist"
->
+<BaseLayout title="404 - Page Not Found" description="The page you're looking for doesn't exist">
   <Header />
-  
+
   <main id="main" class="container mx-auto flex min-h-[60vh] max-w-4xl items-center px-4">
     <div class="mx-auto text-center">
       <p class="text-base font-semibold text-accent dark:text-accent-light">404</p>
@@ -22,19 +19,17 @@ import Footer from '../components/Footer.astro';
       <div class="mt-10 flex items-center justify-center gap-x-6">
         <a
           href="/"
-          class="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-dark"
-        >
+          class="rounded-lg bg-accent px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-dark">
           Go back home
         </a>
         <a
           href="/contact"
-          class="text-sm font-medium text-gray-900 hover:text-accent dark:text-gray-100 dark:hover:text-accent-light"
-        >
+          class="text-sm font-medium text-gray-900 hover:text-accent dark:text-gray-100 dark:hover:text-accent-light">
           Contact support <span aria-hidden="true">→</span>
         </a>
       </div>
     </div>
   </main>
-  
+
   <Footer />
 </BaseLayout>
