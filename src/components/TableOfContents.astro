@@ -353,9 +353,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
     if (!headingElements.length) return;
 
-    // Track which headings are currently visible
-    const visibleHeadings = new Set();
-
     // Track visible full-width images
     const visibleFullWidthImages = new Set();
     let animationFrame: number | null = null;
@@ -409,18 +406,8 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     const contentImages = document.querySelectorAll('article img, .prose img, main img');
     contentImages.forEach((img) => imageObserver.observe(img));
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const id = entry.target.getAttribute('id');
-
-        if (entry.isIntersecting) {
-          visibleHeadings.add(id);
-        } else {
-          visibleHeadings.delete(id);
-        }
-      });
-
-      // Update active states
+    const observer = new IntersectionObserver(() => {
+      // Just trigger an update when any heading crosses the threshold
       updateActiveStates();
     }, observerOptions);
 
@@ -429,36 +416,28 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
       tocLinks.forEach((link) => link.removeAttribute('aria-current'));
       tocIndicators.forEach((indicator) => indicator.classList.remove('active'));
 
-      // Find the first visible heading
       let activeId = null;
+      
+      // Always use scroll position logic for more accurate tracking
+      const viewportHeight = window.innerHeight;
+      
+      // Find the heading that's most prominently in view
+      // We look for the last heading that's passed the top 20% of the viewport
       for (const heading of headingElements) {
-        const id = heading.getAttribute('id');
-        if (visibleHeadings.has(id)) {
-          activeId = id;
+        const rect = heading.getBoundingClientRect();
+        
+        // If heading is above 20% of viewport height, it's our active heading
+        if (rect.top <= viewportHeight * 0.2) {
+          activeId = heading.getAttribute('id');
+        } else {
+          // Stop when we hit a heading below the threshold
           break;
         }
       }
-
-      // If no headings are visible, highlight based on scroll position
-      if (!activeId && visibleHeadings.size === 0) {
-        const scrollPosition = window.scrollY;
-        let activeHeading = null;
-
-        // Find the last heading that's above the current scroll position
-        for (const heading of headingElements) {
-          const rect = heading.getBoundingClientRect();
-          const absoluteTop = rect.top + window.scrollY;
-
-          if (absoluteTop <= scrollPosition + 100) {
-            activeHeading = heading;
-          } else {
-            break;
-          }
-        }
-
-        if (activeHeading) {
-          activeId = activeHeading.getAttribute('id');
-        }
+      
+      // If no heading has passed the threshold, use the first heading
+      if (!activeId && headingElements.length > 0) {
+        activeId = headingElements[0].getAttribute('id');
       }
 
       // Update active states for both links and indicators
