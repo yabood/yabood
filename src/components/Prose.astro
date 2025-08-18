@@ -7,6 +7,13 @@
   <div class="relative max-w-full max-h-full" onclick="event.stopPropagation()">
     <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain">
     
+    <!-- Image counter -->
+    <div 
+      id="lightbox-counter"
+      class="absolute top-4 left-4 text-white bg-black bg-opacity-50 px-3 py-1 rounded text-sm hidden"
+      aria-label="Image position">
+    </div>
+    
     <!-- Previous button -->
     <button 
       id="lightbox-prev"
@@ -56,12 +63,17 @@
   let currentImageIndex = 0;
   let allImages = [];
 
-  function openLightbox(imageSrc, imageAlt) {
+  function openLightbox(imageSrc, imageAlt, clickedImage) {
     const lightbox = document.getElementById('lightbox');
     const lightboxImage = document.getElementById('lightbox-image');
     
-    // Find the current image index
-    currentImageIndex = allImages.findIndex(img => img.src === imageSrc);
+    // Find the current image index - use the clicked image directly if provided
+    if (clickedImage) {
+      currentImageIndex = allImages.findIndex(img => img === clickedImage);
+    } else {
+      currentImageIndex = allImages.findIndex(img => img.src === imageSrc);
+    }
+    
     
     lightboxImage.src = imageSrc;
     lightboxImage.alt = imageAlt;
@@ -84,24 +96,51 @@
     document.body.style.overflow = '';
   }
 
+  function getGalleryImages(targetImage) {
+    const galleryId = targetImage.getAttribute('data-gallery');
+    
+    if (!galleryId) {
+      return [targetImage]; // Single image, no gallery
+    }
+    
+    // Find all images with the same gallery ID
+    return allImages.filter(img => img.getAttribute('data-gallery') === galleryId);
+  }
+
   function showNextImage() {
-    if (currentImageIndex < allImages.length - 1) {
-      currentImageIndex++;
-      const img = allImages[currentImageIndex];
+    const currentImage = allImages[currentImageIndex];
+    const galleryImages = getGalleryImages(currentImage);
+    
+    if (galleryImages.length <= 1) return;
+    
+    const currentGalleryIndex = galleryImages.indexOf(currentImage);
+    const nextGalleryIndex = currentGalleryIndex + 1;
+    
+    if (nextGalleryIndex < galleryImages.length) {
+      const nextImage = galleryImages[nextGalleryIndex];
+      currentImageIndex = allImages.indexOf(nextImage);
       const lightboxImage = document.getElementById('lightbox-image');
-      lightboxImage.src = img.src;
-      lightboxImage.alt = img.alt;
+      lightboxImage.src = nextImage.src;
+      lightboxImage.alt = nextImage.alt;
       updateNavigationButtons();
     }
   }
 
   function showPrevImage() {
-    if (currentImageIndex > 0) {
-      currentImageIndex--;
-      const img = allImages[currentImageIndex];
+    const currentImage = allImages[currentImageIndex];
+    const galleryImages = getGalleryImages(currentImage);
+    
+    if (galleryImages.length <= 1) return;
+    
+    const currentGalleryIndex = galleryImages.indexOf(currentImage);
+    const prevGalleryIndex = currentGalleryIndex - 1;
+    
+    if (prevGalleryIndex >= 0) {
+      const prevImage = galleryImages[prevGalleryIndex];
+      currentImageIndex = allImages.indexOf(prevImage);
       const lightboxImage = document.getElementById('lightbox-image');
-      lightboxImage.src = img.src;
-      lightboxImage.alt = img.alt;
+      lightboxImage.src = prevImage.src;
+      lightboxImage.alt = prevImage.alt;
       updateNavigationButtons();
     }
   }
@@ -109,12 +148,36 @@
   function updateNavigationButtons() {
     const prevBtn = document.getElementById('lightbox-prev');
     const nextBtn = document.getElementById('lightbox-next');
+    const counter = document.getElementById('lightbox-counter');
+    
+    const currentImage = allImages[currentImageIndex];
+    const galleryImages = getGalleryImages(currentImage);
+    
+    // Only show navigation if there are multiple images in the gallery
+    const isInGallery = galleryImages.length > 1;
+    
+    if (!isInGallery) {
+      if (prevBtn) prevBtn.style.display = 'none';
+      if (nextBtn) nextBtn.style.display = 'none';
+      if (counter) counter.style.display = 'none';
+      return;
+    }
+    
+    const currentGalleryIndex = galleryImages.indexOf(currentImage);
+    const hasPrev = currentGalleryIndex > 0;
+    const hasNext = currentGalleryIndex < galleryImages.length - 1;
+    
+    // Update counter
+    if (counter) {
+      counter.textContent = `${currentGalleryIndex + 1} / ${galleryImages.length}`;
+      counter.style.display = 'block';
+    }
     
     if (prevBtn) {
-      prevBtn.style.display = currentImageIndex > 0 ? 'flex' : 'none';
+      prevBtn.style.display = hasPrev ? 'flex' : 'none';
     }
     if (nextBtn) {
-      nextBtn.style.display = currentImageIndex < allImages.length - 1 ? 'flex' : 'none';
+      nextBtn.style.display = hasNext ? 'flex' : 'none';
     }
   }
 
@@ -139,14 +202,18 @@
 
   // Add event listeners when DOM is ready
   document.addEventListener('DOMContentLoaded', function() {
-    // Collect all images in prose content
-    const images = document.querySelectorAll('.prose img');
-    allImages = Array.from(images);
+    // Collect all images in prose content and hero images
+    const proseImages = document.querySelectorAll('.prose img');
+    const heroImages = document.querySelectorAll('.hero-image');
+    // Hero images should be first in the array for navigation purposes
+    const allImageElements = [...heroImages, ...proseImages];
+    allImages = Array.from(allImageElements);
     
-    images.forEach(img => {
+    
+    allImageElements.forEach(img => {
       img.classList.add('cursor-zoom-in');
       img.addEventListener('click', function() {
-        openLightbox(this.src, this.alt);
+        openLightbox(this.src, this.alt, this);
       });
     });
 
@@ -234,10 +301,18 @@
       if (lightbox && !lightbox.classList.contains('hidden')) {
         if (e.key === 'Escape') {
           closeLightbox();
-        } else if (e.key === 'ArrowLeft') {
-          showPrevImage();
-        } else if (e.key === 'ArrowRight') {
-          showNextImage();
+        } else {
+          // Check if current image is in a gallery before allowing navigation
+          const currentImage = allImages[currentImageIndex];
+          const galleryImages = getGalleryImages(currentImage);
+          
+          if (galleryImages.length > 1) {
+            if (e.key === 'ArrowLeft') {
+              showPrevImage();
+            } else if (e.key === 'ArrowRight') {
+              showNextImage();
+            }
+          }
         }
       }
     });
