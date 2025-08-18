@@ -2,7 +2,244 @@
 
 ---
 
+<!-- Lightbox overlay -->
+<div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4">
+  <div class="relative max-w-full max-h-full" onclick="event.stopPropagation()">
+    <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain">
+    
+    <!-- Previous button -->
+    <button 
+      id="lightbox-prev"
+      class="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 cursor-pointer"
+      aria-label="Previous image">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    
+    <!-- Next button -->
+    <button 
+      id="lightbox-next"
+      class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 cursor-pointer"
+      aria-label="Next image">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+    
+    <!-- Top buttons -->
+    <button 
+      id="lightbox-download"
+      class="absolute top-4 right-14 text-white hover:text-gray-300 w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 cursor-pointer"
+      aria-label="Download image">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+    </button>
+    <button 
+      id="lightbox-close"
+      class="absolute top-4 right-4 text-white hover:text-gray-300 w-8 h-8 flex items-center justify-center rounded-full bg-black bg-opacity-50 cursor-pointer"
+      aria-label="Close lightbox">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    </button>
+  </div>
+</div>
+
 <div
-  class="prose prose-gray max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-a:text-accent prose-a:no-underline hover:prose-a:underline dark:prose-a:text-accent-light prose-pre:bg-gray-900 prose-pre:text-gray-100 dark:prose-pre:bg-gray-950 prose-code:text-accent dark:prose-code:text-accent-light prose-code:before:content-[''] prose-code:after:content-[''] prose-img:rounded-lg">
+  class="prose prose-gray max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-a:text-accent prose-a:no-underline hover:prose-a:underline dark:prose-a:text-accent-light prose-pre:bg-gray-900 prose-pre:text-gray-100 dark:prose-pre:bg-gray-950 prose-code:text-accent dark:prose-code:text-accent-light prose-code:before:content-[''] prose-code:after:content-[''] prose-img:rounded-lg prose-img:cursor-zoom-in">
   <slot />
 </div>
+
+<script>
+  let currentImageIndex = 0;
+  let allImages = [];
+
+  function openLightbox(imageSrc, imageAlt) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImage = document.getElementById('lightbox-image');
+    
+    // Find the current image index
+    currentImageIndex = allImages.findIndex(img => img.src === imageSrc);
+    
+    lightboxImage.src = imageSrc;
+    lightboxImage.alt = imageAlt;
+    lightbox.classList.remove('hidden');
+    lightbox.classList.add('flex');
+    
+    // Update navigation buttons visibility
+    updateNavigationButtons();
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    lightbox.classList.add('hidden');
+    lightbox.classList.remove('flex');
+    
+    // Restore body scroll
+    document.body.style.overflow = '';
+  }
+
+  function showNextImage() {
+    if (currentImageIndex < allImages.length - 1) {
+      currentImageIndex++;
+      const img = allImages[currentImageIndex];
+      const lightboxImage = document.getElementById('lightbox-image');
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      updateNavigationButtons();
+    }
+  }
+
+  function showPrevImage() {
+    if (currentImageIndex > 0) {
+      currentImageIndex--;
+      const img = allImages[currentImageIndex];
+      const lightboxImage = document.getElementById('lightbox-image');
+      lightboxImage.src = img.src;
+      lightboxImage.alt = img.alt;
+      updateNavigationButtons();
+    }
+  }
+
+  function updateNavigationButtons() {
+    const prevBtn = document.getElementById('lightbox-prev');
+    const nextBtn = document.getElementById('lightbox-next');
+    
+    if (prevBtn) {
+      prevBtn.style.display = currentImageIndex > 0 ? 'flex' : 'none';
+    }
+    if (nextBtn) {
+      nextBtn.style.display = currentImageIndex < allImages.length - 1 ? 'flex' : 'none';
+    }
+  }
+
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      // Show feedback that code was copied
+      const event = new CustomEvent('code-copied');
+      document.dispatchEvent(event);
+    });
+  }
+
+  function showCopyFeedback(button) {
+    const originalText = button.innerHTML;
+    button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+    button.classList.add('text-green-500');
+    
+    setTimeout(() => {
+      button.innerHTML = originalText;
+      button.classList.remove('text-green-500');
+    }, 2000);
+  }
+
+  // Add event listeners when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    // Collect all images in prose content
+    const images = document.querySelectorAll('.prose img');
+    allImages = Array.from(images);
+    
+    images.forEach(img => {
+      img.classList.add('cursor-zoom-in');
+      img.addEventListener('click', function() {
+        openLightbox(this.src, this.alt);
+      });
+    });
+
+    // Add copy buttons to code blocks
+    const codeBlocks = document.querySelectorAll('.prose pre');
+    codeBlocks.forEach(pre => {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative group';
+      
+      const copyButton = document.createElement('button');
+      copyButton.className = 'absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-gray-700 hover:bg-gray-600 text-white p-2 rounded text-sm flex items-center gap-1 cursor-pointer';
+      copyButton.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+      copyButton.setAttribute('aria-label', 'Copy code');
+      
+      copyButton.addEventListener('click', () => {
+        const code = pre.querySelector('code');
+        if (code) {
+          copyToClipboard(code.textContent);
+          showCopyFeedback(copyButton);
+        }
+      });
+      
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+      wrapper.appendChild(copyButton);
+    });
+
+    // Close button click handler
+    const closeButton = document.getElementById('lightbox-close');
+    if (closeButton) {
+      closeButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeLightbox();
+      });
+    }
+
+    // Download button click handler
+    const downloadButton = document.getElementById('lightbox-download');
+    if (downloadButton) {
+      downloadButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const lightboxImage = document.getElementById('lightbox-image');
+        if (lightboxImage && lightboxImage.src) {
+          const link = document.createElement('a');
+          link.href = lightboxImage.src;
+          link.download = lightboxImage.alt || 'image';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      });
+    }
+
+    // Previous button click handler
+    const prevButton = document.getElementById('lightbox-prev');
+    if (prevButton) {
+      prevButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showPrevImage();
+      });
+    }
+
+    // Next button click handler
+    const nextButton = document.getElementById('lightbox-next');
+    if (nextButton) {
+      nextButton.addEventListener('click', function(e) {
+        e.stopPropagation();
+        showNextImage();
+      });
+    }
+
+    // Click outside image to close
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+      lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) {
+          closeLightbox();
+        }
+      });
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+      const lightbox = document.getElementById('lightbox');
+      if (lightbox && !lightbox.classList.contains('hidden')) {
+        if (e.key === 'Escape') {
+          closeLightbox();
+        } else if (e.key === 'ArrowLeft') {
+          showPrevImage();
+        } else if (e.key === 'ArrowRight') {
+          showNextImage();
+        }
+      }
+    });
+  });
+</script>
