@@ -9,9 +9,9 @@ const navItems = [
 const currentPath = Astro.url.pathname;
 ---
 
-<header
-  class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
-  <nav class="container mx-auto max-w-4xl px-4 py-4">
+<!-- Non-sticky name section -->
+<div class="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
+  <nav class="container mx-auto max-w-4xl px-4 pt-4">
     <div>
       <a
         href="/"
@@ -19,28 +19,59 @@ const currentPath = Astro.url.pathname;
         Yousif Abood
       </a>
     </div>
+  </nav>
+</div>
 
-    <ul class="flex items-center gap-6 mt-3">
+<!-- Sticky navigation links only -->
+<header id="sticky-header" class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-transparent transition-colors duration-200">
+  <nav class="container mx-auto max-w-4xl px-4 py-3 flex items-center">
+    <ul class="flex items-center leading-0">
       {
-        navItems.map(({ href, label }) => (
-          <li>
-            <a
-              href={href}
-              class:list={[
-                'text-sm font-medium transition-colors hover:text-accent dark:hover:text-accent-light',
-                {
-                  'text-accent dark:text-accent-light':
-                    currentPath === href || (href !== '/' && currentPath.startsWith(href)),
-                  'text-gray-600 dark:text-gray-400':
-                    currentPath !== href && !(href !== '/' && currentPath.startsWith(href)),
-                },
-              ]}
-              aria-current={currentPath === href ? 'page' : undefined}>
-              {label}
-            </a>
-          </li>
+        navItems.map(({ href, label }, index) => (
+          <>
+            <li>
+              <a
+                href={href}
+                class:list={[
+                  'text-sm font-medium transition-colors hover:text-accent dark:hover:text-accent-light',
+                  {
+                    'text-accent dark:text-accent-light':
+                      currentPath === href || (href !== '/' && currentPath.startsWith(href)),
+                    'text-gray-600 dark:text-gray-400':
+                      currentPath !== href && !(href !== '/' && currentPath.startsWith(href)),
+                  },
+                ]}
+                aria-current={currentPath === href ? 'page' : undefined}>
+                {label}
+              </a>
+            </li>
+            {index < navItems.length - 1 && (
+              <span class="mx-3 text-gray-400 dark:text-gray-600">·</span>
+            )}
+          </>
         ))
       }
     </ul>
   </nav>
 </header>
+
+<script>
+  function handleScroll() {
+    const header = document.getElementById('sticky-header');
+    if (header) {
+      if (window.scrollY > 100) {
+        header.classList.remove('border-transparent');
+        header.classList.add('border-gray-200', 'dark:border-gray-800');
+      } else {
+        header.classList.add('border-transparent');
+        header.classList.remove('border-gray-200', 'dark:border-gray-800');
+      }
+    }
+  }
+
+  // Add scroll listener
+  window.addEventListener('scroll', handleScroll);
+  
+  // Check initial state
+  handleScroll();
+</script>
