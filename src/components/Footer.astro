@@ -3,60 +3,75 @@ const currentYear = new Date().getFullYear();
 
 const socialLinks = [
   { href: 'https://github.com/yabood', label: 'GitHub', icon: 'github' },
-  { href: 'https://twitter.com/yabood', label: 'Twitter', icon: 'twitter' },
+  { href: 'https://linkedin.com/in/yabood', label: 'LinkedIn', icon: 'linkedin' },
   { href: '/rss.xml', label: 'RSS', icon: 'rss' },
 ];
 ---
 
-<footer class="mt-auto border-t border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+<footer class="mt-auto bg-white dark:bg-gray-900">
   <div class="container mx-auto max-w-4xl px-4 py-8">
-    <div class="flex flex-col items-center justify-between gap-4 sm:flex-row">
-      <p class="text-sm text-gray-600 dark:text-gray-400">
-        © {currentYear} Yabood. All rights reserved.
-      </p>
+    <div class="flex items-start justify-between">
+      <div class="flex flex-col gap-4">
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          © {currentYear} Yabood. All rights reserved.
+        </p>
 
-      <div class="flex items-center gap-4">
-        {
-          socialLinks.map(({ href, label, icon }) => (
-            <a
-              href={href}
-              class="text-gray-600 transition-colors hover:text-accent dark:text-gray-400 dark:hover:text-accent-light"
-              aria-label={label}
-              rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              target={href.startsWith('http') ? '_blank' : undefined}>
-              {icon === 'github' && (
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    fill-rule="evenodd"
-                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              )}
-              {icon === 'twitter' && (
-                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
-                </svg>
-              )}
-              {icon === 'rss' && (
-                <svg
-                  class="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M6 5c7.18 0 13 5.82 13 13M6 11a7 7 0 017 7m-6 0a1 1 0 11-2 0 1 1 0 012 0z"
-                  />
-                </svg>
-              )}
-            </a>
-          ))
-        }
+        <div class="flex items-center">
+          {
+            socialLinks.map(({ href, label }, index) => (
+              <>
+                <a
+                  href={href}
+                  class="text-sm text-gray-600 transition-colors hover:text-accent dark:text-gray-400 dark:hover:text-accent-light"
+                  rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                  target={href.startsWith('http') ? '_blank' : undefined}>
+                  {label}
+                </a>
+                {index < socialLinks.length - 1 && (
+                  <span class="mx-3 text-gray-400 dark:text-gray-600">·</span>
+                )}
+              </>
+            ))
+          }
+        </div>
       </div>
+
+      <svg class="text-gray-400 dark:text-gray-600 flex-shrink-0" viewBox="0 0 384 384" fill="none" xmlns="http://www.w3.org/2000/svg" style="height: 56px;">
+        <g>
+          <path d="M156.496 14.477H170.699V28.68H156.496V14.477ZM270.109 42.883V0.277H255.906V28.68H241.707V0.277H227.504V28.68H213.301V0.277H199.102V28.68H184.898V0.277H142.293V28.68H71.285V14.477H99.688V0.277H57.082V42.883H270.109Z" fill="currentColor"/>
+          <path d="M113.891 0.277H128.094V14.476H113.891V0.277Z" fill="currentColor"/>
+          <path d="M298.512 14.477H312.715V28.68H298.512V14.477ZM326.918 69.867V42.883H355.32V0.277H341.117V28.68H326.918V0.277H284.312V42.883H312.715V57.082H284.312V71.285H326.918V69.867Z" fill="currentColor"/>
+          <path d="M369.523 0.277H383.722V14.476H369.523V0.277Z" fill="currentColor"/>
+          <path d="M369.523 28.68H383.722V42.883H369.523V28.68Z" fill="currentColor"/>
+          <path d="M156.496 71.285H170.699V85.488H156.496V71.285ZM270.109 99.688V85.488H241.707V71.285H270.109V57.082H227.504V85.488H213.301V57.082H199.102V85.488H184.898V57.082H142.293V99.688H170.699V113.891H142.293V128.094H184.898V99.688H270.109Z" fill="currentColor"/>
+          <path d="M85.488 85.434V99.637L128.094 99.688V57.082H85.488V71.285H113.891V85.434H85.488Z" fill="currentColor"/>
+          <path d="M199.102 113.891H213.301V128.094H199.102V113.891Z" fill="currentColor"/>
+          <path d="M369.523 170.699H355.32V156.496H369.523V170.699ZM341.117 57.082V270.109H383.723V255.906H355.32V241.707H383.723V227.504H355.32V213.301H383.723V199.102H355.32V184.898H383.723V142.293H355.32V71.285H369.523V99.688H383.723V57.082H341.117Z" fill="currentColor"/>
+          <path d="M369.523 113.891H383.722V128.094H369.523V113.891Z" fill="currentColor"/>
+          <path d="M369.523 312.715H355.32V298.512H369.523V312.715ZM341.117 284.312V312.715H326.918V284.312H312.715V326.918H341.117V355.32H383.723V341.117H355.32V326.918H383.723V284.312H341.117Z" fill="currentColor"/>
+          <path d="M369.523 369.523H383.722V383.722H369.523V369.523Z" fill="currentColor"/>
+          <path d="M341.117 369.523H355.32V383.722H341.117V369.523Z" fill="currentColor"/>
+          <path d="M298.512 156.496H312.715V170.699H298.512V156.496ZM270.109 170.699V142.293H255.906V184.898H284.312V270.109H298.512V241.707H312.715V270.109H326.918V227.504H298.512V213.301H326.918V199.102H298.512V184.898H326.918V142.293H284.312V170.699H270.109Z" fill="currentColor"/>
+          <path d="M326.918 85.488H312.715V113.891H298.566V85.488H284.363V113.891L284.312 128.094H326.918V85.488Z" fill="currentColor"/>
+          <path d="M255.906 199.102H270.109V213.301H255.906V199.102Z" fill="currentColor"/>
+          <path d="M227.504 369.523H213.301V355.32H227.504V369.523ZM113.891 341.117V383.723H128.094V355.32H142.293V383.723H156.496V355.32H170.699V383.723H184.898V355.32H199.102V383.723H241.707V355.32H312.715V369.523H284.312V383.723H326.918V341.117H113.891Z" fill="currentColor"/>
+          <path d="M255.906 369.523H270.109V383.722H255.906V369.523Z" fill="currentColor"/>
+          <path d="M85.488 369.523H71.285V355.32H85.488V369.523ZM57.082 341.117H28.68V383.723H42.883V355.32H57.082V383.723H99.688V341.117H71.285V326.918H99.688V312.715H57.082V341.117Z" fill="currentColor"/>
+          <path d="M0.277008 369.523H14.476V383.722H0.277008V369.523Z" fill="currentColor"/>
+          <path d="M0.277008 341.117H14.476V355.32H0.277008V341.117Z" fill="currentColor"/>
+          <path d="M298.516 298.566V284.363L255.91 284.312V326.918H298.516V312.715H270.109V298.566H298.516Z" fill="currentColor"/>
+          <path d="M227.504 312.715H213.301V298.512H227.504V312.715ZM241.707 270.109V255.906H199.102V284.312H113.891V298.516H142.293V312.715H113.891V326.918H156.496V298.516H170.699V326.918H184.898V298.516H199.102V326.918H241.707V284.312H213.301V270.109H241.707Z" fill="currentColor"/>
+          <path d="M170.699 255.906H184.898V270.109H170.699V255.906Z" fill="currentColor"/>
+          <path d="M14.477 213.301H28.68V227.504H14.477V213.301ZM42.883 326.918V113.891H0.277008V128.094H28.68V142.293H0.277008V156.496H28.68V170.699H0.277008V184.898H28.68V199.102H0.277008V241.707H28.68V312.715H14.477V284.312H0.277008V326.918H42.883Z" fill="currentColor"/>
+          <path d="M0.277008 255.906H14.476V270.109H0.277008V255.906Z" fill="currentColor"/>
+          <path d="M14.477 71.285H28.68V85.488H14.477V71.285ZM42.883 99.688V71.285H57.082V99.688H71.285V57.082H42.883V28.68H0.277008V42.883H28.68V57.082H0.277008V99.688H42.883Z" fill="currentColor"/>
+          <path d="M0.277008 0.277H14.476V14.476H0.277008V0.277Z" fill="currentColor"/>
+          <path d="M28.68 0.277H42.883V14.476H28.68V0.277Z" fill="currentColor"/>
+          <path d="M85.488 227.504H71.285V213.301H85.488V227.504ZM113.891 213.301V241.707H128.094V199.102H99.688V113.891H85.488V142.293H71.285V113.891H57.082V156.496H85.488V170.699H57.082V184.898H85.488V199.102H57.082V241.707H99.688V213.301H113.891Z" fill="currentColor"/>
+          <path d="M57.082 298.516H71.285V270.109H85.434V298.516H99.637L99.688 255.91H57.082V298.516Z" fill="currentColor"/>
+          <path d="M113.891 170.699H128.094V184.898H113.891V170.699Z" fill="currentColor"/>
+        </g>
+      </svg>
     </div>
   </div>
 </footer>
