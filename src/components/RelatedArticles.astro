@@ -84,11 +84,17 @@ const formatDate = (date: Date) => {
                   </div>
                 )}
 
-                <time
-                  datetime={post.data.pubDate.toISOString()}
-                  class="text-sm text-gray-600 dark:text-gray-400">
-                  {formatDate(post.data.pubDate)}
-                </time>
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <time datetime={post.data.pubDate.toISOString()}>
+                    {formatDate(post.data.pubDate)}
+                  </time>
+                  {post.data.draft && import.meta.env.DEV && (
+                    <>
+                      <span>·</span>
+                      <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+                    </>
+                  )}
+                </div>
 
                 <h3 class="mt-2 text-lg font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light line-clamp-2">
                   {post.data.title}

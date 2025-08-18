@@ -16,6 +16,7 @@ type Props = CollectionEntry<'blog'>['data'] & {
     text: string;
   }[];
   currentPost?: CollectionEntry<'blog'>;
+  draft?: boolean;
 };
 
 const {
@@ -30,6 +31,7 @@ const {
   headings = [],
   currentPost,
   readingTime,
+  draft,
 } = Astro.props;
 
 const articleDate = pubDate.toLocaleDateString('en-US', {
@@ -67,6 +69,12 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
             <>
               <span class="mx-2">·</span>
               <span>{readingTime}</span>
+            </>
+          )}
+          {draft && import.meta.env.DEV && (
+            <>
+              <span class="mx-2">·</span>
+              <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
             </>
           )}
           {
