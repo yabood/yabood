@@ -6,8 +6,9 @@ import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
-  const posts = (await getCollection('blog'))
-    .filter((post) => import.meta.env.DEV || !post.data.draft);
+  const posts = (await getCollection('blog')).filter(
+    (post) => import.meta.env.DEV || !post.data.draft
+  );
   const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
 
   return tags.map((tag) => ({

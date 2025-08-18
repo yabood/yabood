@@ -1,10 +1,10 @@
 ---
-title: "Prototype complete — first scans!"
-date: "2025-08-12"
-phase: "implementation"
-project: "skyscan"
-tags: ["Rust", "Edge Compute"]
-summary: "Hit the first end-to-end pass from ingest → parse → enrich → store."
+title: 'Prototype complete — first scans!'
+date: '2025-08-12'
+phase: 'implementation'
+project: 'skyscan'
+tags: ['Rust', 'Edge Compute']
+summary: 'Hit the first end-to-end pass from ingest → parse → enrich → store.'
 ---
 
 Major milestone today! Got the first working end-to-end scan pipeline running locally. The architecture is coming together nicely:
@@ -19,6 +19,7 @@ Major milestone today! Got the first working end-to-end scan pipeline running lo
 ## Performance Numbers
 
 Initial benchmarks are promising:
+
 - **Scan Speed**: ~500 resources/second on my M2 MacBook
 - **Memory Usage**: Under 50MB for typical enterprise infrastructure
 - **Binary Size**: Just 8MB thanks to Rust's efficiency

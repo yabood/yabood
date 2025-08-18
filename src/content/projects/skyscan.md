@@ -1,13 +1,13 @@
 ---
-title: "SkyScaN"
-description: "Edge-native security scanner for cloud infrastructure using Rust and WebAssembly"
-startDate: "2025-01-15"
+title: 'SkyScaN'
+description: 'Edge-native security scanner for cloud infrastructure using Rust and WebAssembly'
+startDate: '2025-01-15'
 draft: true
-tags: ["Rust", "WebAssembly", "Security", "Cloud", "CLI", "Edge Computing"]
-status: "active"
-currentPhase: "release"
-github: "https://github.com/yabood/skyscan"
-website: "https://skyscan.dev"
+tags: ['Rust', 'WebAssembly', 'Security', 'Cloud', 'CLI', 'Edge Computing']
+status: 'active'
+currentPhase: 'release'
+github: 'https://github.com/yabood/skyscan'
+website: 'https://skyscan.dev'
 releases: 1
 contributors: 8
 ---

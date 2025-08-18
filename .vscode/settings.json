@@ -1,0 +1,29 @@
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "files.associations": {
+    "*.astro": "astro"
+  },
+  "astro.typescript.allowArbitraryAttributes": true,
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "typescript.suggest.autoImports": true,
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.format.semicolons": "insert",
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.inlayHints.enabled": "on",
+  "typescript.inlayHints.parameterNames.enabled": "all",
+  "typescript.inlayHints.variableTypes.enabled": true,
+  "emmet.includeLanguages": {
+    "astro": "html"
+  },
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "editor.rulers": [100],
+  "editor.wordWrap": "bounded",
+  "editor.wordWrapColumn": 100
+}

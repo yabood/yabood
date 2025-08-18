@@ -1,10 +1,10 @@
 ---
-title: "WebAssembly feasibility study"
-date: "2025-01-25"
-phase: "idea"
-project: "skyscan"
-tags: ["WebAssembly", "Technical Feasibility", "Rust"]
-summary: "Built proof-of-concept WebAssembly modules to validate that complex security scanning logic can run efficiently in WASM environments."
+title: 'WebAssembly feasibility study'
+date: '2025-01-25'
+phase: 'idea'
+project: 'skyscan'
+tags: ['WebAssembly', 'Technical Feasibility', 'Rust']
+summary: 'Built proof-of-concept WebAssembly modules to validate that complex security scanning logic can run efficiently in WASM environments.'
 ---
 
 Needed to validate that WebAssembly can actually handle the computational complexity of security scanning before committing to the architecture. Built some proof-of-concept modules to test the waters.
@@ -12,6 +12,7 @@ Needed to validate that WebAssembly can actually handle the computational comple
 ## Test Scenarios
 
 ### 1. **JSON Parsing Performance**
+
 Cloud configurations are massive JSON documents. Tested parsing AWS CloudFormation templates:
 
 ```rust
@@ -26,11 +27,13 @@ pub fn parse_cloudformation(template: &str) -> Result<JsValue, JsValue> {
 }
 ```
 
-**Results**: 
+**Results**:
+
 - **50MB CloudFormation template**: Parsed in 23ms (WASM) vs 89ms (Node.js)
 - **Memory usage**: 60% lower than equivalent JavaScript
 
 ### 2. **Vulnerability Database Matching**
+
 Security scanning requires matching resources against vulnerability databases. Tested with 50k+ CVE records:
 
 ```rust
@@ -59,13 +62,16 @@ impl VulnMatcher {
 ```
 
 **Results**:
+
 - **Vulnerability matching**: 3.2x faster than JavaScript regex
 - **Binary size**: 1.8MB compiled WASM (acceptable for edge deployment)
 
 ### 3. **Cloud Provider API Simulation**
+
 Tested HTTP requests and JSON processing for simulated cloud API responses:
 
 **Results**:
+
 - **HTTP performance**: Equivalent to native (limited by network, not compute)
 - **JSON processing**: Consistently 2-4x faster than JavaScript
 - **Memory efficiency**: Predictable allocation patterns
@@ -75,16 +81,19 @@ Tested HTTP requests and JSON processing for simulated cloud API responses:
 The performance gains are significant enough to matter:
 
 ### **Developer Workflow Impact**
+
 - **Local scanning** becomes fast enough for pre-commit hooks
 - **CI/CD integration** won't add significant build time
 - **Real-time feedback** becomes feasible during development
 
-### **Edge Deployment Viability**  
+### **Edge Deployment Viability**
+
 - **Cold start performance** is acceptable for edge functions
 - **Memory footprint** fits within edge compute constraints
 - **Binary size** downloads quickly even on mobile networks
 
 ### **Scale Economics**
+
 - **Reduced compute costs** from better performance per CPU cycle
 - **Lower bandwidth** from processing data where it lives
 - **Fewer API calls** by batching and local processing
@@ -102,7 +111,7 @@ But none of these are blockers for the core use cases.
 Based on this validation:
 
 1. **Rust + WASM core** for performance-critical scanning logic
-2. **JavaScript wrapper** for I/O and environment integration  
+2. **JavaScript wrapper** for I/O and environment integration
 3. **Modular design** to work around WASM limitations
 4. **Progressive enhancement** - fallback to native execution when needed
 

@@ -1,10 +1,10 @@
 ---
-title: "Architecture design and initial research"
-date: "2025-02-01"
-phase: "research"
-project: "skyscan"
-tags: ["Architecture", "Research"]
-summary: "Completed research phase and finalized the technical architecture for edge-native security scanning."
+title: 'Architecture design and initial research'
+date: '2025-02-01'
+phase: 'research'
+project: 'skyscan'
+tags: ['Architecture', 'Research']
+summary: 'Completed research phase and finalized the technical architecture for edge-native security scanning.'
 ---
 
 After weeks of research and prototyping, I've settled on the core architecture for SkyScaN. The goal is to create a security scanner that can run anywhere - from developer laptops to edge locations worldwide.
@@ -14,6 +14,7 @@ After weeks of research and prototyping, I've settled on the core architecture f
 ### 1. Rust + WebAssembly Core
 
 Choosing Rust for the core scanning engine gives us:
+
 - **Memory safety** without garbage collection overhead
 - **Native performance** for compute-intensive vulnerability analysis
 - **WebAssembly target** for universal deployment (browsers, edge, serverless)
@@ -21,6 +22,7 @@ Choosing Rust for the core scanning engine gives us:
 ### 2. Plugin Architecture
 
 Different cloud providers need different approaches. A plugin system lets us:
+
 - Keep provider-specific logic isolated
 - Enable community contributions
 - Support custom enterprise integrations
@@ -28,6 +30,7 @@ Different cloud providers need different approaches. A plugin system lets us:
 ### 3. Edge-First Design
 
 Traditional security tools are centralized. SkyScaN will be distributed:
+
 - **Local scanning** for development workflows
 - **Edge deployment** for real-time monitoring
 - **Federated results** for compliance reporting
@@ -35,8 +38,9 @@ Traditional security tools are centralized. SkyScaN will be distributed:
 ## Research Findings
 
 Spent time analyzing existing tools like Scout Suite, Prowler, and CloudSploit. Common pain points:
+
 - **Slow execution** due to API rate limits
-- **Limited customization** for enterprise environments  
+- **Limited customization** for enterprise environments
 - **Poor developer experience** with complex setup requirements
 
 SkyScaN will address each of these systematically.

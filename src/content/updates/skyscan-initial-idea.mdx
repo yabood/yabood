@@ -1,10 +1,10 @@
 ---
-title: "The spark: edge-native security scanning"
-date: "2025-01-15"
-phase: "idea"
-project: "skyscan"
-tags: ["Idea", "Security"]
-summary: "Initial brainstorm on building a modern security scanner that runs at the edge instead of centralized infrastructure."
+title: 'The spark: edge-native security scanning'
+date: '2025-01-15'
+phase: 'idea'
+project: 'skyscan'
+tags: ['Idea', 'Security']
+summary: 'Initial brainstorm on building a modern security scanner that runs at the edge instead of centralized infrastructure.'
 ---
 
 Had an interesting conversation with a friend at AWS re:Invent about the challenges of cloud security scanning. Most tools today are centralized - you run them from one place and they reach out to scan your entire infrastructure.
@@ -16,13 +16,14 @@ But what if we flipped that model?
 Instead of centralized scanning, what about **edge-native** security analysis? Push the scanning logic closer to the resources themselves:
 
 - **Developer laptops** for local development
-- **CI/CD pipelines** for deployment validation  
+- **CI/CD pipelines** for deployment validation
 - **Edge locations** for real-time monitoring
 - **Mobile devices** for on-the-go security checks
 
 ## Why This Matters
 
 Current pain points with traditional scanners:
+
 1. **Latency**: Round trips to central systems slow everything down
 2. **Bandwidth**: Pulling massive amounts of config data across networks
 3. **Availability**: Central systems become single points of failure

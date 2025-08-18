@@ -417,15 +417,15 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
       tocIndicators.forEach((indicator) => indicator.classList.remove('active'));
 
       let activeId = null;
-      
+
       // Always use scroll position logic for more accurate tracking
       const viewportHeight = window.innerHeight;
-      
+
       // Find the heading that's most prominently in view
       // We look for the last heading that's passed the top 20% of the viewport
       for (const heading of headingElements) {
         const rect = heading.getBoundingClientRect();
-        
+
         // If heading is above 20% of viewport height, it's our active heading
         if (rect.top <= viewportHeight * 0.2) {
           activeId = heading.getAttribute('id');
@@ -434,7 +434,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
           break;
         }
       }
-      
+
       // If no heading has passed the threshold, use the first heading
       if (!activeId && headingElements.length > 0) {
         activeId = headingElements[0].getAttribute('id');
@@ -532,7 +532,13 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
     // Close TOC when clicking outside
     document.addEventListener('click', (e) => {
-      if (tocContent && e.target instanceof Node && !tocContent.contains(e.target) && tocToggle && !tocToggle.contains(e.target)) {
+      if (
+        tocContent &&
+        e.target instanceof Node &&
+        !tocContent.contains(e.target) &&
+        tocToggle &&
+        !tocToggle.contains(e.target)
+      ) {
         closeTOC();
       }
     });

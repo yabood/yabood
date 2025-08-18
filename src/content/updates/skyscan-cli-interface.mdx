@@ -1,10 +1,10 @@
 ---
-title: "CLI interface and developer experience polish"
-date: "2025-04-20"
-phase: "implementation"
-project: "skyscan"
-tags: ["CLI", "Developer Experience", "Tools"]
-summary: "Built a comprehensive CLI interface with intuitive commands, beautiful output formatting, and seamless integration with developer workflows."
+title: 'CLI interface and developer experience polish'
+date: '2025-04-20'
+phase: 'implementation'
+project: 'skyscan'
+tags: ['CLI', 'Developer Experience', 'Tools']
+summary: 'Built a comprehensive CLI interface with intuitive commands, beautiful output formatting, and seamless integration with developer workflows.'
 ---
 
 The CLI is where most developers will first experience SkyScaN. Spent significant time making it intuitive, fast, and visually appealing. The result feels like a natural extension of the developer toolkit.
@@ -23,15 +23,15 @@ struct Cli {
     /// Enable verbose output
     #[arg(short, long, global = true)]
     verbose: bool,
-    
+
     /// Configuration file path
     #[arg(short, long, global = true)]
     config: Option<PathBuf>,
-    
+
     /// Output format
     #[arg(short, long, global = true, value_enum, default_value_t = OutputFormat::Table)]
     format: OutputFormat,
-    
+
     #[command(subcommand)]
     command: Commands,
 }
@@ -43,57 +43,57 @@ enum Commands {
         /// Cloud provider to scan
         #[arg(short, long, default_value = "aws")]
         provider: String,
-        
+
         /// Regions to scan (comma-separated)
         #[arg(short, long)]
         regions: Option<String>,
-        
-        /// Services to scan (comma-separated)  
+
+        /// Services to scan (comma-separated)
         #[arg(short, long)]
         services: Option<String>,
-        
+
         /// Save results to file
         #[arg(short, long)]
         output: Option<PathBuf>,
-        
+
         /// Filter by severity level
         #[arg(long, value_enum)]
         severity: Option<SeverityFilter>,
-        
+
         /// Only show failing resources
         #[arg(long)]
         failures_only: bool,
     },
-    
+
     /// List available providers and their services
     List {
         /// Show detailed information
         #[arg(short, long)]
         detailed: bool,
     },
-    
+
     /// Initialize configuration file
     Init {
         /// Force overwrite existing config
         #[arg(short, long)]
         force: bool,
     },
-    
+
     /// Validate configuration
     Config {
         #[command(subcommand)]
         action: ConfigAction,
     },
-    
+
     /// Generate reports from previous scan results
     Report {
         /// Input scan results file
         input: PathBuf,
-        
+
         /// Report format
         #[arg(short, long, value_enum, default_value_t = ReportFormat::Html)]
         format: ReportFormat,
-        
+
         /// Output file path
         #[arg(short, long)]
         output: Option<PathBuf>,
@@ -118,14 +118,14 @@ pub struct CliReporter {
 impl CliReporter {
     pub fn scan_summary(&self, results: &ScanResults) -> Result<()> {
         let term = &self.term;
-        
+
         // Header with scan metadata
         term.write_line(&format!(
             "\n{} {}",
             style("🛡️  SkyScaN Security Report").bold().blue(),
             style(format!("({})", Local::now().format("%Y-%m-%d %H:%M:%S"))).dim()
         ))?;
-        
+
         // Summary statistics
         let stats = vec![
             ("Resources Scanned", results.resources.len().to_string()),
@@ -133,28 +133,28 @@ impl CliReporter {
             ("Critical Issues", self.count_by_severity(&results.findings, Severity::Critical).to_string()),
             ("High Risk Issues", self.count_by_severity(&results.findings, Severity::High).to_string()),
         ];
-        
+
         self.print_stats_table(&stats)?;
-        
+
         // Findings breakdown by severity
         if !results.findings.is_empty() {
             self.print_findings_summary(&results.findings)?;
         }
-        
+
         // Recommendations section
         if results.findings.len() > 10 {
             self.print_recommendations(&results.findings)?;
         }
-        
+
         Ok(())
     }
-    
+
     fn print_findings_summary(&self, findings: &[Finding]) -> Result<()> {
         use tabled::{Table, Modify, Style, Alignment};
-        
+
         // Group findings by rule and severity
         let mut rule_summary: HashMap<String, RuleSummary> = HashMap::new();
-        
+
         for finding in findings {
             let summary = rule_summary.entry(finding.rule_id.clone())
                 .or_insert(RuleSummary {
@@ -164,11 +164,11 @@ impl CliReporter {
                     count: 0,
                     affected_resources: Vec::new(),
                 });
-            
+
             summary.count += 1;
             summary.affected_resources.push(finding.resource_id.clone());
         }
-        
+
         let mut table_data: Vec<_> = rule_summary.into_values().collect();
         table_data.sort_by(|a, b| {
             // Sort by severity then by count
@@ -177,20 +177,20 @@ impl CliReporter {
                 other => other,
             }
         });
-        
+
         // Build table
         let table = Table::new(&table_data)
             .with(Style::modern())
             .with(Modify::new(tabled::object::Columns::single(0))
                 .with(Alignment::left()))
             .to_string();
-        
+
         self.term.write_line("\n📋 Security Findings Summary")?;
         self.term.write_line(&table)?;
-        
+
         Ok(())
     }
-    
+
     pub fn scan_progress(&self, total_resources: usize) -> ProgressBar {
         let pb = ProgressBar::new(total_resources as u64);
         pb.set_style(
@@ -202,7 +202,7 @@ impl CliReporter {
         pb.set_message("Scanning resources...");
         pb
     }
-    
+
     pub fn finding_detail(&self, finding: &Finding) -> Result<()> {
         let severity_color = match finding.severity {
             Severity::Critical => style("CRITICAL").red().bold(),
@@ -211,31 +211,31 @@ impl CliReporter {
             Severity::Low => style("LOW").green().bold(),
             Severity::Info => style("INFO").dim(),
         };
-        
+
         self.term.write_line(&format!(
             "\n{} {} {}",
             severity_color,
             style(&finding.title).bold(),
             style(format!("({})", finding.rule_id)).dim()
         ))?;
-        
+
         self.term.write_line(&format!(
             "  📍 Resource: {}",
             style(&finding.resource_id).cyan()
         ))?;
-        
+
         self.term.write_line(&format!(
-            "  📄 {}", 
+            "  📄 {}",
             finding.description
         ))?;
-        
+
         if !finding.remediation.is_empty() {
             self.term.write_line(&format!(
-                "  🔧 Remediation: {}", 
+                "  🔧 Remediation: {}",
                 style(&finding.remediation).green()
             ))?;
         }
-        
+
         Ok(())
     }
 }
@@ -251,7 +251,7 @@ use dialoguer::{Select, Input, Confirm, MultiSelect};
 pub fn interactive_config_wizard() -> Result<ScanConfig> {
     println!("{}", style("🚀 SkyScaN Configuration Wizard").bold().blue());
     println!("Let's set up your cloud security scanning configuration.\n");
-    
+
     // Provider selection
     let providers = vec!["AWS", "Azure", "Google Cloud", "Multi-cloud"];
     let provider_selection = Select::new()
@@ -259,9 +259,9 @@ pub fn interactive_config_wizard() -> Result<ScanConfig> {
         .items(&providers)
         .default(0)
         .interact()?;
-    
+
     let mut config = ScanConfig::default();
-    
+
     match provider_selection {
         0 => configure_aws(&mut config)?,
         1 => configure_azure(&mut config)?,
@@ -269,33 +269,33 @@ pub fn interactive_config_wizard() -> Result<ScanConfig> {
         3 => configure_multicloud(&mut config)?,
         _ => unreachable!(),
     }
-    
+
     // Performance settings
     configure_performance_settings(&mut config)?;
-    
+
     // Output preferences
     configure_output_settings(&mut config)?;
-    
+
     println!("\n{}", style("✅ Configuration complete!").green().bold());
-    
+
     Ok(config)
 }
 
 fn configure_aws(config: &mut ScanConfig) -> Result<()> {
     println!("\n{}", style("AWS Configuration").bold());
-    
+
     // AWS Profile or credentials
     let use_profile = Confirm::new()
         .with_prompt("Do you want to use an AWS profile?")
         .default(true)
         .interact()?;
-    
+
     if use_profile {
         let profile: String = Input::new()
             .with_prompt("AWS Profile name")
             .default("default".to_string())
             .interact()?;
-        
+
         config.providers.insert("aws".to_string(), ProviderConfig {
             enabled: true,
             credentials: CredentialsConfig::Profile(profile),
@@ -307,9 +307,9 @@ fn configure_aws(config: &mut ScanConfig) -> Result<()> {
         let access_key: String = Input::new()
             .with_prompt("AWS Access Key ID")
             .interact()?;
-        
+
         let secret_key = rpassword::prompt_password("AWS Secret Access Key: ")?;
-        
+
         config.providers.insert("aws".to_string(), ProviderConfig {
             enabled: true,
             credentials: CredentialsConfig::Keys { access_key, secret_key },
@@ -317,25 +317,25 @@ fn configure_aws(config: &mut ScanConfig) -> Result<()> {
             services: vec!["ec2", "iam", "s3"],
         });
     }
-    
+
     // Region selection
     let available_regions = vec![
         "us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1", "All regions"
     ];
-    
+
     let region_selection = MultiSelect::new()
         .with_prompt("Which regions do you want to scan?")
         .items(&available_regions)
         .interact()?;
-    
+
     let selected_regions: Vec<String> = region_selection.iter()
         .map(|&i| available_regions[i].to_string())
         .collect();
-    
+
     if let Some(aws_config) = config.providers.get_mut("aws") {
         aws_config.regions = selected_regions;
     }
-    
+
     Ok(())
 }
 ```
@@ -343,6 +343,7 @@ fn configure_aws(config: &mut ScanConfig) -> Result<()> {
 ## Integration with Developer Tools
 
 ### **Git Hooks Integration**
+
 ```bash
 #!/bin/bash
 # .git/hooks/pre-commit
@@ -350,19 +351,20 @@ fn configure_aws(config: &mut ScanConfig) -> Result<()> {
 # Run SkyScaN on Terraform files before commit
 if git diff --cached --name-only | grep -q "\.tf$"; then
     echo "🛡️  Running SkyScaN security check on Terraform files..."
-    
+
     # Scan staged Terraform files
     if ! skyscan terraform --staged --severity high; then
         echo "❌ Security issues found in Terraform files"
         echo "Run 'skyscan terraform --fix' to auto-remediate or commit with --no-verify to skip"
         exit 1
     fi
-    
+
     echo "✅ Security check passed"
 fi
 ```
 
 ### **CI/CD Integration**
+
 ```yaml
 # .github/workflows/security-scan.yml
 name: SkyScaN Security Scan
@@ -377,46 +379,47 @@ jobs:
   security-scan:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Install SkyScaN
-      run: |
-        curl -sSL https://install.skyscan.dev | sh
-        echo "$HOME/.skyscan/bin" >> $GITHUB_PATH
-    
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v2
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-    
-    - name: Run security scan
-      run: |
-        skyscan scan --provider aws \
-          --regions us-east-1,us-west-2 \
-          --format json \
-          --output scan-results.json \
-          --severity high
-    
-    - name: Generate security report
-      if: always()
-      run: |
-        skyscan report scan-results.json \
-          --format html \
-          --output security-report.html
-    
-    - name: Upload scan results
-      if: always()
-      uses: actions/upload-artifact@v3
-      with:
-        name: security-scan-results
-        path: |
-          scan-results.json
-          security-report.html
+      - uses: actions/checkout@v3
+
+      - name: Install SkyScaN
+        run: |
+          curl -sSL https://install.skyscan.dev | sh
+          echo "$HOME/.skyscan/bin" >> $GITHUB_PATH
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Run security scan
+        run: |
+          skyscan scan --provider aws \
+            --regions us-east-1,us-west-2 \
+            --format json \
+            --output scan-results.json \
+            --severity high
+
+      - name: Generate security report
+        if: always()
+        run: |
+          skyscan report scan-results.json \
+            --format html \
+            --output security-report.html
+
+      - name: Upload scan results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-scan-results
+          path: |
+            scan-results.json
+            security-report.html
 ```
 
 ### **VS Code Integration**
+
 ```json
 {
   "name": "skyscan-vscode",
@@ -434,7 +437,7 @@ jobs:
         "category": "SkyScaN"
       },
       {
-        "command": "skyscan.scanFile", 
+        "command": "skyscan.scanFile",
         "title": "Scan Current File",
         "category": "SkyScaN"
       }
@@ -453,38 +456,40 @@ jobs:
 ## Advanced CLI Features
 
 ### **Smart Defaults & Context Awareness**
+
 ```rust
 impl CliConfig {
     pub fn auto_detect_context(&self) -> ScanConfig {
         let mut config = ScanConfig::default();
-        
+
         // Detect AWS context
         if let Ok(_) = std::env::var("AWS_PROFILE") {
             config.providers.insert("aws".to_string(), ProviderConfig::from_env());
         }
-        
+
         // Detect Terraform files
         if Path::new("*.tf").exists() {
             config.include_terraform_analysis = true;
         }
-        
+
         // Detect CI environment
         if std::env::var("CI").is_ok() {
             config.output_format = OutputFormat::Json;
             config.quiet = true;
         }
-        
+
         // Detect repository context
         if let Ok(repo) = git2::Repository::open(".") {
             config.scan_scope = ScanScope::Repository(repo.workdir().unwrap().to_path_buf());
         }
-        
+
         config
     }
 }
 ```
 
 ### **Progressive Disclosure**
+
 ```rust
 // Start with simple commands, show advanced options as needed
 impl Commands {
@@ -495,7 +500,7 @@ impl Commands {
 {} Basic Usage:
   skyscan scan                    # Scan default AWS account
   skyscan scan --provider aws     # Scan specific provider
-  
+
 {} Advanced Options:
   skyscan scan --regions us-east-1,us-west-2
   skyscan scan --services ec2,s3,iam --severity high
@@ -519,18 +524,20 @@ impl Commands {
 ## CLI Performance & UX
 
 ### **Fast Startup**
+
 - **Cold start**: 127ms (including config load)
 - **Warm start**: 23ms (with cache)
 - **Tab completion**: Full bash/zsh completion support
 
 ### **Responsive Feedback**
+
 ```rust
 pub async fn scan_with_live_updates(&self, config: &ScanConfig) -> Result<()> {
     let pb = self.reporter.scan_progress(0);
-    
+
     // Start discovery with progress updates
     let (tx, mut rx) = mpsc::channel(100);
-    
+
     tokio::spawn(async move {
         let mut discovered = 0;
         while let Some(event) = rx.recv().await {
@@ -555,11 +562,11 @@ pub async fn scan_with_live_updates(&self, config: &ScanConfig) -> Result<()> {
             }
         }
     });
-    
+
     // Run scan with event streaming
     let results = self.engine.scan_with_events(config, tx).await?;
     self.reporter.scan_summary(&results)?;
-    
+
     Ok(())
 }
 ```
@@ -567,6 +574,7 @@ pub async fn scan_with_live_updates(&self, config: &ScanConfig) -> Result<()> {
 ## Output Format Examples
 
 ### **Table Format (Default)**
+
 ```
 🛡️  SkyScaN Security Report (2025-04-20 14:30:15)
 
@@ -591,6 +599,7 @@ pub async fn scan_with_live_updates(&self, config: &ScanConfig) -> Result<()> {
 ```
 
 ### **JSON Format (for scripting)**
+
 ```json
 {
   "scan_id": "550e8400-e29b-41d4-a716-446655440000",

@@ -65,26 +65,23 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
           <time datetime={pubDate.toISOString()}>
             {articleDate}
           </time>
-          {readingTime && (
-            <>
-              <span class="mx-2">·</span>
-              <span>{readingTime}</span>
-            </>
-          )}
-          {draft && import.meta.env.DEV && (
-            <>
-              <span class="mx-2">·</span>
-              <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
-            </>
-          )}
           {
-            updatedDate && updatedDateFormatted && (
-              <span>
-                {' '}
-                • Updated {updatedDateFormatted}
-              </span>
+            readingTime && (
+              <>
+                <span class="mx-2">·</span>
+                <span>{readingTime}</span>
+              </>
             )
           }
+          {
+            draft && import.meta.env.DEV && (
+              <>
+                <span class="mx-2">·</span>
+                <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+              </>
+            )
+          }
+          {updatedDate && updatedDateFormatted && <span> • Updated {updatedDateFormatted}</span>}
         </div>
 
         <h1

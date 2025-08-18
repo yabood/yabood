@@ -7,39 +7,46 @@ import Footer from '../../../../components/Footer.astro';
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
   const updates = await getCollection('updates');
-  const phases = ['idea', 'research', 'implementation', 'release', 'iteration', 'archived'] as const;
-  
+  const phases = [
+    'idea',
+    'research',
+    'implementation',
+    'release',
+    'iteration',
+    'archived',
+  ] as const;
+
   const paths: Array<{
     params: { slug: string; phaseSlug: string };
     props: { project: any; phase: string; updates: any[] };
   }> = [];
-  
+
   for (const project of projects) {
-    const projectUpdates = updates.filter(update => 
-      update.data.project === project.slug && !update.data.draft
+    const projectUpdates = updates.filter(
+      (update) => update.data.project === project.slug && !update.data.draft
     );
-    
+
     for (const phase of phases) {
       const phaseUpdates = projectUpdates
-        .filter(update => update.data.phase === phase)
+        .filter((update) => update.data.phase === phase)
         .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-      
+
       if (phaseUpdates.length > 0) {
         paths.push({
-          params: { 
-            slug: project.slug, 
-            phaseSlug: phase 
+          params: {
+            slug: project.slug,
+            phaseSlug: phase,
           },
-          props: { 
+          props: {
             project,
             phase,
-            updates: phaseUpdates
-          }
+            updates: phaseUpdates,
+          },
         });
       }
     }
   }
-  
+
   return paths;
 }
 
@@ -51,9 +58,8 @@ const phaseLabels: Record<string, string> = {
   implementation: 'Implementation',
   release: 'Release',
   iteration: 'Iteration',
-  archived: 'Archived'
+  archived: 'Archived',
 };
-
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -64,7 +70,7 @@ const jsonLd = {
   isPartOf: {
     '@type': 'Blog',
     name: project.data.title,
-    url: `https://yabood.com/projects/${project.slug}`
+    url: `https://yabood.com/projects/${project.slug}`,
   },
   numberOfItems: updates.length,
   mainEntity: {
@@ -77,10 +83,10 @@ const jsonLd = {
         headline: update.data.title,
         description: update.data.summary,
         datePublished: update.data.date.toISOString(),
-        url: `https://yabood.com/projects/${project.slug}/updates/${update.slug}`
-      }
-    }))
-  }
+        url: `https://yabood.com/projects/${project.slug}/updates/${update.slug}`,
+      },
+    })),
+  },
 };
 ---
 
@@ -93,7 +99,7 @@ const jsonLd = {
     script.textContent = JSON.stringify(jsonLd);
     document.head.appendChild(script);
   </script>
-  
+
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
@@ -104,7 +110,9 @@ const jsonLd = {
         </li>
         <li>/</li>
         <li>
-          <a href={`/projects/${project.slug}`} class="hover:text-accent dark:hover:text-accent-light">
+          <a
+            href={`/projects/${project.slug}`}
+            class="hover:text-accent dark:hover:text-accent-light">
             {project.data.title}
           </a>
         </li>
@@ -121,66 +129,79 @@ const jsonLd = {
           {phaseLabels[phase]} Phase
         </h1>
       </div>
-      
+
       <p class="text-lg text-gray-600 dark:text-gray-400">
-        All {updates.length} update{updates.length !== 1 ? 's' : ''} from the {phaseLabels[phase]} phase of 
-        <a href={`/projects/${project.slug}`} class="font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+        All {updates.length} update{updates.length !== 1 ? 's' : ''} from the {phaseLabels[phase]} phase
+        of
+        <a
+          href={`/projects/${project.slug}`}
+          class="font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
           {project.data.title}
         </a>
       </p>
     </header>
 
     <div class="space-y-8">
-      {updates.map(update => (
-        <article class="group">
-          <a 
-            href={`/projects/${project.slug}/updates/${update.slug}`}
-            class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md dark:border-gray-700 dark:hover:border-accent-light">
-            <time 
-              datetime={update.data.date.toISOString()}
-              class="text-sm text-gray-500 dark:text-gray-400">
-              {update.data.date.toLocaleDateString('en-US', { 
-                month: 'long', 
-                day: 'numeric',
-                year: 'numeric' 
-              })}
-            </time>
-            
-            <h2 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-              {update.data.title}
-            </h2>
-            
-            <p class="mt-2 text-gray-600 dark:text-gray-400">
-              {update.data.summary}
-            </p>
-            
-            {update.data.tags.length > 0 && (
-              <div class="mt-4 flex flex-wrap gap-2">
-                {update.data.tags.map((tag: string) => (
-                  <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                    {tag}
-                  </span>
-                ))}
+      {
+        updates.map((update) => (
+          <article class="group">
+            <a
+              href={`/projects/${project.slug}/updates/${update.slug}`}
+              class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md dark:border-gray-700 dark:hover:border-accent-light">
+              <time
+                datetime={update.data.date.toISOString()}
+                class="text-sm text-gray-500 dark:text-gray-400">
+                {update.data.date.toLocaleDateString('en-US', {
+                  month: 'long',
+                  day: 'numeric',
+                  year: 'numeric',
+                })}
+              </time>
+
+              <h2 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                {update.data.title}
+              </h2>
+
+              <p class="mt-2 text-gray-600 dark:text-gray-400">{update.data.summary}</p>
+
+              {update.data.tags.length > 0 && (
+                <div class="mt-4 flex flex-wrap gap-2">
+                  {update.data.tags.map((tag: string) => (
+                    <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div class="mt-4 flex items-center text-sm text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
+                Read more
+                <svg
+                  class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
               </div>
-            )}
-            
-            <div class="mt-4 flex items-center text-sm text-accent group-hover:text-accent-dark dark:text-accent-light dark:group-hover:text-accent">
-              Read more
-              <svg class="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
-            </div>
-          </a>
-        </article>
-      ))}
+            </a>
+          </article>
+        ))
+      }
     </div>
 
     <div class="mt-12 text-center">
-      <a 
+      <a
         href={`/projects/${project.slug}`}
         class="inline-flex items-center text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
+          ></path>
         </svg>
         Back to {project.data.title}
       </a>

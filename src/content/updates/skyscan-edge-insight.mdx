@@ -1,10 +1,10 @@
 ---
-title: "Why centralized security scanning is broken"
-date: "2025-01-16"
-phase: "idea"
-project: "skyscan"
-tags: ["Problem Analysis", "Security"]
-summary: "Deep dive into the fundamental problems with current cloud security scanning approaches and why edge-native is the answer."
+title: 'Why centralized security scanning is broken'
+date: '2025-01-16'
+phase: 'idea'
+project: 'skyscan'
+tags: ['Problem Analysis', 'Security']
+summary: 'Deep dive into the fundamental problems with current cloud security scanning approaches and why edge-native is the answer.'
 ---
 
 Been thinking more about yesterday's conversation at re:Invent. The more I dig into current cloud security tools, the more convinced I become that we're solving the wrong problem.
@@ -12,23 +12,27 @@ Been thinking more about yesterday's conversation at re:Invent. The more I dig i
 ## The Centralized Scanning Problem
 
 Every major security tool today follows the same pattern:
+
 1. **Central server** pulls configuration from your cloud accounts
-2. **Heavy analysis** happens on their infrastructure  
+2. **Heavy analysis** happens on their infrastructure
 3. **Results pushed back** to you via dashboards/alerts
 
 This creates fundamental issues:
 
 ### Latency & Performance
+
 - **Round-trip delays** for every API call across regions
 - **Rate limiting** from cloud providers slows everything down
 - **Network bandwidth** becomes a bottleneck with large infrastructures
 
 ### Security & Privacy
+
 - **Credentials** must be shared with third-party services
-- **Configuration data** leaves your environment entirely  
+- **Configuration data** leaves your environment entirely
 - **Compliance concerns** with sensitive infrastructure details
 
 ### Availability & Reliability
+
 - **Single points of failure** when scanning services go down
 - **Regional outages** can block critical security workflows
 - **Vendor lock-in** with proprietary analysis engines
@@ -55,6 +59,7 @@ The technical pieces are finally in place to make this work.
 ## Next Steps
 
 Need to validate this isn't just theoretical. Going to start researching:
+
 - What existing tools are already doing in this space
 - Technical feasibility of WebAssembly for security scanning
 - Performance benchmarks for edge vs centralized approaches
