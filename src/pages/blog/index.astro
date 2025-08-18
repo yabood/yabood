@@ -30,34 +30,12 @@ const postsByYear = postsWithReadingTime.reduce((acc, post) => {
 
 // Sort years in descending order
 const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a));
-
-// Get all unique tags
-const allTags = [...new Set(postsWithReadingTime.flatMap(post => post.data.tags || []))].sort();
 ---
 
 <BaseLayout title="Blog" description="Articles about web development, technology, and more">
   <Header />
 
   <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
-    {allTags.length > 0 && (
-      <div class="mb-12">
-        <div class="flex items-center justify-center flex-wrap gap-2">
-          <a
-            href="/blog"
-            class="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-dark transition-colors">
-            All posts
-          </a>
-          {allTags.map((tag) => (
-            <a
-              href={`/tags/${tag}`}
-              class="rounded-full bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
-              #{tag}
-            </a>
-          ))}
-        </div>
-      </div>
-    )}
-
     <div class="space-y-16">
       {
         sortedYears.map((year) => (
