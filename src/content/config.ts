@@ -34,6 +34,7 @@ const projects = defineCollection({
       cover: image().optional(),
       releases: z.number().default(0),
       contributors: z.number().default(1),
+      draft: z.boolean().default(false),
     }),
 });
 

@@ -5,7 +5,9 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
+  const projects = await getCollection('projects', ({ data }) => 
+    import.meta.env.DEV || !data.draft
+  );
   const updates = await getCollection('updates');
 
   return projects.map(project => ({
@@ -60,9 +62,14 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
     </nav>
 
     <header class="mb-12">
-      <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
-        {project.data.title}
-      </h1>
+      <div class="mb-4 flex items-center gap-3">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          {project.data.title}
+        </h1>
+        {project.data.draft && import.meta.env.DEV && (
+          <span class="text-lg text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+        )}
+      </div>
       
       <div class="mb-6 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
         <time datetime={project.data.startDate.toISOString()}>

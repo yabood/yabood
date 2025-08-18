@@ -4,7 +4,9 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-const projects = await getCollection('projects', ({ data }) => !data.status || data.status !== 'archived');
+const projects = await getCollection('projects', ({ data }) => 
+  (!data.status || data.status !== 'archived') && (import.meta.env.DEV || !data.draft)
+);
 const updates = await getCollection('updates', ({ data }) => !data.draft);
 
 const projectsWithLatestUpdate = projects.map(project => {
@@ -61,13 +63,21 @@ const projectsWithLatestUpdate = projects.map(project => {
               </div>
 
               <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
-                <time datetime={project.lastUpdatedDate.toISOString()}>
-                  Updated {project.lastUpdatedDate.toLocaleDateString('en-US', { 
-                    month: 'short', 
-                    day: 'numeric', 
-                    year: 'numeric' 
-                  })}
-                </time>
+                <div class="flex items-center gap-2">
+                  <time datetime={project.lastUpdatedDate.toISOString()}>
+                    Updated {project.lastUpdatedDate.toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      year: 'numeric' 
+                    })}
+                  </time>
+                  {project.data.draft && (
+                    <>
+                      <span>·</span>
+                      <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+                    </>
+                  )}
+                </div>
                 {project.updateCount > 0 && (
                   <span class="text-accent dark:text-accent-light">
                     {project.updateCount} update{project.updateCount !== 1 ? 's' : ''}

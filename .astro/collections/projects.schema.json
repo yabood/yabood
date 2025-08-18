@@ -89,6 +89,10 @@
           "type": "number",
           "default": 1
         },
+        "draft": {
+          "type": "boolean",
+          "default": false
+        },
         "$schema": {
           "type": "string"
         }
