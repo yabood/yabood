@@ -11,8 +11,7 @@ const posts = (await getCollection('blog'))
 
 const postsWithReadingTime = await Promise.all(
   posts.map(async (post) => {
-    const { Content } = await post.render();
-    const content = await post.body;
+    const content = post.body;
     const readingTime = calculateReadingTime(content);
     return { ...post, readingTime };
   })

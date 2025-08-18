@@ -4,7 +4,7 @@
 
 <!-- Lightbox overlay -->
 <div id="lightbox" class="fixed inset-0 bg-black bg-opacity-90 z-50 hidden items-center justify-center p-4">
-  <div class="relative max-w-full max-h-full" onclick="event.stopPropagation()">
+  <div class="relative max-w-full max-h-full">
     <img id="lightbox-image" src="" alt="" class="max-w-full max-h-full object-contain">
     
     <!-- Image counter -->
@@ -61,11 +61,11 @@
 
 <script>
   let currentImageIndex = 0;
-  let allImages = [];
+  let allImages: HTMLImageElement[] = [];
 
-  function openLightbox(imageSrc, imageAlt, clickedImage) {
+  function openLightbox(imageSrc: string, imageAlt: string, clickedImage?: HTMLImageElement) {
     const lightbox = document.getElementById('lightbox');
-    const lightboxImage = document.getElementById('lightbox-image');
+    const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
     
     // Find the current image index - use the clicked image directly if provided
     if (clickedImage) {
@@ -77,8 +77,8 @@
     
     lightboxImage.src = imageSrc;
     lightboxImage.alt = imageAlt;
-    lightbox.classList.remove('hidden');
-    lightbox.classList.add('flex');
+    lightbox!.classList.remove('hidden');
+    lightbox!.classList.add('flex');
     
     // Update navigation buttons visibility
     updateNavigationButtons();
@@ -88,7 +88,7 @@
   }
 
   function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
+    const lightbox = document.getElementById('lightbox')!;
     lightbox.classList.add('hidden');
     lightbox.classList.remove('flex');
     
@@ -96,7 +96,7 @@
     document.body.style.overflow = '';
   }
 
-  function getGalleryImages(targetImage) {
+  function getGalleryImages(targetImage: HTMLImageElement) {
     const galleryId = targetImage.getAttribute('data-gallery');
     
     if (!galleryId) {
@@ -119,7 +119,7 @@
     if (nextGalleryIndex < galleryImages.length) {
       const nextImage = galleryImages[nextGalleryIndex];
       currentImageIndex = allImages.indexOf(nextImage);
-      const lightboxImage = document.getElementById('lightbox-image');
+      const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
       lightboxImage.src = nextImage.src;
       lightboxImage.alt = nextImage.alt;
       updateNavigationButtons();
@@ -138,7 +138,7 @@
     if (prevGalleryIndex >= 0) {
       const prevImage = galleryImages[prevGalleryIndex];
       currentImageIndex = allImages.indexOf(prevImage);
-      const lightboxImage = document.getElementById('lightbox-image');
+      const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
       lightboxImage.src = prevImage.src;
       lightboxImage.alt = prevImage.alt;
       updateNavigationButtons();
@@ -181,7 +181,7 @@
     }
   }
 
-  function copyToClipboard(text) {
+  function copyToClipboard(text: string) {
     navigator.clipboard.writeText(text).then(() => {
       // Show feedback that code was copied
       const event = new CustomEvent('code-copied');
@@ -189,7 +189,7 @@
     });
   }
 
-  function showCopyFeedback(button) {
+  function showCopyFeedback(button: HTMLButtonElement) {
     const originalText = button.innerHTML;
     button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
     button.classList.add('text-green-500');
@@ -207,12 +207,12 @@
     const heroImages = document.querySelectorAll('.hero-image');
     // Hero images should be first in the array for navigation purposes
     const allImageElements = [...heroImages, ...proseImages];
-    allImages = Array.from(allImageElements);
+    allImages = Array.from(allImageElements) as HTMLImageElement[];
     
     
     allImageElements.forEach(img => {
       img.classList.add('cursor-zoom-in');
-      img.addEventListener('click', function() {
+      img.addEventListener('click', function(this: HTMLImageElement) {
         openLightbox(this.src, this.alt, this);
       });
     });
@@ -236,7 +236,7 @@
         }
       });
       
-      pre.parentNode.insertBefore(wrapper, pre);
+      pre.parentNode!.insertBefore(wrapper, pre);
       wrapper.appendChild(pre);
       wrapper.appendChild(copyButton);
     });
@@ -255,7 +255,7 @@
     if (downloadButton) {
       downloadButton.addEventListener('click', function(e) {
         e.stopPropagation();
-        const lightboxImage = document.getElementById('lightbox-image');
+        const lightboxImage = document.getElementById('lightbox-image') as HTMLImageElement;
         if (lightboxImage && lightboxImage.src) {
           const link = document.createElement('a');
           link.href = lightboxImage.src;
@@ -289,7 +289,9 @@
     const lightbox = document.getElementById('lightbox');
     if (lightbox) {
       lightbox.addEventListener('click', function(e) {
-        if (e.target === lightbox) {
+        // Check if click is on the lightbox itself (not its children)
+        const imageContainer = lightbox.querySelector('.relative');
+        if (!imageContainer?.contains(e.target as Node)) {
           closeLightbox();
         }
       });
