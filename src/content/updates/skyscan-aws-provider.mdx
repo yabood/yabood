@@ -1,10 +1,10 @@
 ---
-title: "AWS provider implementation breakthrough"
-date: "2025-03-15"
-phase: "implementation"
-project: "skyscan"
-tags: ["AWS", "Provider", "Integration"]
-summary: "Completed the AWS provider implementation with comprehensive resource discovery across 15+ services and intelligent rate limiting."
+title: 'AWS provider implementation breakthrough'
+date: '2025-03-15'
+phase: 'implementation'
+project: 'skyscan'
+tags: ['AWS', 'Provider', 'Integration']
+summary: 'Completed the AWS provider implementation with comprehensive resource discovery across 15+ services and intelligent rate limiting.'
 ---
 
 Major milestone achieved! The AWS provider is now fully functional and discovering resources across all major AWS services. This was more complex than anticipated but the results are impressive.
@@ -14,27 +14,32 @@ Major milestone achieved! The AWS provider is now fully functional and discoveri
 Successfully implemented discovery for 15 core AWS services:
 
 ### **Compute & Containers**
+
 - **EC2**: Instances, AMIs, snapshots, key pairs, placement groups
-- **Lambda**: Functions, layers, event source mappings, aliases  
+- **Lambda**: Functions, layers, event source mappings, aliases
 - **ECS**: Clusters, services, task definitions
 - **EKS**: Clusters, node groups, Fargate profiles
 
 ### **Networking & Content Delivery**
+
 - **VPC**: VPCs, subnets, route tables, internet gateways, NAT gateways
 - **Security Groups**: Ingress/egress rules with full relationship mapping
 - **ELB**: Classic, Application, and Network Load Balancers
 - **CloudFront**: Distributions, origins, behaviors
 
-### **Storage & Databases**  
+### **Storage & Databases**
+
 - **S3**: Buckets, bucket policies, ACLs, lifecycle policies
 - **RDS**: DB instances, snapshots, parameter groups, subnet groups
 - **DynamoDB**: Tables, indexes, backup policies
 
 ### **Security & Identity**
+
 - **IAM**: Users, roles, policies, groups, access keys
 - **KMS**: Keys, key policies, grants, aliases
 
 ### **Management & Governance**
+
 - **CloudTrail**: Trails, event selectors, insights
 - **CloudWatch**: Alarms, log groups, metrics
 
@@ -63,33 +68,33 @@ impl CloudProvider for AwsProvider {
     async fn discover(&self, config: &ProviderConfig) -> Result<Vec<Resource>> {
         let regions = self.get_enabled_regions(config);
         let services = self.get_enabled_services(config);
-        
-        info!("Starting AWS discovery across {} regions, {} services", 
+
+        info!("Starting AWS discovery across {} regions, {} services",
               regions.len(), services.len());
-        
+
         let mut all_resources = Vec::new();
-        
+
         // Discover global services first (IAM, Route53, CloudFront)
         if services.contains("iam") {
             all_resources.extend(self.discover_iam_resources().await?);
         }
-        
+
         // Then discover regional services in parallel
         let regional_futures: Vec<_> = regions.into_iter()
             .map(|region| self.discover_regional_resources(&region, &services))
             .collect();
-        
+
         let regional_results = futures::future::join_all(regional_futures).await;
-        
+
         for result in regional_results {
             match result {
                 Ok(resources) => all_resources.extend(resources),
                 Err(e) => warn!("Regional discovery failed: {}", e),
             }
         }
-        
+
         info!("AWS discovery complete: {} resources discovered", all_resources.len());
-        
+
         Ok(all_resources)
     }
 }
@@ -109,7 +114,7 @@ pub struct RateLimiter {
     iam_semaphore: Arc<Semaphore>,        // 10 req/sec
     s3_semaphore: Arc<Semaphore>,         // 100 req/sec
     rds_semaphore: Arc<Semaphore>,        // 20 req/sec
-    
+
     // Adaptive rate limiting based on response times
     adaptive_delays: Arc<Mutex<HashMap<String, Duration>>>,
 }
@@ -121,14 +126,14 @@ impl RateLimiter {
     {
         let semaphore = self.get_semaphore_for_service(service);
         let _permit = semaphore.acquire().await?;
-        
+
         let start = Instant::now();
         let result = operation.await;
         let duration = start.elapsed();
-        
+
         // Adapt rate limiting based on response time
         self.update_adaptive_delay(service, duration).await;
-        
+
         match result {
             Ok(value) => Ok(value),
             Err(e) if self.is_rate_limit_error(&e) => {
@@ -139,10 +144,10 @@ impl RateLimiter {
             Err(e) => Err(e),
         }
     }
-    
+
     async fn update_adaptive_delay(&self, service: &str, response_time: Duration) {
         let mut delays = self.adaptive_delays.lock().await;
-        
+
         // If response time is slow, increase delay
         if response_time > Duration::from_millis(500) {
             let current_delay = delays.get(service).unwrap_or(&Duration::ZERO);
@@ -169,7 +174,7 @@ impl AwsProvider {
     async fn build_resource_graph(&self, resources: Vec<Resource>) -> Result<Vec<Resource>> {
         let mut graph = ResourceGraph::new();
         let mut enriched_resources = resources;
-        
+
         // Build relationship mappings
         for resource in &mut enriched_resources {
             match resource.resource_type.as_str() {
@@ -185,22 +190,22 @@ impl AwsProvider {
                 _ => {}
             }
         }
-        
+
         // Add relationship data back to resources
         for resource in &mut enriched_resources {
             if let Some(relations) = graph.get_relationships(&resource.id) {
                 resource.relationships = relations;
             }
         }
-        
+
         Ok(enriched_resources)
     }
-    
+
     async fn map_ec2_relationships(&self, graph: &mut ResourceGraph, resource: &Resource) -> Result<()> {
         if let Some(vpc_id) = resource.get_property("VpcId")?.as_str() {
             graph.add_relationship(&resource.id, vpc_id, RelationType::ContainedIn);
         }
-        
+
         if let Some(security_groups) = resource.get_property("SecurityGroups")?.as_array() {
             for sg in security_groups {
                 if let Some(sg_id) = sg.get("GroupId")?.as_str() {
@@ -208,18 +213,18 @@ impl AwsProvider {
                 }
             }
         }
-        
+
         if let Some(subnet_id) = resource.get_property("SubnetId")?.as_str() {
             graph.add_relationship(&resource.id, subnet_id, RelationType::DeployedIn);
         }
-        
+
         // Map IAM instance profile relationships
         if let Some(iam_profile) = resource.get_property("IamInstanceProfile") {
             if let Some(arn) = iam_profile.get("Arn")?.as_str() {
                 graph.add_relationship(&resource.id, arn, RelationType::AssumeRole);
             }
         }
-        
+
         Ok(())
     }
 }
@@ -234,34 +239,34 @@ impl AwsProvider {
     async fn discover_ec2_instances(&self, region: &Region) -> Result<Vec<Resource>> {
         let ec2_client = &self.clients.get(region).unwrap().ec2;
         let mut resources = Vec::new();
-        
+
         // Use paginator for large result sets
         let mut paginator = ec2_client.describe_instances().into_paginator().send();
-        
+
         while let Some(page) = paginator.next().await {
             let output = page?;
-            
+
             for reservation in output.reservations().unwrap_or_default() {
                 for instance in reservation.instances().unwrap_or_default() {
                     let resource = self.convert_ec2_instance_to_resource(instance, region)?;
                     resources.push(resource);
                 }
             }
-            
+
             // Respect rate limits between pages
             if resources.len() % 100 == 0 {
                 tokio::time::sleep(Duration::from_millis(50)).await;
             }
         }
-        
+
         Ok(resources)
     }
-    
+
     fn convert_ec2_instance_to_resource(&self, instance: &Instance, region: &Region) -> Result<Resource> {
         let instance_id = instance.instance_id().unwrap_or("unknown").to_string();
         let instance_type = instance.instance_type().map(|t| t.as_str()).unwrap_or("unknown");
         let state = instance.state().and_then(|s| s.name()).map(|n| n.as_str()).unwrap_or("unknown");
-        
+
         // Extract tags
         let mut tags = HashMap::new();
         if let Some(tag_list) = instance.tags() {
@@ -271,10 +276,10 @@ impl AwsProvider {
                 }
             }
         }
-        
+
         // Get human-readable name from tags
         let name = tags.get("Name").cloned();
-        
+
         Ok(Resource {
             id: format!("aws:ec2:instance:{}", instance_id),
             resource_type: "aws:ec2:instance".to_string(),
@@ -298,35 +303,35 @@ The provider handles partial failures gracefully:
 ```rust
 impl AwsProvider {
     async fn discover_regional_resources(
-        &self, 
-        region: &Region, 
+        &self,
+        region: &Region,
         services: &[String]
     ) -> Result<Vec<Resource>> {
         let mut regional_resources = Vec::new();
         let mut failed_services = Vec::new();
-        
+
         for service in services {
             match self.discover_service_resources(region, service).await {
                 Ok(resources) => {
-                    info!("Discovered {} {} resources in {}", 
+                    info!("Discovered {} {} resources in {}",
                           resources.len(), service, region);
                     regional_resources.extend(resources);
                 },
                 Err(e) => {
-                    error!("Failed to discover {} resources in {}: {}", 
+                    error!("Failed to discover {} resources in {}: {}",
                            service, region, e);
                     failed_services.push(service.clone());
                 }
             }
         }
-        
+
         if !failed_services.is_empty() {
             warn!("Some services failed in region {}: {:?}", region, failed_services);
         }
-        
+
         Ok(regional_resources)
     }
-    
+
     async fn discover_service_resources(&self, region: &Region, service: &str) -> Result<Vec<Resource>> {
         match service {
             "ec2" => self.discover_ec2_resources(region).await,
@@ -348,12 +353,14 @@ impl AwsProvider {
 Benchmarked against a medium-sized AWS account:
 
 ### **Discovery Performance**
+
 - **Total resources**: 1,247 across 3 regions
 - **Discovery time**: 38 seconds (down from 2+ minutes in research phase)
 - **Memory usage**: ~18MB for full resource graph
 - **API calls**: 427 calls (well within AWS limits)
 
 ### **Service Breakdown**
+
 - **EC2**: 203 instances, 45 security groups, 12 VPCs (8.2 seconds)
 - **S3**: 67 buckets with policies (3.1 seconds)
 - **IAM**: 23 users, 41 roles, 78 policies (5.4 seconds)
@@ -361,11 +368,12 @@ Benchmarked against a medium-sized AWS account:
 - **Lambda**: 34 functions (1.8 seconds)
 
 ### **Rate Limiting Effectiveness**
+
 - **Zero rate limit errors** during normal operation
 - **Adaptive delays** reduced average response time by 23%
 - **Concurrent discovery** improved overall performance by 3.2x
 
-## Resource Quality & Completeness  
+## Resource Quality & Completeness
 
 Each discovered resource includes comprehensive metadata:
 
@@ -374,7 +382,7 @@ Each discovered resource includes comprehensive metadata:
   "id": "aws:ec2:instance:i-0123456789abcdef0",
   "resource_type": "aws:ec2:instance",
   "provider": "aws",
-  "region": "us-east-1", 
+  "region": "us-east-1",
   "account_id": "123456789012",
   "name": "web-server-prod",
   "created_at": "2025-03-10T14:30:00Z",
@@ -385,15 +393,15 @@ Each discovered resource includes comprehensive metadata:
   },
   "properties": {
     "InstanceType": "t3.medium",
-    "State": {"Name": "running"},
-    "SecurityGroups": [{"GroupId": "sg-0123456"}],
+    "State": { "Name": "running" },
+    "SecurityGroups": [{ "GroupId": "sg-0123456" }],
     "VpcId": "vpc-0123456",
     "SubnetId": "subnet-0123456"
   },
   "relationships": [
-    {"type": "contained_in", "target": "vpc-0123456"},
-    {"type": "protected_by", "target": "sg-0123456"},
-    {"type": "deployed_in", "target": "subnet-0123456"}
+    { "type": "contained_in", "target": "vpc-0123456" },
+    { "type": "protected_by", "target": "sg-0123456" },
+    { "type": "deployed_in", "target": "subnet-0123456" }
   ]
 }
 ```

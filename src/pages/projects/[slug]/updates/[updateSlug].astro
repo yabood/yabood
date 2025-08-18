@@ -8,28 +8,29 @@ import Prose from '../../../../components/Prose.astro';
 export async function getStaticPaths() {
   const updates = await getCollection('updates');
   const projects = await getCollection('projects');
-  
-  return updates.map(update => {
-    const project = projects.find(p => p.slug === update.data.project);
+
+  return updates.map((update) => {
+    const project = projects.find((p) => p.slug === update.data.project);
     const allProjectUpdates = updates
-      .filter(u => u.data.project === update.data.project && !u.data.draft)
+      .filter((u) => u.data.project === update.data.project && !u.data.draft)
       .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-    
-    const currentIndex = allProjectUpdates.findIndex(u => u.slug === update.slug);
-    const prevUpdate = currentIndex < allProjectUpdates.length - 1 ? allProjectUpdates[currentIndex + 1] : null;
+
+    const currentIndex = allProjectUpdates.findIndex((u) => u.slug === update.slug);
+    const prevUpdate =
+      currentIndex < allProjectUpdates.length - 1 ? allProjectUpdates[currentIndex + 1] : null;
     const nextUpdate = currentIndex > 0 ? allProjectUpdates[currentIndex - 1] : null;
-    
+
     return {
-      params: { 
+      params: {
         slug: update.data.project,
-        updateSlug: update.slug 
+        updateSlug: update.slug,
       },
-      props: { 
+      props: {
         update,
         project,
         prevUpdate,
-        nextUpdate
-      }
+        nextUpdate,
+      },
     };
   });
 }
@@ -43,7 +44,7 @@ const phaseLabels = {
   implementation: 'Implementation',
   release: 'Release',
   iteration: 'Iteration',
-  archived: 'Archived'
+  archived: 'Archived',
 };
 
 const jsonLd = {
@@ -54,18 +55,18 @@ const jsonLd = {
   datePublished: update.data.date.toISOString(),
   author: {
     '@type': 'Person',
-    name: 'Yousif Abood'
+    name: 'Yousif Abood',
   },
   publisher: {
     '@type': 'Organization',
     name: 'Yousif Abood',
-    url: 'https://yabood.com'
+    url: 'https://yabood.com',
   },
   isPartOf: {
     '@type': 'Blog',
     name: project?.data.title || 'Project Journal',
-    url: `https://yabood.com/projects/${update.data.project}`
-  }
+    url: `https://yabood.com/projects/${update.data.project}`,
+  },
 };
 ---
 
@@ -78,7 +79,7 @@ const jsonLd = {
     script.textContent = JSON.stringify(jsonLd);
     document.head.appendChild(script);
   </script>
-  
+
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
@@ -89,7 +90,9 @@ const jsonLd = {
         </li>
         <li>/</li>
         <li>
-          <a href={`/projects/${update.data.project}`} class="hover:text-accent dark:hover:text-accent-light">
+          <a
+            href={`/projects/${update.data.project}`}
+            class="hover:text-accent dark:hover:text-accent-light">
             {project?.data.title || update.data.project}
           </a>
         </li>
@@ -103,42 +106,48 @@ const jsonLd = {
     <article>
       <header class="mb-8">
         <div class="mb-4">
-          <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <span
+            class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
             {phaseLabels[update.data.phase]}
           </span>
         </div>
-        
-        <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+
+        <h1
+          class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
           {update.data.title}
         </h1>
-        
+
         <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
           <time datetime={update.data.date.toISOString()}>
-            {update.data.date.toLocaleDateString('en-US', { 
-              month: 'long', 
-              day: 'numeric',
-              year: 'numeric' 
-            })}
+            {
+              update.data.date.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+              })
+            }
           </time>
-          {update.data.tags.length > 0 && (
-            <>
-              <span>•</span>
-              <div class="flex flex-wrap gap-2">
-                {update.data.tags.map(tag => (
-                  <span class="text-gray-500 dark:text-gray-400">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </>
-          )}
+          {
+            update.data.tags.length > 0 && (
+              <>
+                <span>•</span>
+                <div class="flex flex-wrap gap-2">
+                  {update.data.tags.map((tag) => (
+                    <span class="text-gray-500 dark:text-gray-400">{tag}</span>
+                  ))}
+                </div>
+              </>
+            )
+          }
         </div>
-        
-        {update.data.summary && (
-          <p class="mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-400">
-            {update.data.summary}
-          </p>
-        )}
+
+        {
+          update.data.summary && (
+            <p class="mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+              {update.data.summary}
+            </p>
+          )
+        }
       </header>
 
       <Prose>
@@ -146,32 +155,37 @@ const jsonLd = {
       </Prose>
     </article>
 
-    <nav class="mt-12 flex items-center justify-between border-t border-gray-200 pt-8 dark:border-gray-700">
-      {prevUpdate ? (
-        <a 
-          href={`/projects/${update.data.project}/updates/${prevUpdate.slug}`}
-          class="group flex max-w-xs flex-col">
-          <span class="text-sm text-gray-500 dark:text-gray-400">← Previous</span>
-          <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-            {prevUpdate.data.title}
-          </span>
-        </a>
-      ) : (
-        <div></div>
-      )}
-      
-      {nextUpdate ? (
-        <a 
-          href={`/projects/${update.data.project}/updates/${nextUpdate.slug}`}
-          class="group flex max-w-xs flex-col text-right">
-          <span class="text-sm text-gray-500 dark:text-gray-400">Next →</span>
-          <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-            {nextUpdate.data.title}
-          </span>
-        </a>
-      ) : (
-        <div></div>
-      )}
+    <nav
+      class="mt-12 flex items-center justify-between border-t border-gray-200 pt-8 dark:border-gray-700">
+      {
+        prevUpdate ? (
+          <a
+            href={`/projects/${update.data.project}/updates/${prevUpdate.slug}`}
+            class="group flex max-w-xs flex-col">
+            <span class="text-sm text-gray-500 dark:text-gray-400">← Previous</span>
+            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+              {prevUpdate.data.title}
+            </span>
+          </a>
+        ) : (
+          <div />
+        )
+      }
+
+      {
+        nextUpdate ? (
+          <a
+            href={`/projects/${update.data.project}/updates/${nextUpdate.slug}`}
+            class="group flex max-w-xs flex-col text-right">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Next →</span>
+            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+              {nextUpdate.data.title}
+            </span>
+          </a>
+        ) : (
+          <div />
+        )
+      }
     </nav>
   </main>
 

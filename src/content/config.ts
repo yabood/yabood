@@ -16,7 +16,14 @@ const blog = defineCollection({
     }),
 });
 
-const phaseEnum = z.enum(['idea', 'research', 'implementation', 'release', 'iteration', 'archived']);
+const phaseEnum = z.enum([
+  'idea',
+  'research',
+  'implementation',
+  'release',
+  'iteration',
+  'archived',
+]);
 
 const projects = defineCollection({
   type: 'content',

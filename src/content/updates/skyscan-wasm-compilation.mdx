@@ -1,10 +1,10 @@
 ---
-title: "WebAssembly compilation success and edge deployment"
-date: "2025-04-02"
-phase: "implementation"
-project: "skyscan"
-tags: ["WebAssembly", "Edge Computing", "Performance"]
-summary: "Successfully compiled SkyScaN to WebAssembly and deployed to edge environments with impressive performance results."
+title: 'WebAssembly compilation success and edge deployment'
+date: '2025-04-02'
+phase: 'implementation'
+project: 'skyscan'
+tags: ['WebAssembly', 'Edge Computing', 'Performance']
+summary: 'Successfully compiled SkyScaN to WebAssembly and deployed to edge environments with impressive performance results.'
 ---
 
 Huge breakthrough! Got SkyScaN successfully compiling to WebAssembly and running in edge environments. This validates the core architectural vision and opens up some incredible deployment possibilities.
@@ -12,6 +12,7 @@ Huge breakthrough! Got SkyScaN successfully compiling to WebAssembly and running
 ## WASM Compilation Challenges & Solutions
 
 ### **Challenge 1: Async Runtime in WASM**
+
 Tokio doesn't work directly in WebAssembly environments. Had to implement a custom async runtime:
 
 ```rust
@@ -20,14 +21,14 @@ Tokio doesn't work directly in WebAssembly environments. Had to implement a cust
 pub mod wasm_runtime {
     use wasm_bindgen_futures::spawn_local;
     use futures::future::LocalBoxFuture;
-    
-    pub fn spawn<F>(future: F) 
+
+    pub fn spawn<F>(future: F)
     where
         F: std::future::Future<Output = ()> + 'static,
     {
         spawn_local(future);
     }
-    
+
     pub async fn block_on<F>(future: F) -> F::Output
     where
         F: std::future::Future,
@@ -45,6 +46,7 @@ pub use wasm_runtime as Runtime;
 ```
 
 ### **Challenge 2: File System Access**
+
 WebAssembly can't access the file system directly. Implemented a virtual filesystem:
 
 ```rust
@@ -55,7 +57,7 @@ extern "C" {
     // JavaScript functions for file I/O
     #[wasm_bindgen(js_namespace = ["window", "skyscan"])]
     async fn read_file(path: &str) -> JsValue;
-    
+
     #[wasm_bindgen(js_namespace = ["window", "skyscan"])]
     async fn write_file(path: &str, content: &str) -> bool;
 }
@@ -69,11 +71,11 @@ impl FileSystem for WasmFileSystem {
             .ok_or_else(|| Error::new("Failed to read file"))?;
         Ok(content.into_bytes())
     }
-    
+
     async fn write(&self, path: &str, content: &[u8]) -> Result<()> {
         let content_str = String::from_utf8(content.to_vec())?;
         let success = write_file(path, &content_str).await;
-        
+
         if success {
             Ok(())
         } else {
@@ -84,6 +86,7 @@ impl FileSystem for WasmFileSystem {
 ```
 
 ### **Challenge 3: Network Requests**
+
 AWS SDK doesn't compile to WASM. Built a custom HTTP client abstraction:
 
 ```rust
@@ -92,33 +95,33 @@ mod wasm_http {
     use wasm_bindgen::prelude::*;
     use wasm_bindgen_futures::JsFuture;
     use web_sys::{Request, RequestInit, Response};
-    
+
     pub struct WasmHttpClient;
-    
+
     impl HttpClient for WasmHttpClient {
         async fn request(&self, req: HttpRequest) -> Result<HttpResponse> {
             let mut opts = RequestInit::new();
             opts.method(&req.method);
             opts.body(Some(&JsValue::from_str(&req.body)));
-            
+
             // Add headers
             let headers = web_sys::Headers::new()?;
             for (key, value) in req.headers {
                 headers.set(&key, &value)?;
             }
             opts.headers(&headers);
-            
+
             let request = Request::new_with_str_and_init(&req.url, &opts)?;
-            
+
             let window = web_sys::window().unwrap();
             let resp_value = JsFuture::from(window.fetch_with_request(&request)).await?;
             let response: Response = resp_value.dyn_into()?;
-            
+
             let status = response.status();
             let text_promise = response.text()?;
             let text = JsFuture::from(text_promise).await?;
             let body = text.as_string().unwrap_or_default();
-            
+
             Ok(HttpResponse {
                 status,
                 body: body.into_bytes(),
@@ -191,50 +194,56 @@ echo "Node package: $(du -h pkg-node/skyscan_bg.wasm | cut -f1)"
 The WebAssembly version performs surprisingly well:
 
 ### **Binary Size**
+
 - **Unoptimized**: 3.2MB
-- **With wasm-opt -Oz**: 1.8MB  
+- **With wasm-opt -Oz**: 1.8MB
 - **Gzipped**: 542KB
 
 ### **Runtime Performance** (vs native)
+
 - **Resource parsing**: 98% of native performance
 - **Security rule evaluation**: 94% of native performance
 - **Memory usage**: 15% lower than native (no garbage collector)
 - **Cold start time**: 23ms (acceptable for edge functions)
 
 ### **Browser Integration**
+
 ```javascript
 // JavaScript integration example
 import init, { SkyScaN } from './pkg-web/skyscan.js';
 
 async function runScan() {
-    // Initialize the WASM module
-    await init();
-    
-    // Create scanner instance
-    const scanner = new SkyScaN();
-    
-    // Configure AWS provider
-    scanner.configure_aws({
-        access_key: 'AKIA...',
-        secret_key: '...',
-        regions: ['us-east-1'],
-        services: ['ec2', 'iam', 's3']
-    });
-    
-    // Run scan
-    console.log('Starting security scan...');
-    const results = await scanner.scan();
-    
-    console.log(`Scan complete: ${results.resources.length} resources, ${results.findings.length} findings`);
-    
-    // Display results in UI
-    displayScanResults(results);
+  // Initialize the WASM module
+  await init();
+
+  // Create scanner instance
+  const scanner = new SkyScaN();
+
+  // Configure AWS provider
+  scanner.configure_aws({
+    access_key: 'AKIA...',
+    secret_key: '...',
+    regions: ['us-east-1'],
+    services: ['ec2', 'iam', 's3'],
+  });
+
+  // Run scan
+  console.log('Starting security scan...');
+  const results = await scanner.scan();
+
+  console.log(
+    `Scan complete: ${results.resources.length} resources, ${results.findings.length} findings`
+  );
+
+  // Display results in UI
+  displayScanResults(results);
 }
 ```
 
 ## Edge Deployment Success
 
 ### **CloudFlare Workers**
+
 Got SkyScaN running on CloudFlare Workers:
 
 ```javascript
@@ -242,33 +251,35 @@ Got SkyScaN running on CloudFlare Workers:
 import { SkyScaN } from './skyscan-wasm.js';
 
 export default {
-    async fetch(request, env, ctx) {
-        if (request.method === 'POST' && new URL(request.url).pathname === '/scan') {
-            const config = await request.json();
-            
-            // Initialize scanner
-            const scanner = new SkyScaN();
-            scanner.configure_from_env(env);
-            
-            // Run scan
-            const results = await scanner.scan();
-            
-            return new Response(JSON.stringify(results), {
-                headers: { 'Content-Type': 'application/json' },
-            });
-        }
-        
-        return new Response('SkyScaN Edge Scanner', { status: 200 });
-    },
+  async fetch(request, env, ctx) {
+    if (request.method === 'POST' && new URL(request.url).pathname === '/scan') {
+      const config = await request.json();
+
+      // Initialize scanner
+      const scanner = new SkyScaN();
+      scanner.configure_from_env(env);
+
+      // Run scan
+      const results = await scanner.scan();
+
+      return new Response(JSON.stringify(results), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return new Response('SkyScaN Edge Scanner', { status: 200 });
+  },
 };
 ```
 
 **Performance on CloudFlare Workers:**
+
 - **Cold start**: 31ms
 - **Scan time**: 1.2 seconds for 50 resources
 - **Memory usage**: 8MB (well within 128MB limit)
 
 ### **AWS Lambda@Edge**
+
 Also deployed to Lambda@Edge functions:
 
 ```javascript
@@ -276,28 +287,29 @@ Also deployed to Lambda@Edge functions:
 const SkyScaN = require('./pkg-node/skyscan.js');
 
 exports.handler = async (event) => {
-    const scanner = new SkyScaN.SkyScaN();
-    
-    // Configure from environment variables
-    scanner.configure_aws({
-        access_key: process.env.AWS_ACCESS_KEY_ID,
-        secret_key: process.env.AWS_SECRET_ACCESS_KEY,
-        regions: ['us-east-1'],
-    });
-    
-    const results = await scanner.scan();
-    
-    return {
-        statusCode: 200,
-        body: JSON.stringify(results),
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    };
+  const scanner = new SkyScaN.SkyScaN();
+
+  // Configure from environment variables
+  scanner.configure_aws({
+    access_key: process.env.AWS_ACCESS_KEY_ID,
+    secret_key: process.env.AWS_SECRET_ACCESS_KEY,
+    regions: ['us-east-1'],
+  });
+
+  const results = await scanner.scan();
+
+  return {
+    statusCode: 200,
+    body: JSON.stringify(results),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
 };
 ```
 
 **Performance on Lambda@Edge:**
+
 - **Cold start**: 42ms
 - **Execution time**: 850ms for typical scan
 - **Memory usage**: 12MB
@@ -309,41 +321,41 @@ The killer feature: security scanning directly in the browser:
 ```html
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <title>SkyScaN - Browser Security Scanner</title>
     <script type="module">
-        import init, { SkyScaN } from './pkg-web/skyscan.js';
-        
-        async function main() {
-            await init();
-            
-            const scanner = new SkyScaN();
-            
-            // Configure with temporary credentials from AWS STS
-            scanner.configure_aws({
-                access_key: document.getElementById('accessKey').value,
-                secret_key: document.getElementById('secretKey').value,
-                session_token: document.getElementById('sessionToken').value,
-                regions: ['us-east-1'],
-            });
-            
-            document.getElementById('scanBtn').onclick = async () => {
-                const results = await scanner.scan();
-                displayResults(results);
-            };
-        }
-        
-        main();
+      import init, { SkyScaN } from './pkg-web/skyscan.js';
+
+      async function main() {
+        await init();
+
+        const scanner = new SkyScaN();
+
+        // Configure with temporary credentials from AWS STS
+        scanner.configure_aws({
+          access_key: document.getElementById('accessKey').value,
+          secret_key: document.getElementById('secretKey').value,
+          session_token: document.getElementById('sessionToken').value,
+          regions: ['us-east-1'],
+        });
+
+        document.getElementById('scanBtn').onclick = async () => {
+          const results = await scanner.scan();
+          displayResults(results);
+        };
+      }
+
+      main();
     </script>
-</head>
-<body>
+  </head>
+  <body>
     <h1>SkyScaN Browser Scanner</h1>
     <input id="accessKey" placeholder="AWS Access Key" />
     <input id="secretKey" placeholder="AWS Secret Key" />
     <input id="sessionToken" placeholder="Session Token" />
     <button id="scanBtn">Start Scan</button>
     <div id="results"></div>
-</body>
+  </body>
 </html>
 ```
 
@@ -357,16 +369,16 @@ import { NativeModules } from 'react-native';
 const { SkyScaNWasm } = NativeModules;
 
 export class MobileScanner {
-    private wasmInstance: any;
-    
-    async initialize() {
-        // Load WASM module in a WebView
-        this.wasmInstance = await SkyScaNWasm.loadModule();
-    }
-    
-    async scanInfrastructure(config: ScanConfig): Promise<ScanResults> {
-        return await this.wasmInstance.scan(config);
-    }
+  private wasmInstance: any;
+
+  async initialize() {
+    // Load WASM module in a WebView
+    this.wasmInstance = await SkyScaNWasm.loadModule();
+  }
+
+  async scanInfrastructure(config: ScanConfig): Promise<ScanResults> {
+    return await this.wasmInstance.scan(config);
+  }
 }
 
 // Usage in React Native component
@@ -374,14 +386,14 @@ const scanner = new MobileScanner();
 await scanner.initialize();
 
 const results = await scanner.scanInfrastructure({
-    provider: 'aws',
-    regions: ['us-east-1'],
-    credentials: {
-        // Use AWS Cognito for mobile auth
-        accessKey: cognitoCredentials.accessKey,
-        secretKey: cognitoCredentials.secretKey,
-        sessionToken: cognitoCredentials.sessionToken,
-    },
+  provider: 'aws',
+  regions: ['us-east-1'],
+  credentials: {
+    // Use AWS Cognito for mobile auth
+    accessKey: cognitoCredentials.accessKey,
+    secretKey: cognitoCredentials.secretKey,
+    sessionToken: cognitoCredentials.sessionToken,
+  },
 });
 ```
 
@@ -390,24 +402,28 @@ const results = await scanner.scanInfrastructure({
 The WASM compilation opens up powerful new deployment scenarios:
 
 ### **1. Developer Browser Extension**
+
 ```javascript
 // Chrome extension for inline AWS console scanning
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-    if (tab.url?.includes('console.aws.amazon.com')) {
-        // Inject scanner into AWS console
-        const results = await injectSecurityScanner(tabId);
-        showSecurityOverlay(results);
-    }
+  if (tab.url?.includes('console.aws.amazon.com')) {
+    // Inject scanner into AWS console
+    const results = await injectSecurityScanner(tabId);
+    showSecurityOverlay(results);
+  }
 });
 ```
 
 ### **2. CDN-Based Scanning**
+
 Deploy scanner to CDNs for ultra-low latency global scanning:
+
 - **EdgeWorkers** on Fastly
 - **CloudFlare Workers** worldwide
 - **Lambda@Edge** at AWS edge locations
 
 ### **3. Offline Security Analysis**
+
 WASM enables offline analysis of infrastructure exports:
 
 ```javascript

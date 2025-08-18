@@ -4,21 +4,20 @@ import type { APIContext } from 'astro';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
-  return projects.map(project => ({
+  return projects.map((project) => ({
     params: { slug: project.slug },
-    props: { project }
+    props: { project },
   }));
 }
 
 export async function GET(context: APIContext) {
   const { project } = context.props;
-  const updates = await getCollection('updates', ({ data }) => 
-    !data.draft && data.project === project.slug
+  const updates = await getCollection(
+    'updates',
+    ({ data }) => !data.draft && data.project === project.slug
   );
-  
-  const sortedUpdates = updates.sort((a, b) => 
-    b.data.date.getTime() - a.data.date.getTime()
-  );
+
+  const sortedUpdates = updates.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
   return rss({
     title: `${project.data.title} Updates - Yousif Abood`,

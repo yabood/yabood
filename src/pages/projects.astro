@@ -4,26 +4,29 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
-const projects = await getCollection('projects', ({ data }) => 
-  (!data.status || data.status !== 'archived') && (import.meta.env.DEV || !data.draft)
+const projects = await getCollection(
+  'projects',
+  ({ data }) => (!data.status || data.status !== 'archived') && (import.meta.env.DEV || !data.draft)
 );
 const updates = await getCollection('updates', ({ data }) => !data.draft);
 
-const projectsWithLatestUpdate = projects.map(project => {
-  const projectUpdates = updates
-    .filter(update => update.data.project === project.slug)
-    .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-  
-  const latestUpdate = projectUpdates[0];
-  const lastUpdatedDate = latestUpdate ? latestUpdate.data.date : project.data.startDate;
-  
-  return {
-    ...project,
-    latestUpdate,
-    lastUpdatedDate,
-    updateCount: projectUpdates.length,
-  };
-}).sort((a, b) => b.lastUpdatedDate.getTime() - a.lastUpdatedDate.getTime());
+const projectsWithLatestUpdate = projects
+  .map((project) => {
+    const projectUpdates = updates
+      .filter((update) => update.data.project === project.slug)
+      .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+    const latestUpdate = projectUpdates[0];
+    const lastUpdatedDate = latestUpdate ? latestUpdate.data.date : project.data.startDate;
+
+    return {
+      ...project,
+      latestUpdate,
+      lastUpdatedDate,
+      updateCount: projectUpdates.length,
+    };
+  })
+  .sort((a, b) => b.lastUpdatedDate.getTime() - a.lastUpdatedDate.getTime());
 ---
 
 <BaseLayout
@@ -51,7 +54,9 @@ const projectsWithLatestUpdate = projects.map(project => {
               </h2>
 
               <p class="mb-4 text-gray-600 dark:text-gray-400">
-                {project.latestUpdate ? project.latestUpdate.data.summary : project.data.description}
+                {project.latestUpdate
+                  ? project.latestUpdate.data.summary
+                  : project.data.description}
               </p>
 
               <div class="mb-4 flex flex-wrap gap-2">
@@ -65,10 +70,11 @@ const projectsWithLatestUpdate = projects.map(project => {
               <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
                 <div class="flex items-center gap-2">
                   <time datetime={project.lastUpdatedDate.toISOString()}>
-                    Updated {project.lastUpdatedDate.toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric', 
-                      year: 'numeric' 
+                    Updated{' '}
+                    {project.lastUpdatedDate.toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
                     })}
                   </time>
                   {project.data.draft && (

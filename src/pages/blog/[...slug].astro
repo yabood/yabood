@@ -4,8 +4,9 @@ import PostLayout from '../../layouts/PostLayout.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
-  const posts = (await getCollection('blog'))
-    .filter((post) => import.meta.env.DEV || !post.data.draft);
+  const posts = (await getCollection('blog')).filter(
+    (post) => import.meta.env.DEV || !post.data.draft
+  );
   return posts.map((post) => ({
     params: { slug: post.slug },
     props: post,
