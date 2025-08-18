@@ -58,7 +58,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
 
   <main id="main" class="py-12">
     <article>
-      <header class="container mx-auto max-w-4xl px-4 mb-8 text-center">
+      <header class="container mx-auto max-w-3xl px-4 mb-8">
         <div class="text-sm text-gray-600 dark:text-gray-400">
           <time datetime={pubDate.toISOString()}>
             {articleDate}
@@ -98,7 +98,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
 
         {
           tags && tags.length > 0 && (
-            <div class="mt-4 flex flex-wrap justify-center gap-2">
+            <div class="mt-4 flex flex-wrap gap-2">
               {tags.map((tag) => (
                 <a
                   href={`/tags/${tag}`}
@@ -113,7 +113,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
 
       {
         heroImage && (
-          <div class="container mx-auto max-w-4xl px-4 mb-8 overflow-hidden rounded-lg">
+          <div class="container mx-auto max-w-3xl px-4 mb-8 overflow-hidden rounded-lg">
             <Image
               src={heroImage}
               alt={`Hero image for ${title}`}
@@ -126,8 +126,8 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
         )
       }
 
-      <div class="container mx-auto max-w-4xl px-4">
-        <div class="mx-auto max-w-prose relative">
+      <div class="container mx-auto max-w-3xl px-4">
+        <div class="mx-auto relative">
           {showToc && <TableOfContents headings={headings} />}
           <Prose>
             <slot />

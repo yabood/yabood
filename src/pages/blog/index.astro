@@ -35,7 +35,7 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
 <BaseLayout title="Blog" description="Articles about web development, technology, and more">
   <Header />
 
-  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
+  <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <div class="space-y-16">
       {
         sortedYears.map((year) => (
