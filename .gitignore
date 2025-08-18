@@ -23,3 +23,8 @@ pnpm-debug.log*
 
 # typescript
 *.tsbuildinfo
+
+# amplify
+.amplify
+amplify_outputs*
+amplifyconfiguration*
