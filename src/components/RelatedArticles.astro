@@ -13,7 +13,7 @@ const allPosts = await getCollection('blog');
 
 // Filter out current post and published posts only
 const otherPosts = allPosts
-  .filter((post) => post.slug !== currentPost.slug)
+  .filter((post) => post.slug !== currentPost.slug && (import.meta.env.DEV || !post.data.draft))
   .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime());
 
 // Find related posts based on shared tags

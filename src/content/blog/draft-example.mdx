@@ -1,0 +1,31 @@
+---
+title: 'Draft Post: My Work in Progress'
+description: 'This is a draft post that will only show in development mode'
+pubDate: 2025-08-18
+heroImage: '../../assets/hero-astro-blog.jpg'
+tags: ['draft', 'testing', 'development']
+author: 'Yousif Abood'
+draft: true
+---
+
+This is a draft post that demonstrates the draft functionality.
+
+## Only Visible in Development
+
+This post will:
+- ✅ Show up when running `npm run dev` (development mode)
+- ❌ NOT show up when you build for production (`npm run build`)
+- ❌ NOT appear in RSS feeds
+
+## Testing Your Draft System
+
+To test that drafts are working correctly:
+
+1. Run your site in development mode: `npm run dev`
+2. You should see this post in the blog listing
+3. Build your site for production: `npm run build && npm run preview`
+4. This post should NOT appear in the production build
+
+## Converting to Published
+
+When you're ready to publish this post, simply change `draft: true` to `draft: false` in the frontmatter, or remove the draft field entirely (it defaults to false).

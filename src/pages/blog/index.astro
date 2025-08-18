@@ -6,7 +6,7 @@ import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
 const posts = (await getCollection('blog'))
-  .filter((post) => !post.data.draft)
+  .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const postsWithReadingTime = await Promise.all(
@@ -57,6 +57,12 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
                       </time>
                       <span class="mx-2">·</span>
                       <span>{post.readingTime}</span>
+                      {post.data.draft && (
+                        <>
+                          <span class="mx-2">·</span>
+                          <span class="text-amber-600 dark:text-amber-400 font-medium">Draft</span>
+                        </>
+                      )}
                     </div>
                     <h3 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
                       {post.data.title}

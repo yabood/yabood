@@ -20,7 +20,7 @@ export async function getStaticPaths() {
 const { project, updates } = Astro.props;
 
 const sortedUpdates = updates
-  .filter(update => !update.data.draft)
+  .filter(update => import.meta.env.DEV || !update.data.draft)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const phases = ['idea', 'research', 'implementation', 'release', 'iteration', 'archived'] as const;

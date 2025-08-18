@@ -6,7 +6,8 @@ import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
+  const posts = (await getCollection('blog'))
+    .filter((post) => import.meta.env.DEV || !post.data.draft);
   const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
 
   return tags.map((tag) => ({
@@ -21,7 +22,7 @@ type Props = {
 
 const { tag } = Astro.props;
 const allPosts = (await getCollection('blog'))
-  .filter((post) => !post.data.draft && post.data.tags.includes(tag))
+  .filter((post) => (import.meta.env.DEV || !post.data.draft) && post.data.tags.includes(tag))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const posts = await Promise.all(
@@ -85,6 +86,12 @@ const posts = await Promise.all(
                   </time>
                   <span class="mx-2">·</span>
                   <span>{post.readingTime}</span>
+                  {post.data.draft && (
+                    <>
+                      <span class="mx-2">·</span>
+                      <span class="text-amber-600 dark:text-amber-400 font-medium">Draft</span>
+                    </>
+                  )}
                 </div>
                 <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
                   {post.data.title}
