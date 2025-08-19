@@ -10,7 +10,7 @@ export default function CodePlayground({
   language = 'javascript' 
 }: CodePlaygroundProps) {
   const [code, setCode] = useState(initialCode);
-  const [output, setOutput] = useState('');
+  const [output, setOutput] = useState('Click "Run" to see output');
 
   const runCode = () => {
     try {
@@ -58,7 +58,7 @@ export default function CodePlayground({
         <div className="p-4 bg-gray-50">
           <div className="font-mono text-sm">
             <div className="text-gray-500 mb-2">Output:</div>
-            <pre className="whitespace-pre-wrap text-gray-800">{output || 'Click "Run" to see output'}</pre>
+            <pre className="whitespace-pre-wrap text-gray-800">{output}</pre>
           </div>
         </div>
       </div>
