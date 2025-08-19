@@ -13,23 +13,20 @@ export default function Counter({ initialValue = 0, step = 1 }: CounterProps) {
       <button
         onClick={() => setCount(count - step)}
         className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
-        aria-label="Decrease count"
-      >
+        aria-label="Decrease count">
         -
       </button>
       <span className="font-mono text-xl min-w-[3ch] text-center">{count}</span>
       <button
         onClick={() => setCount(count + step)}
         className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-        aria-label="Increase count"
-      >
+        aria-label="Increase count">
         +
       </button>
       <button
         onClick={() => setCount(initialValue)}
         className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors ml-2"
-        aria-label="Reset count"
-      >
+        aria-label="Reset count">
         Reset
       </button>
     </div>

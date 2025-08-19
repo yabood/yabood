@@ -11,9 +11,9 @@ export default defineConfig({
     mdx({
       remarkPlugins: [remarkMath],
       rehypePlugins: [rehypeKatex],
-    }), 
-    sitemap(), 
-    react()
+    }),
+    sitemap(),
+    react(),
   ],
   markdown: {
     remarkPlugins: [remarkMath],

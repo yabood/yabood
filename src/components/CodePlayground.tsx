@@ -5,9 +5,9 @@ interface CodePlaygroundProps {
   language?: string;
 }
 
-export default function CodePlayground({ 
+export default function CodePlayground({
   initialCode = '// Type your code here\nconsole.log("Hello, World!");',
-  language = 'javascript' 
+  language = 'javascript',
 }: CodePlaygroundProps) {
   const [code, setCode] = useState(initialCode);
   const [output, setOutput] = useState('Click "Run" to see output');
@@ -18,16 +18,18 @@ export default function CodePlayground({
       const logs: string[] = [];
       const customConsole = {
         log: (...args: any[]) => {
-          logs.push(args.map(arg => 
-            typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
-          ).join(' '));
-        }
+          logs.push(
+            args
+              .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)))
+              .join(' ')
+          );
+        },
       };
 
       // Create a function with the code and run it
       const func = new Function('console', code);
       func(customConsole);
-      
+
       setOutput(logs.join('\n') || 'Code executed successfully (no output)');
     } catch (error) {
       setOutput(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -40,8 +42,7 @@ export default function CodePlayground({
         <span className="font-mono text-sm text-gray-600">Code Playground ({language})</span>
         <button
           onClick={runCode}
-          className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm"
-        >
+          className="px-4 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors text-sm">
           ▶ Run
         </button>
       </div>

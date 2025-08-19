@@ -35,17 +35,22 @@ This post demonstrates all the markdown and typography features available in our
 ## Headers
 
 # H1 - The Largest Header
+
 ## H2 - Second Level Header
+
 ### H3 - Third Level Header
+
 #### H4 - Fourth Level Header
+
 ##### H5 - Fifth Level Header
+
 ###### H6 - The Smallest Header
 
 ---
 
 ## Text Formatting
 
-This is a regular paragraph with **bold text** and *italic text*. You can also use ***bold italic*** for emphasis.
+This is a regular paragraph with **bold text** and _italic text_. You can also use **_bold italic_** for emphasis.
 
 Here's some ~~strikethrough text~~ that has been corrected.
 
@@ -98,16 +103,16 @@ This is <sup>superscript</sup> and this is <sub>subscript</sub>.
 > This is a simple blockquote. It can contain **formatted text** and other markdown elements.
 
 > Multi-line blockquotes are also supported.
-> 
+>
 > They can have multiple paragraphs and include other elements.
 
 > #### Nested Elements in Blockquotes
-> 
+>
 > - You can include lists
 > - And other markdown elements
-> 
+>
 > > Even nested blockquotes work!
-> > 
+> >
 > > This is a quote within a quote.
 
 ---
@@ -185,7 +190,7 @@ free -m
 ### Simple Table
 
 | Header 1 | Header 2 | Header 3 |
-|----------|----------|----------|
+| -------- | -------- | -------- |
 | Cell 1   | Cell 2   | Cell 3   |
 | Cell 4   | Cell 5   | Cell 6   |
 | Cell 7   | Cell 8   | Cell 9   |
@@ -193,22 +198,22 @@ free -m
 ### Aligned Table
 
 | Left Aligned | Center Aligned | Right Aligned |
-|:-------------|:--------------:|--------------:|
-| Left         | Center         | Right         |
-| Text         | Text           | Text          |
-| More         | More           | More          |
+| :----------- | :------------: | ------------: |
+| Left         |     Center     |         Right |
+| Text         |      Text      |          Text |
+| More         |      More      |          More |
 
 ### Complex Table
 
-| Feature | Basic | Pro | Enterprise |
-|---------|:-----:|:---:|:----------:|
-| Users | 1 | 5 | Unlimited |
-| Storage | 5GB | 50GB | 500GB |
-| Support | Email | Priority | 24/7 Phone |
-| Price | **$0** | **$9/mo** | **$99/mo** |
-| API Access | ❌ | ✅ | ✅ |
-| Custom Domain | ❌ | ✅ | ✅ |
-| Analytics | Basic | Advanced | Enterprise |
+| Feature       | Basic  |    Pro    | Enterprise |
+| ------------- | :----: | :-------: | :--------: |
+| Users         |   1    |     5     | Unlimited  |
+| Storage       |  5GB   |   50GB    |   500GB    |
+| Support       | Email  | Priority  | 24/7 Phone |
+| Price         | **$0** | **$9/mo** | **$99/mo** |
+| API Access    |   ❌   |    ✅     |     ✅     |
+| Custom Domain |   ❌   |    ✅     |     ✅     |
+| Analytics     | Basic  | Advanced  | Enterprise |
 
 ---
 
@@ -218,17 +223,17 @@ free -m
 
 - [External link to GitHub](https://github.com)
 - [Internal link to home page](/)
-- [Link with title](https://www.example.com "Visit Example.com")
+- [Link with title](https://www.example.com 'Visit Example.com')
 - Automatic link: [https://www.automatic-link.com](https://www.automatic-link.com)
 - Email: [contact@example.com](mailto:contact@example.com)
 
 ### Images
 
-![Alt text for image](../../assets/hero-astro-blog.jpg "Optional title for image")
+![Alt text for image](../../assets/hero-astro-blog.jpg 'Optional title for image')
 
 ### Linked Images
 
-[![Clickable image](../../assets/hero-astro-blog.jpg "Click to view larger")](../../assets/hero-astro-blog.jpg)
+[![Clickable image](../../assets/hero-astro-blog.jpg 'Click to view larger')](../../assets/hero-astro-blog.jpg)
 
 ---
 
@@ -240,11 +245,11 @@ Three or more hyphens:
 
 Three or more asterisks:
 
-***
+---
 
 Three or more underscores:
 
-___
+---
 
 ---
 
@@ -256,17 +261,17 @@ Long footnotes can contain multiple paragraphs and formatting[^long].
 
 [^1]: This is the first footnote with a simple explanation.
 
-[^2]: This is the second footnote with **bold text** and *italic text*.
+[^2]: This is the second footnote with **bold text** and _italic text_.
 
 [^long]: This is a longer footnote with multiple elements.
 
     It can contain multiple paragraphs, lists, and code:
-    
+
     - First item
     - Second item
-    
+
     ```javascript
-    console.log("Even code blocks!");
+    console.log('Even code blocks!');
     ```
 
 ---
@@ -285,16 +290,16 @@ Long footnotes can contain multiple paragraphs and formatting[^long].
 ## Definition Lists
 
 Term 1
-:   Definition 1 with **inline markup**
+: Definition 1 with **inline markup**
 
 Term 2
-:   Definition 2a
-:   Definition 2b with multiple definitions
+: Definition 2a
+: Definition 2b with multiple definitions
 
 Complex Term
-:   A more detailed definition that spans multiple lines and includes
-    various markdown elements like *emphasis* and `code`.
-    
+: A more detailed definition that spans multiple lines and includes
+various markdown elements like _emphasis_ and `code`.
+
     It can even include lists:
     - Item 1
     - Item 2
@@ -436,7 +441,7 @@ const fibonacci = (n) => {
 };
 
 for (let i = 0; i < 10; i++) {
-  console.log(\`Fibonacci(\${i}) = \${fibonacci(i)}\`);
+console.log(\`Fibonacci(\${i}) = \${fibonacci(i)}\`);
 }`} />
 
 ### Custom Containers
@@ -467,12 +472,13 @@ This is a danger/error message.
 This content is hidden by default and can be revealed by clicking the summary.
 
 It can contain any markdown content:
+
 - Lists
 - **Formatted text**
 - `Code blocks`
 
 ```javascript
-console.log("Hidden code example");
+console.log('Hidden code example');
 ```
 
 </details>
@@ -484,17 +490,17 @@ console.log("Hidden code example");
 Here's an example combining multiple features:
 
 > ### Important Quote
-> 
-> This blockquote contains a **header**, some *emphasized text*, and a list:
-> 
+>
+> This blockquote contains a **header**, some _emphasized text_, and a list:
+>
 > 1. First point about `code`
 > 2. Second point with a [link](https://example.com)
 > 3. Third point with math: $a^2 + b^2 = c^2$
-> 
+>
 > | Column A | Column B |
-> |----------|----------|
+> | -------- | -------- |
 > | Data 1   | Data 2   |
-> 
+>
 > Even a footnote reference[^3]!
 
 [^3]: This footnote is referenced from within a blockquote.
@@ -506,6 +512,7 @@ Here's an example combining multiple features:
 This document showcases the rich typography and markdown features available in this blog. Feel free to reference this guide when creating your own content. The combination of standard markdown, extended syntax, and MDX components provides a powerful toolkit for creating engaging and well-formatted blog posts.
 
 Remember:
+
 - ✅ Use appropriate formatting for clarity
 - ✅ Structure your content with headers
 - ✅ Include code examples when relevant
