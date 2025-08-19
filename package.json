@@ -14,11 +14,17 @@
   "dependencies": {
     "@astrojs/check": "^0.9.0",
     "@astrojs/mdx": "^4.0.0",
+    "@astrojs/react": "^4.3.0",
     "@astrojs/rss": "^4.0.0",
     "@astrojs/sitemap": "^3.0.0",
     "@tailwindcss/postcss": "^4.0.0",
     "astro": "^5.0.0",
     "aws-amplify": "^6.15.5",
+    "katex": "^0.16.22",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "tailwindcss": "^4.0.0"
   },
   "devDependencies": {
