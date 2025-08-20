@@ -6,7 +6,9 @@ import Footer from '../../components/Footer.astro';
 import Seo from '../../components/Seo.astro';
 
 export async function getStaticPaths() {
-  const scratches = await getCollection('scratchpad');
+  const scratches = (await getCollection('scratchpad')).filter(
+    (scratch) => import.meta.env.DEV || !scratch.data.draft
+  );
   return scratches.map((scratch) => ({
     params: { id: scratch.data.id },
     props: scratch,
@@ -65,25 +67,20 @@ const ogImage = extractFirstImage(scratch.body) || '/og-image.jpg';
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <article class="scratch-detail">
       <header class="mb-8">
-        <div class="flex items-center gap-3">
-          <span
-            class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400">
-            Scratch
-          </span>
-          <time
-            datetime={scratch.data.publishedAt.toISOString()}
-            class="text-sm text-gray-500 dark:text-gray-400">
-            {
-              scratch.data.publishedAt.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: '2-digit',
-              })
-            }
-          </time>
-        </div>
+        <time
+          datetime={scratch.data.publishedAt.toISOString()}
+          class="text-sm text-gray-500 dark:text-gray-400">
+          {scratch.data.publishedAt.toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+          })}
+          <span class="mx-1">·</span>
+          {scratch.data.publishedAt.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
       </header>
 
       <div class="prose prose-lg dark:prose-invert max-w-none scratch-content">

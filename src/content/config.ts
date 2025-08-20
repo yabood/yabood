@@ -67,6 +67,7 @@ const scratchpad = defineCollection({
     publishedAt: z.coerce.date(),
     visibility: z.enum(['public', 'unlisted']).default('public'),
     summary: z.string().optional(),
+    draft: z.boolean().default(false),
   }),
 });
 
