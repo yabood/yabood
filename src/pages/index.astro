@@ -5,18 +5,90 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { calculateReadingTime } from '../utils/readingTime';
 
-const allPosts = (await getCollection('blog'))
+// Fetch recent blog posts
+const recentBlogPosts = (await getCollection('blog'))
   .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 5);
+  .slice(0, 3);
 
-const posts = await Promise.all(
-  allPosts.map(async (post) => {
+const blogPostsWithReadingTime = await Promise.all(
+  recentBlogPosts.map(async (post) => {
     const content = post.body;
     const readingTime = calculateReadingTime(content);
-    return { ...post, readingTime };
+    return { 
+      ...post, 
+      readingTime,
+      type: 'blog' as const,
+      date: post.data.pubDate,
+      title: post.data.title,
+      description: post.data.description,
+      url: `/blog/${post.slug}`,
+      tags: post.data.tags,
+      draft: post.data.draft,
+      status: undefined
+    };
   })
 );
+
+// Fetch recent projects
+const recentProjects = (await getCollection('projects'))
+  .filter((project) => import.meta.env.DEV || !project.data.draft)
+  .sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf())
+  .slice(0, 3)
+  .map((project) => ({
+    ...project,
+    type: 'project' as const,
+    date: project.data.startDate,
+    title: project.data.title,
+    description: project.data.description,
+    url: `/projects/${project.slug}`,
+    tags: project.data.tags,
+    draft: project.data.draft,
+    status: project.data.status,
+    currentPhase: project.data.currentPhase,
+    readingTime: undefined
+  }));
+
+// Fetch recent scratches
+const recentScratches = (await getCollection('scratchpad'))
+  .filter((scratch) => import.meta.env.DEV || !scratch.data.draft)
+  .filter((scratch) => scratch.data.visibility === 'public')
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
+  .slice(0, 3);
+
+// Extract first chars from scratch content for description
+function extractFirstChars(content: string, length: number = 160): string {
+  const text = content
+    .replace(/<[^>]*>/g, '')
+    .replace(/!\[.*?\]\(.*?\)/g, '')
+    .replace(/\[([^\]]+)\]\(.*?\)/g, '$1')
+    .replace(/#{1,6}\s/g, '')
+    .replace(/[*_~`]/g, '')
+    .replace(/\n+/g, ' ')
+    .trim();
+  
+  return text.length > length ? text.substring(0, length).trim() + '...' : text;
+}
+
+const scratchesWithMeta = recentScratches.map((scratch) => ({
+  ...scratch,
+  type: 'scratch' as const,
+  date: scratch.data.publishedAt,
+  title: scratch.data.summary || extractFirstChars(scratch.body, 80),
+  description: extractFirstChars(scratch.body, 160),
+  url: `/scratchpad/${scratch.data.id}`,
+  draft: scratch.data.draft,
+  tags: undefined,
+  readingTime: undefined,
+  status: undefined
+}));
+
+// Combine and sort all entries by date
+const allRecentEntries = [
+  ...blogPostsWithReadingTime,
+  ...recentProjects,
+  ...scratchesWithMeta
+].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 ---
 
 <BaseLayout
@@ -36,27 +108,53 @@ const posts = await Promise.all(
     </section>
 
     {
-      posts.length > 0 && (
+      allRecentEntries.length > 0 && (
         <section>
+          <h2 class="mb-6 text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
           <div class="space-y-6">
-            {posts.map((post) => (
+            {allRecentEntries.map((entry) => (
               <article class="group">
-                <a href={`/blog/${post.slug}`} class="block">
+                <a href={entry.url} class="block">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
-                      <div class="text-sm text-gray-500 dark:text-gray-500">
-                        <time datetime={post.data.pubDate.toISOString()}>
-                          {post.data.pubDate.toLocaleDateString('en-US', {
+                      <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500">
+                        {entry.type === 'blog' && (
+                          <span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                            Blog
+                          </span>
+                        )}
+                        {entry.type === 'project' && (
+                          <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                            Project
+                          </span>
+                        )}
+                        {entry.type === 'scratch' && (
+                          <span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-400">
+                            Scratch
+                          </span>
+                        )}
+                        <time datetime={entry.date.toISOString()}>
+                          {entry.date.toLocaleDateString('en-US', {
                             year: 'numeric',
-                            month: 'long',
+                            month: 'short',
                             day: 'numeric',
                           })}
                         </time>
-                        <span class="mx-2">·</span>
-                        <span>{post.readingTime}</span>
-                        {post.data.draft && (
+                        {entry.type === 'blog' && entry.readingTime && (
                           <>
-                            <span class="mx-2">·</span>
+                            <span class="mx-1">·</span>
+                            <span>{entry.readingTime}</span>
+                          </>
+                        )}
+                        {entry.type === 'project' && entry.status && (
+                          <>
+                            <span class="mx-1">·</span>
+                            <span class="capitalize">{entry.status}</span>
+                          </>
+                        )}
+                        {entry.draft && (
+                          <>
+                            <span class="mx-1">·</span>
                             <span class="text-amber-600 dark:text-amber-400 font-medium">
                               Draft
                             </span>
@@ -64,12 +162,14 @@ const posts = await Promise.all(
                         )}
                       </div>
                       <h3 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
-                        {post.data.title}
+                        {entry.title}
                       </h3>
-                      <p class="mt-2 text-gray-600 dark:text-gray-400">{post.data.description}</p>
-                      {post.data.tags && post.data.tags.length > 0 && (
+                      {entry.description && (
+                        <p class="mt-2 text-gray-600 dark:text-gray-400 line-clamp-2">{entry.description}</p>
+                      )}
+                      {entry.tags && entry.tags.length > 0 && (
                         <div class="mt-3 flex flex-wrap gap-2">
-                          {post.data.tags.map((tag) => (
+                          {entry.tags.slice(0, 3).map((tag) => (
                             <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
                               #{tag}
                             </span>
@@ -95,11 +195,37 @@ const posts = await Promise.all(
             ))}
           </div>
 
-          <div class="mt-8">
+          <div class="mt-12 flex flex-wrap gap-4">
             <a
               href="/blog"
               class="inline-flex items-center text-base font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
-              View all posts
+              All Blog Posts
+              <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </a>
+            <a
+              href="/projects"
+              class="inline-flex items-center text-base font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+              All Projects
+              <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </a>
+            <a
+              href="/scratchpad"
+              class="inline-flex items-center text-base font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+              All Scratches
               <svg class="ml-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   stroke-linecap="round"
