@@ -1,0 +1,40 @@
+---
+export interface Props {
+  type?: 'info' | 'warning' | 'success' | 'error';
+  title?: string;
+}
+
+const { type = 'info', title } = Astro.props;
+
+const typeStyles = {
+  info: 'bg-blue-50 border-blue-200 text-blue-900',
+  warning: 'bg-yellow-50 border-yellow-200 text-yellow-900',
+  success: 'bg-green-50 border-green-200 text-green-900',
+  error: 'bg-red-50 border-red-200 text-red-900',
+};
+
+const typeIcons = {
+  info: 'ℹ️',
+  warning: '⚠️',
+  success: '✅',
+  error: '❌',
+};
+---
+
+<div class={`callout-box rounded-lg border-2 p-4 my-4 ${typeStyles[type]}`}>
+  <div class="flex items-start gap-2">
+    <span class="text-xl" aria-hidden="true">{typeIcons[type]}</span>
+    <div class="flex-1">
+      {title && <h4 class="font-semibold mb-1">{title}</h4>}
+      <div class="callout-content">
+        <slot />
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .callout-content :global(p:last-child) {
+    margin-bottom: 0;
+  }
+</style>

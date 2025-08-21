@@ -60,4 +60,15 @@ const updates = defineCollection({
     }),
 });
 
-export const collections = { blog, projects, updates };
+const scratchpad = defineCollection({
+  type: 'content',
+  schema: z.object({
+    id: z.string(),
+    publishedAt: z.coerce.date(),
+    visibility: z.enum(['public', 'unlisted']).default('public'),
+    summary: z.string().optional(),
+    draft: z.boolean().default(false),
+  }),
+});
+
+export const collections = { blog, projects, updates, scratchpad };
