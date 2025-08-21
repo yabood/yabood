@@ -30,23 +30,24 @@ const blogPostsWithReadingTime = await Promise.all(
   })
 );
 
-// Fetch recent projects
-const recentProjects = (await getCollection('projects'))
-  .filter((project) => import.meta.env.DEV || !project.data.draft)
-  .sort((a, b) => b.data.startDate.valueOf() - a.data.startDate.valueOf())
+// Fetch recent project updates
+const recentUpdates = (await getCollection('updates'))
+  .filter((update) => import.meta.env.DEV || !update.data.draft)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3)
-  .map((project) => ({
-    ...project,
-    type: 'project' as const,
-    date: project.data.startDate,
-    title: project.data.title,
-    description: project.data.description,
-    url: `/projects/${project.slug}`,
-    tags: project.data.tags,
-    draft: project.data.draft,
-    status: project.data.status,
-    currentPhase: project.data.currentPhase,
-    readingTime: undefined
+  .map((update) => ({
+    ...update,
+    type: 'update' as const,
+    date: update.data.date,
+    title: update.data.title,
+    description: update.data.summary,
+    url: `/projects/${update.data.project}/updates/${update.slug}`,
+    tags: update.data.tags,
+    draft: update.data.draft,
+    projectSlug: update.data.project,
+    phase: update.data.phase,
+    readingTime: undefined,
+    status: undefined
   }));
 
 // Fetch recent scratches
@@ -86,7 +87,7 @@ const scratchesWithMeta = recentScratches.map((scratch) => ({
 // Combine and sort all entries by date
 const allRecentEntries = [
   ...blogPostsWithReadingTime,
-  ...recentProjects,
+  ...recentUpdates,
   ...scratchesWithMeta
 ].sort((a, b) => b.date.valueOf() - a.date.valueOf());
 ---
@@ -119,19 +120,28 @@ const allRecentEntries = [
                     <div class="flex-1">
                       <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-500">
                         {entry.type === 'blog' && (
-                          <span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
-                            Blog
-                          </span>
+                          <>
+                            <span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                              Blog
+                            </span>
+                            <span class="text-gray-400 dark:text-gray-600">·</span>
+                          </>
                         )}
-                        {entry.type === 'project' && (
-                          <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                            Project
-                          </span>
+                        {entry.type === 'update' && (
+                          <>
+                            <span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                              {entry.projectSlug}
+                            </span>
+                            <span class="text-gray-400 dark:text-gray-600">·</span>
+                          </>
                         )}
                         {entry.type === 'scratch' && (
-                          <span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-400">
-                            Scratch
-                          </span>
+                          <>
+                            <span class="inline-flex items-center rounded-md bg-purple-50 dark:bg-purple-900/30 px-2 py-0.5 text-xs font-medium text-purple-700 dark:text-purple-400">
+                              Scratch
+                            </span>
+                            <span class="text-gray-400 dark:text-gray-600">·</span>
+                          </>
                         )}
                         <time datetime={entry.date.toISOString()}>
                           {entry.date.toLocaleDateString('en-US', {
@@ -144,12 +154,6 @@ const allRecentEntries = [
                           <>
                             <span class="mx-1">·</span>
                             <span>{entry.readingTime}</span>
-                          </>
-                        )}
-                        {entry.type === 'project' && entry.status && (
-                          <>
-                            <span class="mx-1">·</span>
-                            <span class="capitalize">{entry.status}</span>
                           </>
                         )}
                         {entry.draft && (
@@ -243,3 +247,4 @@ const allRecentEntries = [
 
   <Footer />
 </BaseLayout>
+
