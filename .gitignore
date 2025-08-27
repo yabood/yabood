@@ -27,3 +27,5 @@ pnpm-debug.log*
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+.vercel
+.astro
