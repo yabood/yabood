@@ -1,0 +1,522 @@
+---
+title: 'Markdown & Typography Showcase'
+description: 'A comprehensive demonstration of all markdown and typography features available in this blog'
+pubDate: 2025-08-18
+heroImage: '../../assets/hero-astro-blog.jpg'
+tags: ['markdown', 'typography', 'demo', 'style-guide']
+author: 'Yousif Abood'
+draft: true
+---
+
+import CalloutBox from '../../components/CalloutBox.astro';
+import Counter from '../../components/Counter.tsx';
+import CodePlayground from '../../components/CodePlayground.tsx';
+
+This post demonstrates all the markdown and typography features available in our blog. Use this as a reference for formatting your own posts.
+
+## Table of Contents
+
+1. [Headers](#headers)
+2. [Text Formatting](#text-formatting)
+3. [Lists](#lists)
+4. [Blockquotes](#blockquotes)
+5. [Code](#code)
+6. [Tables](#tables)
+7. [Links & Images](#links--images)
+8. [Horizontal Rules](#horizontal-rules)
+9. [Footnotes](#footnotes)
+10. [Task Lists](#task-lists)
+11. [Definition Lists](#definition-lists)
+12. [Abbreviations](#abbreviations)
+13. [Math & Special Characters](#math--special-characters)
+
+---
+
+## Headers
+
+# H1 - The Largest Header
+
+## H2 - Second Level Header
+
+### H3 - Third Level Header
+
+#### H4 - Fourth Level Header
+
+##### H5 - Fifth Level Header
+
+###### H6 - The Smallest Header
+
+---
+
+## Text Formatting
+
+This is a regular paragraph with **bold text** and _italic text_. You can also use **_bold italic_** for emphasis.
+
+Here's some ~~strikethrough text~~ that has been corrected.
+
+You can use `inline code` within your text for technical terms or small code snippets.
+
+<mark>Highlighted text</mark> can be useful for drawing attention.
+
+This is <sup>superscript</sup> and this is <sub>subscript</sub>.
+
+<kbd>Ctrl</kbd> + <kbd>C</kbd> for keyboard shortcuts.
+
+---
+
+## Lists
+
+### Unordered Lists
+
+- First level item
+- Another first level item
+  - Second level item
+  - Another second level item
+    - Third level item
+    - Another third level item
+- Back to first level
+
+### Ordered Lists
+
+1. First item
+2. Second item
+   1. Nested item 2.1
+   2. Nested item 2.2
+      1. Deep nested 2.2.1
+      2. Deep nested 2.2.2
+3. Third item
+
+### Mixed Lists
+
+1. First ordered item
+   - Unordered sub-item
+   - Another unordered sub-item
+2. Second ordered item
+   1. Ordered sub-item
+   2. Another ordered sub-item
+      - Mixed unordered item
+
+---
+
+## Blockquotes
+
+> This is a simple blockquote. It can contain **formatted text** and other markdown elements.
+
+> Multi-line blockquotes are also supported.
+>
+> They can have multiple paragraphs and include other elements.
+
+> #### Nested Elements in Blockquotes
+>
+> - You can include lists
+> - And other markdown elements
+>
+> > Even nested blockquotes work!
+> >
+> > This is a quote within a quote.
+
+---
+
+## Code
+
+### Inline Code
+
+Use `const variable = "value"` for inline code snippets.
+
+### Code Blocks
+
+```javascript
+// JavaScript example with syntax highlighting
+function fibonacci(n) {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+const result = fibonacci(10);
+console.log(`Fibonacci of 10 is ${result}`);
+```
+
+```python
+# Python example
+def quicksort(arr):
+    if len(arr) <= 1:
+        return arr
+    pivot = arr[len(arr) // 2]
+    left = [x for x in arr if x < pivot]
+    middle = [x for x in arr if x == pivot]
+    right = [x for x in arr if x > pivot]
+    return quicksort(left) + middle + quicksort(right)
+
+numbers = [3, 6, 8, 10, 1, 2, 1]
+print(quicksort(numbers))
+```
+
+```css
+/* CSS example */
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+  }
+}
+```
+
+```bash
+# Bash/Shell example
+#!/bin/bash
+
+echo "System Information:"
+echo "==================="
+uname -a
+echo ""
+echo "Disk Usage:"
+df -h
+echo ""
+echo "Memory Usage:"
+free -m
+```
+
+---
+
+## Tables
+
+### Simple Table
+
+| Header 1 | Header 2 | Header 3 |
+| -------- | -------- | -------- |
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+| Cell 7   | Cell 8   | Cell 9   |
+
+### Aligned Table
+
+| Left Aligned | Center Aligned | Right Aligned |
+| :----------- | :------------: | ------------: |
+| Left         |     Center     |         Right |
+| Text         |      Text      |          Text |
+| More         |      More      |          More |
+
+### Complex Table
+
+| Feature       | Basic  |    Pro    | Enterprise |
+| ------------- | :----: | :-------: | :--------: |
+| Users         |   1    |     5     | Unlimited  |
+| Storage       |  5GB   |   50GB    |   500GB    |
+| Support       | Email  | Priority  | 24/7 Phone |
+| Price         | **$0** | **$9/mo** | **$99/mo** |
+| API Access    |   ❌   |    ✅     |     ✅     |
+| Custom Domain |   ❌   |    ✅     |     ✅     |
+| Analytics     | Basic  | Advanced  | Enterprise |
+
+---
+
+## Links & Images
+
+### Links
+
+- [External link to GitHub](https://github.com)
+- [Internal link to home page](/)
+- [Link with title](https://www.example.com 'Visit Example.com')
+- Automatic link: [https://www.automatic-link.com](https://www.automatic-link.com)
+- Email: [contact@example.com](mailto:contact@example.com)
+
+### Images
+
+![Alt text for image](../../assets/hero-astro-blog.jpg 'Optional title for image')
+
+### Linked Images
+
+[![Clickable image](../../assets/hero-astro-blog.jpg 'Click to view larger')](../../assets/hero-astro-blog.jpg)
+
+---
+
+## Horizontal Rules
+
+Three or more hyphens:
+
+---
+
+Three or more asterisks:
+
+---
+
+Three or more underscores:
+
+---
+
+---
+
+## Footnotes
+
+Here's a sentence with a footnote[^1]. You can have multiple footnotes[^2] in your text.
+
+Long footnotes can contain multiple paragraphs and formatting[^long].
+
+[^1]: This is the first footnote with a simple explanation.
+
+[^2]: This is the second footnote with **bold text** and _italic text_.
+
+[^long]: This is a longer footnote with multiple elements.
+
+    It can contain multiple paragraphs, lists, and code:
+
+    - First item
+    - Second item
+
+    ```javascript
+    console.log('Even code blocks!');
+    ```
+
+---
+
+## Task Lists
+
+- [x] Completed task
+- [x] Another completed task
+- [ ] Uncompleted task
+- [ ] Another uncompleted task
+  - [x] Completed subtask
+  - [ ] Uncompleted subtask
+
+---
+
+## Definition Lists
+
+Term 1
+: Definition 1 with **inline markup**
+
+Term 2
+: Definition 2a
+: Definition 2b with multiple definitions
+
+Complex Term
+: A more detailed definition that spans multiple lines and includes
+various markdown elements like _emphasis_ and `code`.
+
+    It can even include lists:
+    - Item 1
+    - Item 2
+
+---
+
+## Abbreviations
+
+The HTML specification is maintained by the W3C.
+
+(HTML: HyperText Markup Language, W3C: World Wide Web Consortium)
+
+---
+
+## Math & Special Characters
+
+### Special Characters
+
+- Copyright: ©
+- Registered: ®
+- Trademark: ™
+- Euro: €
+- Pound: £
+- Yen: ¥
+- Em dash: —
+- En dash: –
+- Ellipsis: …
+- Left arrow: ←
+- Right arrow: →
+- Up arrow: ↑
+- Down arrow: ↓
+
+### Emoji Support
+
+You can use emojis directly: 🚀 🎨 💻 📚 ✨ 🔥 💡 🎯
+
+### Mathematical Notation with LaTeX
+
+#### Inline Math
+
+You can write inline math like $E = mc^2$ or $\alpha + \beta = \gamma$ directly in your text.
+
+Some more examples: The area of a circle is $A = \pi r^2$ and the Pythagorean theorem is $a^2 + b^2 = c^2$.
+
+#### Display Math (Block)
+
+For larger equations, use display mode:
+
+$$
+\frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$
+
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$
+
+#### Complex Equations
+
+Maxwell's equations:
+
+$$
+\begin{align}
+\nabla \cdot \mathbf{E} &= \frac{\rho}{\epsilon_0} \\
+\nabla \cdot \mathbf{B} &= 0 \\
+\nabla \times \mathbf{E} &= -\frac{\partial \mathbf{B}}{\partial t} \\
+\nabla \times \mathbf{B} &= \mu_0 \mathbf{J} + \mu_0 \epsilon_0 \frac{\partial \mathbf{E}}{\partial t}
+\end{align}
+$$
+
+#### Matrix
+
+$$
+\begin{bmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33}
+\end{bmatrix}
+\begin{bmatrix}
+x_1 \\
+x_2 \\
+x_3
+\end{bmatrix}
+=
+\begin{bmatrix}
+b_1 \\
+b_2 \\
+b_3
+\end{bmatrix}
+$$
+
+#### Sum and Product
+
+$$
+\sum_{i=1}^{n} i = \frac{n(n+1)}{2} \quad \text{and} \quad \prod_{i=1}^{n} i = n!
+$$
+
+---
+
+## Advanced MDX Features
+
+### Component Embedding
+
+You can embed React/Astro components in MDX files. Here are some examples:
+
+#### Astro Component (CalloutBox)
+
+<CalloutBox type="info" title="Information">
+  This is an info callout box. It's an Astro component embedded directly in MDX!
+</CalloutBox>
+
+<CalloutBox type="warning" title="Warning">
+  Be careful! This is a warning message with important information.
+</CalloutBox>
+
+<CalloutBox type="success" title="Success">
+  Great job! You've successfully embedded a component.
+</CalloutBox>
+
+<CalloutBox type="error" title="Error">
+  Something went wrong. This demonstrates an error callout.
+</CalloutBox>
+
+#### React Component (Interactive Counter)
+
+Here's an interactive counter component built with React:
+
+<Counter client:load initialValue={10} step={2} />
+
+This counter starts at 10 and increments/decrements by 2. It's fully interactive!
+
+#### Interactive Code Playground
+
+Try editing and running this JavaScript code:
+
+<CodePlayground client:load initialCode={`// Try modifying this code and click Run!
+const fibonacci = (n) => {
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+};
+
+for (let i = 0; i < 10; i++) {
+console.log(\`Fibonacci(\${i}) = \${fibonacci(i)}\`);
+}`} />
+
+### Custom Containers
+
+:::note
+This is a note container with important information.
+:::
+
+:::tip
+This is a tip to help users.
+:::
+
+:::warning
+This is a warning message.
+:::
+
+:::danger
+This is a danger/error message.
+:::
+
+---
+
+## Details/Summary (Collapsible Content)
+
+<details>
+<summary>Click to expand this section</summary>
+
+This content is hidden by default and can be revealed by clicking the summary.
+
+It can contain any markdown content:
+
+- Lists
+- **Formatted text**
+- `Code blocks`
+
+```javascript
+console.log('Hidden code example');
+```
+
+</details>
+
+---
+
+## Combining It All Together
+
+Here's an example combining multiple features:
+
+> ### Important Quote
+>
+> This blockquote contains a **header**, some _emphasized text_, and a list:
+>
+> 1. First point about `code`
+> 2. Second point with a [link](https://example.com)
+> 3. Third point with math: $a^2 + b^2 = c^2$
+>
+> | Column A | Column B |
+> | -------- | -------- |
+> | Data 1   | Data 2   |
+>
+> Even a footnote reference[^3]!
+
+[^3]: This footnote is referenced from within a blockquote.
+
+---
+
+## Conclusion
+
+This document showcases the rich typography and markdown features available in this blog. Feel free to reference this guide when creating your own content. The combination of standard markdown, extended syntax, and MDX components provides a powerful toolkit for creating engaging and well-formatted blog posts.
+
+Remember:
+
+- ✅ Use appropriate formatting for clarity
+- ✅ Structure your content with headers
+- ✅ Include code examples when relevant
+- ✅ Add images and media to enhance engagement
+- ✅ Utilize special features like footnotes and task lists when they add value
+
+Happy writing! 🎉

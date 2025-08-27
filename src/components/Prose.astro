@@ -229,8 +229,8 @@
       });
     });
 
-    // Add copy buttons to code blocks
-    const codeBlocks = document.querySelectorAll('.prose pre');
+    // Add copy buttons to code blocks (exclude React components)
+    const codeBlocks = document.querySelectorAll('.prose pre:not(astro-island pre)');
     codeBlocks.forEach((pre) => {
       const wrapper = document.createElement('div');
       wrapper.className = 'relative group';

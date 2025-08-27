@@ -1,0 +1,151 @@
+---
+import { getCollection } from 'astro:content';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const PAGE_SIZE = 20;
+
+const scratches = (await getCollection('scratchpad'))
+  .filter((scratch) => import.meta.env.DEV || !scratch.data.draft)
+  .filter((scratch) => scratch.data.visibility === 'public')
+  .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
+
+// Helper to extract first image from MDX content
+function extractFirstImage(content: string): string | null {
+  const imgRegex = /!\[.*?\]\((.*?)\)/;
+  const match = content.match(imgRegex);
+  return match ? match[1] : null;
+}
+
+// Helper to extract plain text and truncate
+function extractAndTruncateText(content: string, maxLength: number = 280): string {
+  // Remove MDX components, markdown syntax, and images
+  let text = content
+    .replace(/<[^>]*>/g, '') // Remove HTML/JSX tags
+    .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+    .replace(/\[([^\]]+)\]\(.*?\)/g, '$1') // Convert links to text
+    .replace(/#{1,6}\s/g, '') // Remove headers
+    .replace(/[*_~`]/g, '') // Remove formatting
+    .replace(/\n+/g, ' ') // Replace newlines with spaces
+    .trim();
+
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength).trim() + '…';
+  }
+
+  return text;
+}
+
+const scratchesWithMeta = scratches.map((scratch) => {
+  const firstImage = extractFirstImage(scratch.body);
+  const truncatedText = extractAndTruncateText(scratch.body);
+
+  return {
+    ...scratch,
+    firstImage,
+    truncatedText,
+  };
+});
+
+// Pagination
+const currentPage = 1; // In a real implementation, get from URL params
+const totalPages = Math.ceil(scratchesWithMeta.length / PAGE_SIZE);
+const paginatedScratches = scratchesWithMeta.slice(0, PAGE_SIZE);
+---
+
+<BaseLayout title="Scratchpad" description="Short thoughts, updates, and quick notes">
+  <Header />
+
+  <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Scratchpad</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-400">
+        Short jots and scraps on whatever happens to catch my mind.
+      </p>
+    </div>
+
+    <div class="space-y-6">
+      {
+        paginatedScratches.map((scratch) => (
+          <a 
+            href={`/scratchpad/${scratch.data.id}`}
+            class="block group">
+            <article class="rounded-lg border border-gray-200 dark:border-gray-800 p-4 hover:border-gray-300 dark:hover:border-gray-700 transition-colors cursor-pointer">
+              <div class="mb-3">
+                <time
+                  datetime={scratch.data.publishedAt.toISOString()}
+                  class="text-sm text-gray-500 dark:text-gray-400">
+                  {scratch.data.publishedAt.toLocaleTimeString('en-US', {
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                  <span class="mx-1">·</span>
+                  {scratch.data.publishedAt.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                  {scratch.data.draft && (
+                    <>
+                      <span class="mx-1">·</span>
+                      <span class="text-amber-600 dark:text-amber-400 font-medium">Draft</span>
+                    </>
+                  )}
+                </time>
+              </div>
+
+              <div class="space-y-3">
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {scratch.truncatedText}
+                </p>
+
+                {scratch.firstImage && (
+                  <div class="mt-3 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-800">
+                    <img
+                      src={scratch.firstImage}
+                      alt=""
+                      class="w-full h-48 object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
+              </div>
+            </article>
+          </a>
+        ))
+      }
+    </div>
+
+    {
+      scratchesWithMeta.length === 0 && (
+        <div class="text-center py-12">
+          <p class="text-gray-600 dark:text-gray-400">No scratches yet. Check back soon!</p>
+        </div>
+      )
+    }
+
+    {
+      totalPages > 1 && (
+        <nav class="mt-12 flex justify-center" aria-label="Pagination">
+          <div class="flex gap-2">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <a
+                href={`/scratchpad${page > 1 ? `?page=${page}` : ''}`}
+                class={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  page === currentPage
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                }`}
+                aria-current={page === currentPage ? 'page' : undefined}>
+                {page}
+              </a>
+            ))}
+          </div>
+        </nav>
+      )
+    }
+  </main>
+
+  <Footer />
+</BaseLayout>
