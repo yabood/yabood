@@ -1,0 +1,28 @@
+---
+import { getSession } from 'auth-astro/server';
+
+const session = await getSession(Astro.request);
+---
+
+{session ? (
+  <div class="flex items-center gap-4">
+    <span class="text-sm text-gray-600">
+      {session.user?.email}
+    </span>
+    <form method="post" action="/api/auth/signout">
+      <button 
+        type="submit"
+        class="text-sm px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300 transition"
+      >
+        Sign Out
+      </button>
+    </form>
+  </div>
+) : (
+  <a 
+    href="/login"
+    class="text-sm px-3 py-1 rounded-md bg-blue-500 text-white hover:bg-blue-600 transition"
+  >
+    Sign In
+  </a>
+)}
