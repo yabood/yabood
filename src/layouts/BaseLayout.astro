@@ -7,11 +7,24 @@ export interface Props {
   description: string;
   image?: string;
   canonical?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'project' | 'about' | 'contact';
   publishedDate?: Date;
   modifiedDate?: Date;
   author?: string;
   tags?: string[];
+  breadcrumbs?: Array<{ name: string; url: string }>;
+  articleSection?: string;
+  headings?: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+  projectData?: {
+    status: string;
+    startDate: Date;
+    github?: string;
+    website?: string;
+  };
 }
 
 const { title, description, ...seoProps } = Astro.props;

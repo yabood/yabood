@@ -55,7 +55,12 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
   modifiedDate={updatedDate}
   author={author}
   tags={tags}
-  image={typeof heroImage === 'object' ? heroImage.src : heroImage}>
+  image={typeof heroImage === 'object' ? heroImage.src : heroImage}
+  breadcrumbs={[
+    { name: 'Blog', url: '/blog' },
+    { name: title, url: `/blog/${currentPost?.slug || ''}` },
+  ]}
+  headings={headings}>
   <Header />
 
   <main id="main" class="py-12">

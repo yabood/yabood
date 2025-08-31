@@ -4,11 +4,24 @@ export interface Props {
   description: string;
   image?: string | { src: string };
   canonical?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'project' | 'about' | 'contact';
   publishedDate?: Date;
   modifiedDate?: Date;
   author?: string;
   tags?: string[];
+  breadcrumbs?: Array<{ name: string; url: string }>;
+  articleSection?: string;
+  headings?: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+  projectData?: {
+    status: string;
+    startDate: Date;
+    github?: string;
+    website?: string;
+  };
 }
 
 const {
@@ -21,6 +34,10 @@ const {
   modifiedDate,
   author = 'Yousif Abood',
   tags = [],
+  breadcrumbs,
+  articleSection,
+  headings,
+  projectData,
 } = Astro.props;
 
 const siteUrl = 'https://yabood.com';
@@ -39,19 +56,112 @@ const jsonLdBase = {
   '@context': 'https://schema.org',
 };
 
-let jsonLd: any[] = [];
+// Organization schema - appears on all pages
+const organizationSchema = {
+  ...jsonLdBase,
+  '@type': 'Organization',
+  '@id': `${siteUrl}/#organization`,
+  name: siteName,
+  url: siteUrl,
+  logo: {
+    '@type': 'ImageObject',
+    url: `${siteUrl}/favicon.svg`,
+    contentUrl: `${siteUrl}/favicon.svg`,
+    width: 512,
+    height: 512,
+    caption: siteName,
+  },
+  sameAs: [
+    'https://twitter.com/yabood',
+    'https://github.com/yabood',
+  ],
+  founder: {
+    '@type': 'Person',
+    name: author,
+    url: `${siteUrl}/about`,
+  },
+};
 
+let jsonLd: any[] = [organizationSchema];
+
+// Generate breadcrumbs based on URL path or provided breadcrumbs
+const generateBreadcrumbs = () => {
+  if (breadcrumbs && breadcrumbs.length > 0) {
+    return [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      ...breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 2,
+        name: crumb.name,
+        item: crumb.url.startsWith('http') ? crumb.url : `${siteUrl}${crumb.url}`,
+      })),
+    ];
+  }
+
+  // Auto-generate from URL path
+  if (Astro.url.pathname !== '/' && Astro.url.pathname !== '/404') {
+    const pathParts = Astro.url.pathname.split('/').filter(Boolean);
+    const breadcrumbItems = pathParts.map((part, index) => {
+      const url = `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`;
+      let name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+      
+      // Improve naming for common sections
+      if (part === 'blog') name = 'Blog';
+      if (part === 'projects') name = 'Projects';
+      if (part === 'about') name = 'About';
+      if (part === 'contact') name = 'Contact';
+      if (part === 'tags') name = 'Tags';
+      if (part === 'noise') name = 'Noise';
+      
+      return {
+        '@type': 'ListItem',
+        position: index + 2,
+        name: name,
+        item: url,
+      };
+    });
+
+    return [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      ...breadcrumbItems,
+    ];
+  }
+  
+  return null;
+};
+
+const breadcrumbList = generateBreadcrumbs();
+if (breadcrumbList) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'BreadcrumbList',
+    '@id': `${canonicalURL}#breadcrumb`,
+    name: 'Breadcrumb',
+    itemListElement: breadcrumbList,
+  });
+}
+
+// Page-specific schemas
 if (type === 'website') {
   jsonLd.push({
     ...jsonLdBase,
     '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
     name: siteName,
     url: siteUrl,
     description: description,
-    author: {
-      '@type': 'Person',
-      name: author,
-      url: `${siteUrl}/about`,
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
     },
     potentialAction: {
       '@type': 'SearchAction',
@@ -61,14 +171,21 @@ if (type === 'website') {
       },
       'query-input': 'required name=search_term_string',
     },
+    inLanguage: 'en-US',
   });
 } else if (type === 'article' && publishedDate) {
   jsonLd.push({
     ...jsonLdBase,
     '@type': 'BlogPosting',
+    '@id': canonicalURL,
     headline: title,
+    name: title,
     description: description,
-    image: imageURL,
+    image: {
+      '@type': 'ImageObject',
+      url: imageURL,
+      contentUrl: imageURL,
+    },
     datePublished: publishedDate.toISOString(),
     dateModified: (modifiedDate || publishedDate).toISOString(),
     author: {
@@ -77,60 +194,176 @@ if (type === 'website') {
       url: `${siteUrl}/about`,
     },
     publisher: {
-      '@type': 'Organization',
-      name: siteName,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${siteUrl}/favicon.svg`,
-      },
+      '@id': `${siteUrl}/#organization`,
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': canonicalURL,
     },
     keywords: tags.join(', '),
+    ...(articleSection && { articleSection }),
+    inLanguage: 'en-US',
+    copyrightHolder: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    copyrightYear: publishedDate.getFullYear(),
+    ...(headings && headings.length > 0 && {
+      hasPart: headings
+        .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
+        .map((heading, index) => ({
+          '@type': 'WebPageElement',
+          '@id': `${canonicalURL}#${heading.slug}`,
+          name: heading.text,
+          url: `${canonicalURL}#${heading.slug}`,
+          position: index + 1,
+          cssSelector: `#${heading.slug}`,
+        })),
+      speakable: {
+        '@type': 'SpeakableSpecification',
+        cssSelector: headings
+          .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
+          .map((heading) => `#${heading.slug}`)
+          .slice(0, 5) // Limit to first 5 headings for speakable content
+          .join(', '),
+      },
+    }),
   });
 
-  if (Astro.url.pathname !== '/' && Astro.url.pathname !== '/404') {
-    const pathParts = Astro.url.pathname.split('/').filter(Boolean);
-    const breadcrumbItems = pathParts.map((part, index) => {
-      const url = `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`;
-      const name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
-      return {
-        '@type': 'ListItem',
-        position: index + 2,
-        name: name,
-        item: url,
-      };
-    });
-
-    jsonLd.push({
-      ...jsonLdBase,
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
+  // Add separate Table of Contents schema if headings exist
+  if (headings && headings.length > 0) {
+    const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
+    if (filteredHeadings.length > 0) {
+      jsonLd.push({
+        ...jsonLdBase,
+        '@type': 'ItemList',
+        '@id': `${canonicalURL}#table-of-contents`,
+        name: 'Table of Contents',
+        description: 'Article outline and navigation',
+        numberOfItems: filteredHeadings.length,
+        itemListOrder: 'https://schema.org/ItemListOrderAscending',
+        itemListElement: filteredHeadings.map((heading, index) => ({
           '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: siteUrl,
-        },
-        ...breadcrumbItems,
-      ],
-    });
+          position: index + 1,
+          name: heading.text,
+          url: `${canonicalURL}#${heading.slug}`,
+          item: {
+            '@type': 'WebPageElement',
+            '@id': `${canonicalURL}#${heading.slug}`,
+            name: heading.text,
+            url: `${canonicalURL}#${heading.slug}`,
+            headline: heading.text,
+            cssSelector: `h${heading.depth}#${heading.slug}`,
+          },
+        })),
+      });
+    }
   }
+} else if (type === 'project' && projectData) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'CreativeWork',
+    '@id': canonicalURL,
+    name: title,
+    headline: title,
+    description: description,
+    image: {
+      '@type': 'ImageObject',
+      url: imageURL,
+      contentUrl: imageURL,
+    },
+    dateCreated: projectData.startDate.toISOString(),
+    dateModified: (modifiedDate || projectData.startDate).toISOString(),
+    creator: {
+      '@type': 'Person',
+      name: author,
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalURL,
+    },
+    keywords: tags.join(', '),
+    license: projectData.github ? `${projectData.github}/blob/main/LICENSE` : undefined,
+    codeRepository: projectData.github,
+    url: projectData.website || canonicalURL,
+    inLanguage: 'en-US',
+    copyrightHolder: {
+      '@id': `${siteUrl}/#organization`,
+    },
+  });
+} else if (type === 'about') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'ProfilePage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${siteUrl}/about/#person`,
+      name: author,
+      url: `${siteUrl}/about`,
+      image: imageURL,
+      sameAs: [
+        'https://twitter.com/yabood',
+        'https://github.com/yabood',
+      ],
+      jobTitle: 'Software Engineer',
+      worksFor: {
+        '@id': `${siteUrl}/#organization`,
+      },
+    },
+    breadcrumb: {
+      '@id': `${canonicalURL}#breadcrumb`,
+    },
+    inLanguage: 'en-US',
+  });
+} else if (type === 'contact') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'ContactPage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    mainEntity: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    breadcrumb: {
+      '@id': `${canonicalURL}#breadcrumb`,
+    },
+    inLanguage: 'en-US',
+  });
 }
 
-const personSchema = {
+// Add WebPage schema for better page identification
+jsonLd.push({
   ...jsonLdBase,
-  '@type': 'Person',
-  name: author,
-  url: `${siteUrl}/about`,
-  sameAs: [`https://twitter.com/${twitterHandle.replace('@', '')}`, `https://github.com/yabood`],
-};
-
-if (Astro.url.pathname === '/about' || Astro.url.pathname === '/about/') {
-  jsonLd.push(personSchema);
-}
+  '@type': 'WebPage',
+  '@id': canonicalURL,
+  name: title,
+  description: description,
+  url: canonicalURL,
+  inLanguage: 'en-US',
+  isPartOf: {
+    '@id': `${siteUrl}/#website`,
+  },
+  about: type === 'about' ? {
+    '@id': `${siteUrl}/about/#person`,
+  } : undefined,
+  mainEntity: type === 'article' ? {
+    '@id': canonicalURL,
+  } : type === 'project' ? {
+    '@id': canonicalURL,
+  } : undefined,
+  breadcrumb: breadcrumbList ? {
+    '@id': `${canonicalURL}#breadcrumb`,
+  } : undefined,
+  datePublished: publishedDate?.toISOString(),
+  dateModified: (modifiedDate || publishedDate)?.toISOString(),
+});
 ---
 
 <title>{title} | {siteName}</title>
