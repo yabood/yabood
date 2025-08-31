@@ -54,14 +54,17 @@ const totalPages = Math.ceil(noiseListWithMeta.length / PAGE_SIZE);
 const paginatedNoiseList = noiseListWithMeta.slice(0, PAGE_SIZE);
 ---
 
-<BaseLayout title="Noise" description="Short thoughts, updates, and quick notes">
+<BaseLayout
+  title="Noise"
+  description="A stream of scraps and thoughts, from silly to serious, on family, school, work, life, and whatever else comes to mind.">
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <div class="mb-8">
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Noise</h1>
       <p class="mt-2 text-gray-600 dark:text-gray-400">
-        Short jots and scraps on whatever happens to catch my mind.
+        A stream of scraps and thoughts, from silly to serious, on family, school, work, life, and
+        whatever else comes to mind.
       </p>
     </div>
 
