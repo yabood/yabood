@@ -11,7 +11,7 @@ export async function getStaticPaths() {
     ({ data }) => import.meta.env.DEV || !data.draft
   );
   const updates = await getCollection('updates');
-  
+
   // Validate SEO fields during build
   validateContentSEO(projects, 'project', PROJECT_SEO_REQUIREMENTS);
 

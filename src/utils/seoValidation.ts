@@ -40,7 +40,7 @@ export function validateSEOFields(
 ): SEOValidationResult {
   const warnings: string[] = [];
   const errors: string[] = [];
-  
+
   const data = entry.data || entry;
   const prefix = `[${contentType}:${slug}]`;
 
@@ -51,10 +51,14 @@ export function validateSEOFields(
     } else {
       const titleLength = data.title.length;
       if (requirements.title.minLength && titleLength < requirements.title.minLength) {
-        warnings.push(`${prefix} Title too short (${titleLength} chars, recommended: ${requirements.title.minLength}+): "${data.title}"`);
+        warnings.push(
+          `${prefix} Title too short (${titleLength} chars, recommended: ${requirements.title.minLength}+): "${data.title}"`
+        );
       }
       if (requirements.title.maxLength && titleLength > requirements.title.maxLength) {
-        warnings.push(`${prefix} Title too long (${titleLength} chars, recommended: <${requirements.title.maxLength}): "${data.title.slice(0, 50)}..."`);
+        warnings.push(
+          `${prefix} Title too long (${titleLength} chars, recommended: <${requirements.title.maxLength}): "${data.title.slice(0, 50)}..."`
+        );
       }
     }
   }
@@ -66,10 +70,14 @@ export function validateSEOFields(
     } else {
       const descLength = data.description.length;
       if (requirements.description.minLength && descLength < requirements.description.minLength) {
-        warnings.push(`${prefix} Description too short (${descLength} chars, recommended: ${requirements.description.minLength}+)`);
+        warnings.push(
+          `${prefix} Description too short (${descLength} chars, recommended: ${requirements.description.minLength}+)`
+        );
       }
       if (requirements.description.maxLength && descLength > requirements.description.maxLength) {
-        warnings.push(`${prefix} Description too long (${descLength} chars, recommended: <${requirements.description.maxLength})`);
+        warnings.push(
+          `${prefix} Description too long (${descLength} chars, recommended: <${requirements.description.maxLength})`
+        );
       }
     }
   }
@@ -84,7 +92,9 @@ export function validateSEOFields(
     if (!data.tags || data.tags.length === 0) {
       warnings.push(`${prefix} Missing tags - recommended for better SEO and discoverability`);
     } else if (requirements.tags.minCount && data.tags.length < requirements.tags.minCount) {
-      warnings.push(`${prefix} Only ${data.tags.length} tag(s) - recommended: ${requirements.tags.minCount}+`);
+      warnings.push(
+        `${prefix} Only ${data.tags.length} tag(s) - recommended: ${requirements.tags.minCount}+`
+      );
     }
   }
 
@@ -139,7 +149,7 @@ export function validateContentSEO(
   entries.forEach((entry) => {
     const slug = entry.slug || entry.id || 'unknown';
     const result = validateSEOFields(entry, slug, contentType, requirements);
-    
+
     result.errors.forEach((error) => {
       console.error(`❌ ${error}`);
       totalErrors++;

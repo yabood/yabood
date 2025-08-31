@@ -71,10 +71,7 @@ const organizationSchema = {
     height: 512,
     caption: siteName,
   },
-  sameAs: [
-    'https://twitter.com/yabood',
-    'https://github.com/yabood',
-  ],
+  sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
   founder: {
     '@type': 'Person',
     name: author,
@@ -109,7 +106,7 @@ const generateBreadcrumbs = () => {
     const breadcrumbItems = pathParts.map((part, index) => {
       const url = `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`;
       let name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
-      
+
       // Improve naming for common sections
       if (part === 'blog') name = 'Blog';
       if (part === 'projects') name = 'Projects';
@@ -117,7 +114,7 @@ const generateBreadcrumbs = () => {
       if (part === 'contact') name = 'Contact';
       if (part === 'tags') name = 'Tags';
       if (part === 'noise') name = 'Noise';
-      
+
       return {
         '@type': 'ListItem',
         position: index + 2,
@@ -136,7 +133,7 @@ const generateBreadcrumbs = () => {
       ...breadcrumbItems,
     ];
   }
-  
+
   return null;
 };
 
@@ -207,26 +204,27 @@ if (type === 'website') {
       '@id': `${siteUrl}/#organization`,
     },
     copyrightYear: publishedDate.getFullYear(),
-    ...(headings && headings.length > 0 && {
-      hasPart: headings
-        .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
-        .map((heading, index) => ({
-          '@type': 'WebPageElement',
-          '@id': `${canonicalURL}#${heading.slug}`,
-          name: heading.text,
-          url: `${canonicalURL}#${heading.slug}`,
-          position: index + 1,
-          cssSelector: `#${heading.slug}`,
-        })),
-      speakable: {
-        '@type': 'SpeakableSpecification',
-        cssSelector: headings
+    ...(headings &&
+      headings.length > 0 && {
+        hasPart: headings
           .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
-          .map((heading) => `#${heading.slug}`)
-          .slice(0, 5) // Limit to first 5 headings for speakable content
-          .join(', '),
-      },
-    }),
+          .map((heading, index) => ({
+            '@type': 'WebPageElement',
+            '@id': `${canonicalURL}#${heading.slug}`,
+            name: heading.text,
+            url: `${canonicalURL}#${heading.slug}`,
+            position: index + 1,
+            cssSelector: `#${heading.slug}`,
+          })),
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: headings
+            .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
+            .map((heading) => `#${heading.slug}`)
+            .slice(0, 5) // Limit to first 5 headings for speakable content
+            .join(', '),
+        },
+      }),
   });
 
   // Add separate Table of Contents schema if headings exist
@@ -307,10 +305,7 @@ if (type === 'website') {
       name: author,
       url: `${siteUrl}/about`,
       image: imageURL,
-      sameAs: [
-        'https://twitter.com/yabood',
-        'https://github.com/yabood',
-      ],
+      sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
       jobTitle: 'Software Engineer',
       worksFor: {
         '@id': `${siteUrl}/#organization`,
@@ -350,17 +345,27 @@ jsonLd.push({
   isPartOf: {
     '@id': `${siteUrl}/#website`,
   },
-  about: type === 'about' ? {
-    '@id': `${siteUrl}/about/#person`,
-  } : undefined,
-  mainEntity: type === 'article' ? {
-    '@id': canonicalURL,
-  } : type === 'project' ? {
-    '@id': canonicalURL,
-  } : undefined,
-  breadcrumb: breadcrumbList ? {
-    '@id': `${canonicalURL}#breadcrumb`,
-  } : undefined,
+  about:
+    type === 'about'
+      ? {
+          '@id': `${siteUrl}/about/#person`,
+        }
+      : undefined,
+  mainEntity:
+    type === 'article'
+      ? {
+          '@id': canonicalURL,
+        }
+      : type === 'project'
+        ? {
+            '@id': canonicalURL,
+          }
+        : undefined,
+  breadcrumb: breadcrumbList
+    ? {
+        '@id': `${canonicalURL}#breadcrumb`,
+      }
+    : undefined,
   datePublished: publishedDate?.toISOString(),
   dateModified: (modifiedDate || publishedDate)?.toISOString(),
 });
