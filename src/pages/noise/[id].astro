@@ -6,19 +6,19 @@ import Footer from '../../components/Footer.astro';
 import Seo from '../../components/Seo.astro';
 
 export async function getStaticPaths() {
-  const scratches = (await getCollection('scratchpad')).filter(
-    (scratch) => import.meta.env.DEV || !scratch.data.draft
+  const noiseList = (await getCollection('noise')).filter(
+    (noise) => import.meta.env.DEV || !noise.data.draft
   );
-  return scratches.map((scratch) => ({
-    params: { id: scratch.data.id },
-    props: scratch,
+  return noiseList.map((noise) => ({
+    params: { id: noise.data.id },
+    props: noise,
   }));
 }
 
-type Props = CollectionEntry<'scratchpad'>;
+type Props = CollectionEntry<'noise'>;
 
-const scratch = Astro.props;
-const { Content } = await scratch.render();
+const noise = Astro.props;
+const { Content } = await noise.render();
 
 // Helper to extract first 80 chars of text for title fallback
 function extractFirstChars(content: string, length: number = 80): string {
@@ -42,15 +42,15 @@ function extractFirstImage(content: string): string | null {
 }
 
 // Generate title for SEO
-const pageTitle = scratch.data.summary
-  ? `Scratch · ${scratch.data.summary}`
-  : `Scratch · ${extractFirstChars(scratch.body) || scratch.data.publishedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
+const pageTitle = noise.data.summary
+  ? `Noise · ${noise.data.summary}`
+  : `Noise · ${extractFirstChars(noise.body) || noise.data.publishedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
 
 // Generate description for SEO
-const pageDescription = scratch.data.summary || extractFirstChars(scratch.body, 160);
+const pageDescription = noise.data.summary || extractFirstChars(noise.body, 160);
 
 // Extract OG image
-const ogImage = extractFirstImage(scratch.body) || '/og-image.jpg';
+const ogImage = extractFirstImage(noise.body) || '/og-image.jpg';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>
@@ -59,31 +59,35 @@ const ogImage = extractFirstImage(scratch.body) || '/og-image.jpg';
     description={pageDescription}
     image={ogImage}
     type="article"
-    publishedDate={scratch.data.publishedAt}
+    publishedDate={noise.data.publishedAt}
   />
 
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
-    <article class="scratch-detail">
+    <article class="noise-detail">
       <header class="mb-8">
         <time
-          datetime={scratch.data.publishedAt.toISOString()}
+          datetime={noise.data.publishedAt.toISOString()}
           class="text-sm text-gray-500 dark:text-gray-400">
-          {scratch.data.publishedAt.toLocaleTimeString('en-US', {
-            hour: 'numeric',
-            minute: '2-digit',
-          })}
+          {
+            noise.data.publishedAt.toLocaleTimeString('en-US', {
+              hour: 'numeric',
+              minute: '2-digit',
+            })
+          }
           <span class="mx-1">·</span>
-          {scratch.data.publishedAt.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
+          {
+            noise.data.publishedAt.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })
+          }
         </time>
       </header>
 
-      <div class="prose prose-lg dark:prose-invert max-w-none scratch-content">
+      <div class="prose prose-lg dark:prose-invert max-w-none noise-content">
         <Content />
       </div>
 
@@ -137,9 +141,9 @@ const ogImage = extractFirstImage(scratch.body) || '/og-image.jpg';
 
         <div class="mt-8">
           <a
-            href="/scratchpad"
+            href="/noise"
             class="text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-            ← Back to Scratchpad
+            ← Back to Noise
           </a>
         </div>
       </footer>
@@ -168,16 +172,16 @@ const ogImage = extractFirstImage(scratch.body) || '/og-image.jpg';
   </script>
 
   <style>
-    .scratch-content :global(img) {
+    .noise-content :global(img) {
       border-radius: 0.5rem;
     }
 
-    .scratch-content :global(video) {
+    .noise-content :global(video) {
       border-radius: 0.5rem;
       width: 100%;
     }
 
-    .scratch-content :global(audio) {
+    .noise-content :global(audio) {
       width: 100%;
     }
   </style>

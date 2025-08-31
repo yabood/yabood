@@ -60,7 +60,7 @@ const updates = defineCollection({
     }),
 });
 
-const scratchpad = defineCollection({
+const noise = defineCollection({
   type: 'content',
   schema: z.object({
     id: z.string(),
@@ -71,4 +71,4 @@ const scratchpad = defineCollection({
   }),
 });
 
-export const collections = { blog, projects, updates, scratchpad };
+export const collections = { blog, projects, updates, noise };
