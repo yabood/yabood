@@ -18,6 +18,7 @@ interface SearchProps {
 
 export default function Search({ blogPosts, projects, noiseEntries }: SearchProps) {
   const [query, setQuery] = useState('');
+  const [searchedQuery, setSearchedQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -33,6 +34,7 @@ export default function Search({ blogPosts, projects, noiseEntries }: SearchProp
 
   const performSearch = (searchQuery: string) => {
     setHasSearched(true);
+    setSearchedQuery(searchQuery);
     if (!searchQuery.trim()) {
       setResults([]);
       return;
@@ -147,12 +149,12 @@ export default function Search({ blogPosts, projects, noiseEntries }: SearchProp
         </div>
       </form>
 
-      {hasSearched && query && (
+      {hasSearched && searchedQuery && (
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
             {results.length > 0
-              ? `Found ${results.length} result${results.length === 1 ? '' : 's'} for "${query}"`
-              : `No results found for "${query}"`}
+              ? `Found ${results.length} result${results.length === 1 ? '' : 's'} for "${searchedQuery}"`
+              : `No results found for "${searchedQuery}"`}
           </p>
         </div>
       )}
@@ -204,7 +206,7 @@ export default function Search({ blogPosts, projects, noiseEntries }: SearchProp
         </div>
       )}
 
-      {hasSearched && query && results.length === 0 && (
+      {hasSearched && searchedQuery && results.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             No results found. Try different keywords or browse:
