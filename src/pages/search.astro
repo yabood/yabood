@@ -2,7 +2,6 @@
 import { getCollection } from 'astro:content';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import Prose from '../components/Prose.astro';
 import SearchComponent from '../components/Search.tsx';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
@@ -42,11 +41,19 @@ const noiseData = noiseEntries.map((noise) => ({
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
-    <Prose>
-      <h1>Search</h1>
-    </Prose>
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Search</h1>
+      <p class="mt-2 text-gray-600 dark:text-gray-400">
+        Search through blog posts, projects, and noise to find what you're looking for.
+      </p>
+    </div>
 
-    <SearchComponent client:load blogPosts={blogData} projects={projectData} noiseEntries={noiseData} />
+    <SearchComponent
+      client:load
+      blogPosts={blogData}
+      projects={projectData}
+      noiseEntries={noiseData}
+    />
   </main>
 
   <Footer />
