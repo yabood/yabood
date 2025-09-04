@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 interface SearchResult {
-  type: 'Blog Post' | 'Project';
+  type: 'Blog Post' | 'Project' | 'Noise';
   title: string;
   description: string;
   url: string;
@@ -13,11 +13,13 @@ interface SearchResult {
 interface SearchProps {
   blogPosts: any[];
   projects: any[];
+  noiseEntries: any[];
 }
 
-export default function Search({ blogPosts, projects }: SearchProps) {
+export default function Search({ blogPosts, projects, noiseEntries }: SearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     // Get initial query from URL
@@ -30,6 +32,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
   }, []);
 
   const performSearch = (searchQuery: string) => {
+    setHasSearched(true);
     if (!searchQuery.trim()) {
       setResults([]);
       return;
@@ -76,6 +79,24 @@ export default function Search({ blogPosts, projects }: SearchProps) {
       }
     }
 
+    // Search noise entries
+    for (const noise of noiseEntries) {
+      const summaryMatch = noise.summary?.toLowerCase().includes(q);
+      const contentMatch = noise.content?.toLowerCase().includes(q);
+
+      if (summaryMatch || contentMatch) {
+        searchResults.push({
+          type: 'Noise',
+          title: noise.summary || 'Untitled',
+          description: noise.content ? noise.content.substring(0, 150) + '...' : '',
+          url: `/noise#${noise.id}`,
+          publishedDate: new Date(noise.publishedAt),
+          tags: [],
+          relevance: summaryMatch ? 2 : 1,
+        });
+      }
+    }
+
     // Sort by relevance, then by date
     searchResults.sort((a, b) => {
       if (a.relevance !== b.relevance) {
@@ -114,20 +135,19 @@ export default function Search({ blogPosts, projects }: SearchProps) {
             name="q"
             value={query}
             onChange={handleInputChange}
-            placeholder="Search blog posts and projects..."
+            placeholder="Search blog posts, projects, and noise..."
             className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             required
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
-          >
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors">
             Search
           </button>
         </div>
       </form>
 
-      {query && (
+      {hasSearched && query && (
         <div className="mb-6">
           <p className="text-gray-600 dark:text-gray-400">
             {results.length > 0
@@ -150,8 +170,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
                     </span>
                     <time
                       dateTime={result.publishedDate.toISOString()}
-                      className="text-sm text-gray-500 dark:text-gray-400"
-                    >
+                      className="text-sm text-gray-500 dark:text-gray-400">
                       {result.publishedDate.toLocaleDateString('en-US', {
                         year: 'numeric',
                         month: 'long',
@@ -162,8 +181,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
                   <h2 className="text-xl font-semibold mb-2">
                     <a
                       href={result.url}
-                      className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                    >
+                      className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
                       {result.title}
                     </a>
                   </h2>
@@ -173,8 +191,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
                       {result.tags.map((tag, i) => (
                         <span
                           key={i}
-                          className="inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded"
-                        >
+                          className="inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded">
                           {tag}
                         </span>
                       ))}
@@ -187,7 +204,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
         </div>
       )}
 
-      {query && results.length === 0 && (
+      {hasSearched && query && results.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
             No results found. Try different keywords or browse:
@@ -195,24 +212,22 @@ export default function Search({ blogPosts, projects }: SearchProps) {
           <div className="flex justify-center gap-4">
             <a
               href="/blog"
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
               All Blog Posts
             </a>
             <a
               href="/projects"
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-            >
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors">
               All Projects
             </a>
           </div>
         </div>
       )}
 
-      {!query && (
+      {!hasSearched && (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Search through blog posts and projects to find what you're looking for.
+            Search through blog posts, projects, and noise to find what you're looking for.
           </p>
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
             <div className="p-6 border border-gray-200 dark:border-gray-700 rounded-lg">
@@ -222,8 +237,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
               </p>
               <a
                 href="/blog"
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                 Browse all posts →
               </a>
             </div>
@@ -234,8 +248,7 @@ export default function Search({ blogPosts, projects }: SearchProps) {
               </p>
               <a
                 href="/projects"
-                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-              >
+                className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
                 View all projects →
               </a>
             </div>
