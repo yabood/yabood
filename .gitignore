@@ -30,3 +30,4 @@ amplify_outputs*
 amplifyconfiguration*
 .vercel
 .astro
+/.env.backup

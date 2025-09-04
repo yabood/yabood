@@ -1,0 +1,52 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Prose from '../components/Prose.astro';
+import SearchComponent from '../components/Search.tsx';
+
+// Get all blog posts and projects for search
+// Include drafts only in development mode
+const isDev = import.meta.env.DEV;
+const blogPosts = await getCollection('blog', ({ data }) => isDev || !data.draft);
+const projects = await getCollection('projects');
+
+// Transform data for the React component
+const blogData = blogPosts.map(post => ({
+  title: post.data.title,
+  description: post.data.description,
+  slug: post.slug,
+  pubDate: post.data.pubDate,
+  tags: post.data.tags || [],
+}));
+
+const projectData = projects.map(project => ({
+  title: project.data.title,
+  description: project.data.description,
+  slug: project.slug,
+  startDate: project.data.startDate,
+  tags: project.data.tags || [],
+}));
+---
+
+<BaseLayout
+  title="Search"
+  description="Search blog posts and projects on Yabood"
+  type="website">
+  <Header />
+
+  <main id="main" class="container mx-auto max-w-4xl px-4 py-12">
+    <Prose>
+      <h1>Search</h1>
+    </Prose>
+    
+    <SearchComponent 
+      client:load
+      blogPosts={blogData} 
+      projects={projectData} 
+    />
+  </main>
+
+  <Footer />
+</BaseLayout>

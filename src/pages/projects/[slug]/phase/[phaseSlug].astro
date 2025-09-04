@@ -61,45 +61,33 @@ const phaseLabels: Record<string, string> = {
   archived: 'Archived',
 };
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: `${phaseLabels[phase]} Phase - ${project.data.title}`,
-  description: `All updates from the ${phaseLabels[phase]} phase of ${project.data.title}`,
-  url: `https://yabood.com/projects/${project.slug}/phase/${phase}`,
-  isPartOf: {
-    '@type': 'Blog',
-    name: project.data.title,
-    url: `https://yabood.com/projects/${project.slug}`,
-  },
-  numberOfItems: updates.length,
-  mainEntity: {
-    '@type': 'ItemList',
-    itemListElement: updates.map((update, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      item: {
-        '@type': 'Article',
-        headline: update.data.title,
-        description: update.data.summary,
-        datePublished: update.data.date.toISOString(),
-        url: `https://yabood.com/projects/${project.slug}/updates/${update.slug}`,
-      },
-    })),
-  },
-};
+const collectionItems = updates.map((update) => ({
+  title: update.data.title,
+  description: update.data.summary,
+  url: `https://yabood.com/projects/${project.slug}/updates/${update.slug}`,
+  publishedDate: update.data.date,
+}));
+
+const breadcrumbs = [
+  { name: 'Projects', url: '/projects' },
+  { name: project.data.title, url: `/projects/${project.slug}` },
+  { name: `${phaseLabels[phase]} Phase`, url: `/projects/${project.slug}/phase/${phase}` },
+];
 ---
 
 <BaseLayout
   title={`${phaseLabels[phase]} Phase - ${project.data.title}`}
-  description={`All updates from the ${phaseLabels[phase]} phase of ${project.data.title} (${updates.length} updates)`}>
-  <script is:inline define:vars={{ jsonLd }}>
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-  </script>
-
+  description={`All updates from the ${phaseLabels[phase]} phase of ${project.data.title} (${updates.length} updates)`}
+  type="collection"
+  breadcrumbs={breadcrumbs}
+  collectionData={{
+    items: collectionItems,
+    parentEntity: {
+      name: project.data.title,
+      url: `/projects/${project.slug}`,
+      type: 'CreativeWork',
+    },
+  }}>
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">

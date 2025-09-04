@@ -1,10 +1,12 @@
 ---
+import { SITE_CONFIG } from '../config/site.ts';
+
 export interface Props {
   title: string;
   description: string;
   image?: string | { src: string };
   canonical?: string;
-  type?: 'website' | 'article' | 'project' | 'about' | 'contact';
+  type?: 'website' | 'article' | 'project' | 'about' | 'contact' | 'collection';
   publishedDate?: Date;
   modifiedDate?: Date;
   author?: string;
@@ -22,27 +24,41 @@ export interface Props {
     github?: string;
     website?: string;
   };
+  collectionData?: {
+    items: Array<{
+      title: string;
+      description: string;
+      url: string;
+      publishedDate: Date;
+    }>;
+    parentEntity?: {
+      name: string;
+      url: string;
+      type: string;
+    };
+  };
 }
 
 const {
   title,
   description,
-  image = '/og-image.jpg',
+  image = SITE_CONFIG.ogImage,
   canonical,
   type = 'website',
   publishedDate,
   modifiedDate,
-  author = 'Yousif Abood',
+  author = SITE_CONFIG.author.name,
   tags = [],
   breadcrumbs,
   articleSection,
   headings,
   projectData,
+  collectionData,
 } = Astro.props;
 
-const siteUrl = 'https://yabood.com';
-const siteName = 'Yabood';
-const twitterHandle = '@yabood';
+const siteUrl = SITE_CONFIG.url;
+const siteName = SITE_CONFIG.name;
+const twitterHandle = SITE_CONFIG.author.twitter;
 
 const canonicalURL = canonical || new URL(Astro.url.pathname, siteUrl).toString();
 const imageURL =
@@ -59,23 +75,24 @@ const jsonLdBase = {
 // Organization schema - appears on all pages
 const organizationSchema = {
   ...jsonLdBase,
-  '@type': 'Organization',
+  ...SITE_CONFIG.organization,
   '@id': `${siteUrl}/#organization`,
-  name: siteName,
   url: siteUrl,
   logo: {
-    '@type': 'ImageObject',
-    url: `${siteUrl}/favicon.svg`,
-    contentUrl: `${siteUrl}/favicon.svg`,
-    width: 512,
-    height: 512,
+    ...SITE_CONFIG.organization.logo,
+    url: `${siteUrl}${SITE_CONFIG.favicon}`,
+    contentUrl: `${siteUrl}${SITE_CONFIG.favicon}`,
     caption: siteName,
   },
-  sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
   founder: {
     '@type': 'Person',
     name: author,
     url: `${siteUrl}/about`,
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'general inquiry',
+    url: `${siteUrl}/contact`,
   },
 };
 
@@ -160,6 +177,7 @@ if (type === 'website') {
     publisher: {
       '@id': `${siteUrl}/#organization`,
     },
+    inLanguage: 'en-US',
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -168,7 +186,24 @@ if (type === 'website') {
       },
       'query-input': 'required name=search_term_string',
     },
-    inLanguage: 'en-US',
+  });
+
+  // Add Person schema for the homepage to improve Google recognition
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'Person',
+    '@id': `${siteUrl}/about/#person`,
+    name: author,
+    url: `${siteUrl}/about`,
+    image: imageURL,
+    sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
+    jobTitle: 'Software Engineer',
+    description: 'Software engineer passionate about technology, development, and creativity',
+    knowsAbout: ['Software Development', 'Web Development', 'Technology', 'Programming'],
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteUrl}/`,
+    },
   });
 } else if (type === 'article' && publishedDate) {
   jsonLd.push({
@@ -227,35 +262,8 @@ if (type === 'website') {
       }),
   });
 
-  // Add separate Table of Contents schema if headings exist
-  if (headings && headings.length > 0) {
-    const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 4);
-    if (filteredHeadings.length > 0) {
-      jsonLd.push({
-        ...jsonLdBase,
-        '@type': 'ItemList',
-        '@id': `${canonicalURL}#table-of-contents`,
-        name: 'Table of Contents',
-        description: 'Article outline and navigation',
-        numberOfItems: filteredHeadings.length,
-        itemListOrder: 'https://schema.org/ItemListOrderAscending',
-        itemListElement: filteredHeadings.map((heading, index) => ({
-          '@type': 'ListItem',
-          position: index + 1,
-          name: heading.text,
-          url: `${canonicalURL}#${heading.slug}`,
-          item: {
-            '@type': 'WebPageElement',
-            '@id': `${canonicalURL}#${heading.slug}`,
-            name: heading.text,
-            url: `${canonicalURL}#${heading.slug}`,
-            headline: heading.text,
-            cssSelector: `h${heading.depth}#${heading.slug}`,
-          },
-        })),
-      });
-    }
-  }
+  // Table of Contents removed - was causing Google validation errors
+  // The heading structure is already included in the BlogPosting schema's hasPart property
 } else if (type === 'project' && projectData) {
   jsonLd.push({
     ...jsonLdBase,
@@ -326,9 +334,78 @@ if (type === 'website') {
     mainEntity: {
       '@id': `${siteUrl}/#organization`,
     },
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'social media',
+        url: SITE_CONFIG.social.twitter,
+        name: 'Twitter',
+        availableLanguage: 'en',
+      },
+      {
+        '@type': 'ContactPoint',
+        contactType: 'code repository',
+        url: SITE_CONFIG.social.github,
+        name: 'GitHub',
+        availableLanguage: 'en',
+      },
+    ],
     breadcrumb: {
       '@id': `${canonicalURL}#breadcrumb`,
     },
+    inLanguage: 'en-US',
+  });
+} else if (type === 'collection' && collectionData) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'CollectionPage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    url: canonicalURL,
+    numberOfItems: collectionData.items.length,
+    isPartOf: collectionData.parentEntity
+      ? {
+          '@type': collectionData.parentEntity.type,
+          name: collectionData.parentEntity.name,
+          url: collectionData.parentEntity.url,
+        }
+      : {
+          '@id': `${siteUrl}/#website`,
+        },
+    mainEntity: {
+      '@type': 'ItemList',
+      '@id': `${canonicalURL}#itemlist`,
+      name: title,
+      numberOfItems: collectionData.items.length,
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      itemListElement: collectionData.items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Article',
+          '@id': item.url,
+          headline: item.title,
+          name: item.title,
+          description: item.description,
+          url: item.url,
+          datePublished: item.publishedDate.toISOString(),
+          author: {
+            '@type': 'Person',
+            name: author,
+            url: `${siteUrl}/about`,
+          },
+          publisher: {
+            '@id': `${siteUrl}/#organization`,
+          },
+        },
+      })),
+    },
+    breadcrumb: breadcrumbList
+      ? {
+          '@id': `${canonicalURL}#breadcrumb`,
+        }
+      : undefined,
     inLanguage: 'en-US',
   });
 }
