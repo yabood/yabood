@@ -346,15 +346,19 @@ const currentPath = Astro.url.pathname;
     
     if (!resultsContainer || !emptyState) return;
     
-    if (results.length === 0) {
-      resultsContainer.classList.add('hidden');
-      emptyState.innerHTML = '<div class="p-6 text-center"><div class="text-sm text-gray-500 dark:text-gray-400">No results found</div></div>';
-      emptyState.classList.remove('hidden');
-      return;
-    }
-
+    // Always keep the results container visible to prevent layout shifts
     emptyState.classList.add('hidden');
     resultsContainer.classList.remove('hidden');
+    
+    if (results.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="px-6 py-8 text-center">
+          <div class="text-sm text-gray-500">No results found for "${escapeHtml(query)}"</div>
+          <div class="text-xs text-gray-600 mt-2">Try different keywords</div>
+        </div>
+      `;
+      return;
+    }
     
     resultsContainer.innerHTML = results.map((result: any) => {
       const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
@@ -454,7 +458,6 @@ const currentPath = Astro.url.pathname;
     });
 
     // Search functionality
-    let searchTimeout: number;
     searchInput?.addEventListener('input', async (e) => {
       const target = e.target as HTMLInputElement;
       const query = target.value.trim();
@@ -464,36 +467,28 @@ const currentPath = Astro.url.pathname;
         return;
       }
 
-      // Show loading state
-      const loading = document.getElementById('search-loading');
-      const emptyState = document.getElementById('search-empty-state');
-      const resultsContainer = document.getElementById('search-results-list');
-      
-      if (loading && emptyState && resultsContainer) {
-        loading.classList.remove('hidden');
-        emptyState.classList.add('hidden');
-        resultsContainer.classList.add('hidden');
+      // Only show loading state if we don't have data yet
+      if (!searchData) {
+        const loading = document.getElementById('search-loading');
+        const emptyState = document.getElementById('search-empty-state');
+        const resultsContainer = document.getElementById('search-results-list');
+        
+        if (loading && emptyState && resultsContainer) {
+          loading.classList.remove('hidden');
+          emptyState.classList.add('hidden');
+          resultsContainer.classList.add('hidden');
+        }
+        
+        // Load data if not already loaded
+        const data = await fetchSearchData();
+        searchData = data;
+        
+        if (loading) loading.classList.add('hidden');
       }
 
-      // Debounce search
-      clearTimeout(searchTimeout);
-      searchTimeout = window.setTimeout(async () => {
-        try {
-          const data = await fetchSearchData();
-          searchData = data;
-          const results = performSearch(query);
-          
-          if (loading) loading.classList.add('hidden');
-          renderSearchResults(results, query);
-        } catch (error) {
-          console.error('Search error:', error);
-          if (loading && emptyState) {
-            loading.classList.add('hidden');
-            emptyState.innerHTML = '<div class="p-6 text-center"><div class="text-sm text-red-500">Search error occurred</div></div>';
-            emptyState.classList.remove('hidden');
-          }
-        }
-      }, 300);
+      // Perform search immediately without hiding results
+      const results = performSearch(query);
+      renderSearchResults(results, query);
     });
 
     // Handle enter key to go to first result
