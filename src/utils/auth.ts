@@ -1,4 +1,15 @@
 import type { Session } from '@auth/core/types';
+import jwt from 'jsonwebtoken';
+
+export type UserRole = 'user' | 'admin';
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  provider: string;
+}
 
 interface VerifyTokenResponse {
   valid: boolean;
@@ -81,4 +92,50 @@ export function getSessionFromCookie(request: Request): Session | null {
   } catch {
     return null;
   }
+}
+
+export function getUserFromToken(token: string): AuthUser | null {
+  try {
+    const secret = process.env.AUTH_SECRET || import.meta.env.AUTH_SECRET;
+    if (!secret) return null;
+
+    const decoded = jwt.verify(token, secret) as any;
+    return {
+      id: decoded.userId,
+      email: decoded.email,
+      name: decoded.name,
+      role: decoded.role,
+      provider: decoded.provider,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export function hasRole(user: AuthUser | null, requiredRole: UserRole): boolean {
+  if (!user) return false;
+
+  // Admin has access to everything
+  if (user.role === 'admin') return true;
+
+  // Check specific role
+  return user.role === requiredRole;
+}
+
+export function isAdmin(user: AuthUser | null): boolean {
+  return hasRole(user, 'admin');
+}
+
+export function isUser(user: AuthUser | null): boolean {
+  return user !== null && (user.role === 'user' || user.role === 'admin');
+}
+
+export function requireRole(user: AuthUser | null, requiredRole: UserRole): void {
+  if (!hasRole(user, requiredRole)) {
+    throw new Error(`Access denied. Required role: ${requiredRole}`);
+  }
+}
+
+export function requireAdmin(user: AuthUser | null): void {
+  requireRole(user, 'admin');
 }
