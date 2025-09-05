@@ -34,8 +34,8 @@ export const GET: APIRoute = async ({ request }) => {
         headers: { 'Content-Type': 'application/json' },
       }
     );
-  } catch (error: any) {
-    if (error.message.includes('Access denied')) {
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('Access denied')) {
       return new Response(JSON.stringify({ error: 'Access denied. Admin role required.' }), {
         status: 403,
         headers: { 'Content-Type': 'application/json' },

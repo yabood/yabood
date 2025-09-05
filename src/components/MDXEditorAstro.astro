@@ -1,0 +1,19 @@
+---
+import MDXEditorReact from './MDXEditorReact.tsx';
+
+export interface Props {
+  initialContent?: string;
+}
+
+const { initialContent = '# Start writing...' } = Astro.props;
+---
+
+<MDXEditorReact 
+  client:only="react"
+  initialContent={initialContent}
+/>
+
+<style>
+  /* Ensure the editor styles are loaded */
+  @import '@mdxeditor/editor/style.css';
+</style>

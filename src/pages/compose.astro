@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MDXEditorAstro from '../components/MDXEditorAstro.astro';
+
+// Get the session from middleware (middleware handles auth check)
+const session = Astro.locals.session;
+const user = Astro.locals.user;
+
+// The middleware already handles authentication and admin check
+// If we reach here, the user is authenticated and is an admin
+
+const initialContent = `# Welcome to MDX Editor
+
+Write your content here. The editor supports:
+
+- Bold and italic text
+- Lists
+- Code blocks
+- Tables
+- Links
+- Images
+
+Start writing your content...`;
+---
+
+<BaseLayout title="Compose - Admin Only">
+  <div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-2">Compose Content</h1>
+      <p class="text-gray-600">Create and edit MDX content (Admin Only)</p>
+      <div class="mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+        <span class="mr-2">👤</span>
+        Logged in as: {user?.email} ({user?.role || 'admin'})
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <MDXEditorAstro initialContent={initialContent} />
+      
+      <div class="mt-6 flex gap-4">
+        <button
+          id="save-button"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Save Draft
+        </button>
+        <button
+          id="publish-button"
+          class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+        >
+          Publish
+        </button>
+        <button
+          id="preview-button"
+          class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Preview
+        </button>
+      </div>
+    </div>
+
+    <div id="preview-container" class="hidden mt-8 bg-white rounded-lg shadow-lg p-6">
+      <h2 class="text-2xl font-bold mb-4">Preview</h2>
+      <div id="preview-content" class="prose max-w-none"></div>
+    </div>
+  </div>
+
+  <script>
+    // Button handlers
+    document.getElementById('save-button')?.addEventListener('click', () => {
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      console.log('Saving draft:', content);
+      alert('Draft saved! (This would save to your backend)');
+    });
+
+    document.getElementById('publish-button')?.addEventListener('click', () => {
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      console.log('Publishing:', content);
+      alert('Content published! (This would publish to your backend)');
+    });
+
+    document.getElementById('preview-button')?.addEventListener('click', () => {
+      const previewContainer = document.getElementById('preview-container');
+      const previewContent = document.getElementById('preview-content');
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      
+      if (previewContainer && previewContent) {
+        previewContainer.classList.toggle('hidden');
+        if (!previewContainer.classList.contains('hidden')) {
+          // Simple markdown to HTML conversion for preview
+          // In production, you'd use a proper MDX renderer
+          previewContent.innerHTML = `<pre>${content}</pre>`;
+        }
+      }
+    });
+  </script>
+</BaseLayout>
