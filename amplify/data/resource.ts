@@ -12,6 +12,18 @@ const schema = a.schema({
       content: a.string(),
     })
     .authorization((allow) => [allow.guest()]),
+  UserProfile: a
+    .model({
+      userId: a.id().required(),
+      email: a.email().required(),
+      name: a.string(),
+      provider: a.string(),
+      bio: a.string(),
+      preferences: a.json(),
+      createdAt: a.datetime(),
+      updatedAt: a.datetime(),
+    })
+    .authorization((allow) => [allow.guest()]),
 });
 
 export type Schema = ClientSchema<typeof schema>;

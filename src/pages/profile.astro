@@ -1,0 +1,54 @@
+---
+import Layout from '../layouts/BaseLayout.astro';
+
+const session = Astro.locals.session;
+const user = Astro.locals.user;
+
+if (!session) {
+  return Astro.redirect('/auth/signin');
+}
+---
+
+<Layout title="Profile" description="Your user profile">
+  <div class="min-h-screen bg-gray-50 py-12">
+    <div class="max-w-3xl mx-auto px-4">
+      <div class="bg-white shadow rounded-lg p-6">
+        <h1 class="text-2xl font-bold mb-6">User Profile</h1>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Name</label>
+            <p class="mt-1 text-lg">{user?.name || 'Not provided'}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Email</label>
+            <p class="mt-1 text-lg">{user?.email || 'Not provided'}</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Provider</label>
+            <p class="mt-1 text-lg capitalize">{user?.provider || 'Unknown'}</p>
+          </div>
+
+          {
+            user?.image && (
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Profile Picture</label>
+                <img src={user.image} alt="Profile" class="mt-2 h-20 w-20 rounded-full" />
+              </div>
+            )
+          }
+        </div>
+
+        <div class="mt-8">
+          <a
+            href="/api/auth/signout"
+            class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 inline-block">
+            Sign Out
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</Layout>

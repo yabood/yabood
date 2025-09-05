@@ -4,5 +4,6 @@
     "strictNullChecks": true,
     "allowJs": true,
     "types": ["astro/client"]
-  }
+  },
+  "exclude": ["amplify/**"]
 }
