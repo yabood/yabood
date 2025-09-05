@@ -64,7 +64,81 @@ const MDXEditorComponent = React.forwardRef<MDXEditorMethods, MDXEditorComponent
               sql: 'SQL',
             },
           }),
-          mod.jsxPlugin && mod.jsxPlugin(),
+          mod.jsxPlugin && mod.jsxPlugin({
+            jsxComponentDescriptors: [
+              {
+                name: 'Image',
+                kind: 'flow',
+                source: './src/components',
+                props: [
+                  { name: 'src', type: 'string' },
+                  { name: 'alt', type: 'string' },
+                  { name: 'width', type: 'number' },
+                  { name: 'height', type: 'number' },
+                  { name: 'quality', type: 'number' },
+                  { name: 'format', type: 'string' },
+                  { name: 'loading', type: 'string' },
+                  { name: 'decoding', type: 'string' },
+                ],
+                hasChildren: false,
+                Editor: ({ mdastNode }) => {
+                  const props = mdastNode.attributes || [];
+                  const getAttr = (name: string) => {
+                    const attr = props.find((p: any) => p.name === name);
+                    return attr?.value || '';
+                  };
+                  
+                  const src = getAttr('src');
+                  const alt = getAttr('alt');
+                  const width = getAttr('width');
+                  const height = getAttr('height');
+                  
+                  return React.createElement('div', {
+                    style: { 
+                      border: '2px dashed #e2e8f0', 
+                      padding: '16px', 
+                      borderRadius: '8px',
+                      backgroundColor: '#f8fafc',
+                      color: '#475569',
+                      textAlign: 'center',
+                      fontFamily: 'system-ui, sans-serif'
+                    }
+                  }, [
+                    React.createElement('div', { 
+                      key: 'icon',
+                      style: { fontSize: '24px', marginBottom: '8px' } 
+                    }, '🖼️'),
+                    React.createElement('div', {
+                      key: 'title', 
+                      style: { fontWeight: 'bold', marginBottom: '4px' }
+                    }, 'Image Component'),
+                    src && React.createElement('div', {
+                      key: 'src',
+                      style: { fontSize: '12px', color: '#64748b', marginBottom: '2px' }
+                    }, `src: ${src}`),
+                    alt && React.createElement('div', {
+                      key: 'alt',
+                      style: { fontSize: '12px', color: '#64748b', marginBottom: '2px' }
+                    }, `alt: ${alt}`),
+                    (width || height) && React.createElement('div', {
+                      key: 'dimensions',
+                      style: { fontSize: '12px', color: '#64748b' }
+                    }, `${width || '?'} × ${height || '?'}`),
+                  ]);
+                }
+              },
+              {
+                name: 'div',
+                kind: 'flow',
+                props: [
+                  { name: 'className', type: 'string' },
+                  { name: 'style', type: 'string' },
+                ],
+                hasChildren: true,
+                Editor: ({ children }) => React.createElement('div', {}, children)
+              }
+            ]
+          }),
           mod.diffSourcePlugin({ viewMode: 'rich-text' }),
           mod.frontmatterPlugin(),
         ].filter(Boolean));

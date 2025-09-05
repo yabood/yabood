@@ -136,8 +136,8 @@ if (collection && slug) {
                 : '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Published</span>';
               
               html += `
-                <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" 
-                     onclick="editContent('${collectionName}', '${entry.slug}')">
+                <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer content-item" 
+                     data-collection="${collectionName}" data-slug="${entry.slug}">
                   <h4 class="font-medium text-sm mb-1 truncate">${entry.title}</h4>
                   <p class="text-xs text-gray-600 mb-2 line-clamp-2">${entry.description || 'No description'}</p>
                   <div class="flex items-center justify-between">
@@ -152,14 +152,22 @@ if (collection && slug) {
         
         html += '</div>';
         selector.innerHTML = html;
+        
+        // Add event listeners to content items using event delegation
+        selector.addEventListener('click', (event) => {
+          const target = event.target as HTMLElement;
+          const contentItem = target.closest('.content-item') as HTMLElement;
+          if (contentItem) {
+            const collection = contentItem.dataset.collection;
+            const slug = contentItem.dataset.slug;
+            if (collection && slug) {
+              window.location.href = `/compose?collection=${collection}&slug=${slug}`;
+            }
+          }
+        });
       } catch (error) {
         console.error('Error loading content:', error);
       }
-    }
-
-    // Edit content function
-    function editContent(collection: string, slug: string) {
-      window.location.href = `/compose?collection=${collection}&slug=${slug}`;
     }
 
     // Browse content button

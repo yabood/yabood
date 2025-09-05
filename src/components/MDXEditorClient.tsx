@@ -39,47 +39,14 @@ interface MDXEditorClientProps {
 
 const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>(
   ({ initialContent = '', onChange, readOnly = false }, ref) => {
-    const [hasError, setHasError] = React.useState(false);
-    const [errorMessage, setErrorMessage] = React.useState('');
-
-    const handleError = React.useCallback((error: Error) => {
-      console.error('MDX Editor Error:', error);
-      setHasError(true);
-      setErrorMessage(error.message);
-    }, []);
-
-    const resetError = React.useCallback(() => {
-      setHasError(false);
-      setErrorMessage('');
-    }, []);
-
-    if (hasError) {
-      return (
-        <div className="prose max-w-none">
-          <div className="p-4 border border-red-300 rounded-lg bg-red-50">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Editor Error</h3>
-            <p className="text-red-700 mb-4">{errorMessage}</p>
-            <button
-              onClick={resetError}
-              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-            >
-              Try Again
-            </button>
-          </div>
-        </div>
-      );
-    }
-
-    try {
-      return (
-        <div className="prose max-w-none">
-          <MDXEditor
-            ref={ref}
-            markdown={initialContent}
-            onChange={onChange}
-            readOnly={readOnly}
-            onError={handleError}
-            plugins={[
+    return (
+      <div className="prose max-w-none">
+        <MDXEditor
+          ref={ref}
+          markdown={initialContent}
+          onChange={onChange}
+          readOnly={readOnly}
+          plugins={[
             toolbarPlugin({
               toolbarContents: () => (
                 <>
@@ -113,16 +80,7 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
             linkDialogPlugin(),
             imagePlugin(),
             tablePlugin(),
-            codeBlockPlugin({ 
-              defaultCodeBlockLanguage: 'text',
-              codeBlockEditorDescriptors: [
-                {
-                  match: (language, meta) => language === 'txt' || language === 'text' || language === '',
-                  priority: 0,
-                  Editor: (props) => <div {...props} />
-                }
-              ]
-            }),
+            codeBlockPlugin({ defaultCodeBlockLanguage: 'text' }),
             codeMirrorPlugin({
               codeBlockLanguages: {
                 '': 'Plain text',
@@ -151,25 +109,88 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                 sql: 'SQL',
               },
             }),
-            jsxPlugin(),
+            jsxPlugin({
+              jsxComponentDescriptors: [
+                {
+                  name: 'Image',
+                  kind: 'flow', // or 'text' for inline components
+                  source: './src/components',
+                  props: [
+                    { name: 'src', type: 'string' },
+                    { name: 'alt', type: 'string' },
+                    { name: 'width', type: 'number' },
+                    { name: 'height', type: 'number' },
+                    { name: 'quality', type: 'number' },
+                    { name: 'format', type: 'string' },
+                    { name: 'loading', type: 'string' },
+                    { name: 'decoding', type: 'string' },
+                  ],
+                  hasChildren: false,
+                  Editor: ({ mdastNode }) => {
+                    const props = mdastNode.attributes || [];
+                    const getAttr = (name: string) => {
+                      const attr = props.find((p: any) => p.name === name);
+                      return attr?.value || '';
+                    };
+                    
+                    const src = getAttr('src');
+                    const alt = getAttr('alt');
+                    const width = getAttr('width');
+                    const height = getAttr('height');
+                    
+                    return React.createElement('div', {
+                      style: { 
+                        border: '2px dashed #e2e8f0', 
+                        padding: '16px', 
+                        borderRadius: '8px',
+                        backgroundColor: '#f8fafc',
+                        color: '#475569',
+                        textAlign: 'center',
+                        fontFamily: 'system-ui, sans-serif'
+                      }
+                    }, [
+                      React.createElement('div', { 
+                        key: 'icon',
+                        style: { fontSize: '24px', marginBottom: '8px' } 
+                      }, '🖼️'),
+                      React.createElement('div', {
+                        key: 'title', 
+                        style: { fontWeight: 'bold', marginBottom: '4px' }
+                      }, 'Image Component'),
+                      src && React.createElement('div', {
+                        key: 'src',
+                        style: { fontSize: '12px', color: '#64748b', marginBottom: '2px' }
+                      }, `src: ${src}`),
+                      alt && React.createElement('div', {
+                        key: 'alt',
+                        style: { fontSize: '12px', color: '#64748b', marginBottom: '2px' }
+                      }, `alt: ${alt}`),
+                      (width || height) && React.createElement('div', {
+                        key: 'dimensions',
+                        style: { fontSize: '12px', color: '#64748b' }
+                      }, `${width || '?'} × ${height || '?'}`),
+                    ]);
+                  }
+                },
+                {
+                  name: 'div',
+                  kind: 'flow',
+                  props: [
+                    { name: 'className', type: 'string' },
+                    { name: 'style', type: 'string' },
+                  ],
+                  hasChildren: true,
+                  Editor: ({ children }) => React.createElement('div', {}, children)
+                }
+              ]
+            }),
             diffSourcePlugin({ viewMode: 'rich-text', diffMarkdown: '' }),
             frontmatterPlugin(),
           ]}
-            contentEditableClassName="min-h-[500px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      );
-    } catch (error) {
-      handleError(error instanceof Error ? error : new Error('Unknown editor error'));
-      return (
-        <div className="prose max-w-none">
-          <div className="p-4 border border-red-300 rounded-lg bg-red-50">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Editor Loading Error</h3>
-            <p className="text-red-700">There was an error loading the MDX editor. Please try refreshing the page.</p>
-          </div>
-        </div>
-      );
-    }
+          contentEditableClassName="min-h-[500px] p-4 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    );
   }
 );
 
