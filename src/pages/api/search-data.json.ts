@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET: APIRoute = async () => {
   try {
     // Get all blog posts, projects, and noise for search
     // Include drafts only in development mode
@@ -33,26 +33,32 @@ export const GET: APIRoute = async ({ request }) => {
       publishedAt: noise.data.publishedAt,
     }));
 
-    return new Response(JSON.stringify({
-      blogPosts: blogData,
-      projects: projectData,
-      noiseEntries: noiseData,
-    }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        blogPosts: blogData,
+        projects: projectData,
+        noiseEntries: noiseData,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'public, max-age=300', // Cache for 5 minutes
+        },
+      }
+    );
   } catch (error) {
     console.error('Error fetching search data:', error);
-    return new Response(JSON.stringify({
-      error: 'Failed to fetch search data'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    return new Response(
+      JSON.stringify({
+        error: 'Failed to fetch search data',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
   }
 };

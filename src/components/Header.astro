@@ -56,14 +56,18 @@ const currentPath = Astro.url.pathname;
         ))
       }
     </ul>
-    
+
     <!-- Search Icon -->
     <button
       id="search-button"
       class="p-2 text-gray-600 hover:text-accent dark:text-gray-400 dark:hover:text-accent-light transition-colors"
       aria-label="Open search">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
       </svg>
     </button>
   </nav>
@@ -77,7 +81,8 @@ const currentPath = Astro.url.pathname;
   aria-modal="true"
   aria-labelledby="search-input">
   <div class="relative mx-4 w-full max-w-2xl">
-    <div class="rounded-xl bg-gray-900/95 dark:bg-gray-950/95 shadow-2xl border border-gray-800 dark:border-gray-700">
+    <div
+      class="rounded-xl bg-gray-900/95 dark:bg-gray-950/95 shadow-2xl border border-gray-800 dark:border-gray-700">
       <!-- Search Input -->
       <div class="p-6 pb-3">
         <div class="relative">
@@ -96,7 +101,7 @@ const currentPath = Astro.url.pathname;
           </button>
         </div>
       </div>
-      
+
       <!-- Search Results -->
       <div id="search-results" class="max-h-96 overflow-y-auto">
         <div id="search-loading" class="hidden p-6 text-center">
@@ -107,17 +112,21 @@ const currentPath = Astro.url.pathname;
         </div>
         <div id="search-results-list" class="hidden"></div>
       </div>
-      
+
       <!-- Footer -->
       <div class="border-t border-gray-800 dark:border-gray-700 px-6 py-3">
         <div class="flex items-center justify-between text-xs text-gray-500">
           <div class="flex items-center gap-4">
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded">↵</kbd>
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
+                >↵</kbd
+              >
               <span>to select</span>
             </span>
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded">↑↓</kbd>
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
+                >↑↓</kbd
+              >
               <span>to navigate</span>
             </span>
           </div>
@@ -146,7 +155,7 @@ const currentPath = Astro.url.pathname;
 
   async function fetchSearchData() {
     if (searchData) return searchData;
-    
+
     try {
       const response = await fetch('/api/search-data.json');
       searchData = await response.json();
@@ -159,10 +168,10 @@ const currentPath = Astro.url.pathname;
 
   function getRecentEntries() {
     if (!searchData) return [];
-    
+
     const { blogPosts, projects, noiseEntries } = searchData;
     const allEntries: any[] = [];
-    
+
     // Add all blog posts
     for (const post of blogPosts) {
       allEntries.push({
@@ -174,7 +183,7 @@ const currentPath = Astro.url.pathname;
         tags: post.tags || [],
       });
     }
-    
+
     // Add all projects
     for (const project of projects) {
       allEntries.push({
@@ -186,12 +195,12 @@ const currentPath = Astro.url.pathname;
         tags: project.tags || [],
       });
     }
-    
+
     // Add all noise entries (exclude image-only entries)
     for (const noise of noiseEntries) {
       // Skip if there's no text content (only image)
       if (!noise.content || noise.content.trim() === '') continue;
-      
+
       allEntries.push({
         type: 'Noise',
         title: noise.content.substring(0, 100) + (noise.content.length > 100 ? '...' : ''),
@@ -201,7 +210,7 @@ const currentPath = Astro.url.pathname;
         tags: [],
       });
     }
-    
+
     // Sort by date and return top 7
     allEntries.sort((a, b) => b.publishedDate.getTime() - a.publishedDate.getTime());
     return allEntries.slice(0, 7);
@@ -254,7 +263,7 @@ const currentPath = Astro.url.pathname;
     for (const noise of noiseEntries) {
       // Skip if there's no text content (only image)
       if (!noise.content || noise.content.trim() === '') continue;
-      
+
       const contentMatch = noise.content?.toLowerCase().includes(q);
 
       if (contentMatch) {
@@ -291,35 +300,40 @@ const currentPath = Astro.url.pathname;
     if (!query.trim()) return escapeHtml(text);
     const escapedText = escapeHtml(text);
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    return escapedText.replace(regex, '<mark class="bg-blue-500/30 text-blue-300 rounded px-0.5">$1</mark>');
+    return escapedText.replace(
+      regex,
+      '<mark class="bg-blue-500/30 text-blue-300 rounded px-0.5">$1</mark>'
+    );
   }
 
   function renderSuggestions() {
     const resultsContainer = document.getElementById('search-results-list');
     const emptyState = document.getElementById('search-empty-state');
-    
+
     if (!resultsContainer || !emptyState) return;
-    
+
     const suggestions = getRecentEntries();
-    
+
     if (suggestions.length === 0) {
       resultsContainer.classList.add('hidden');
-      emptyState.innerHTML = '<div class="p-6 text-center"><div class="text-sm text-gray-500 dark:text-gray-400">No recent content available</div></div>';
+      emptyState.innerHTML =
+        '<div class="p-6 text-center"><div class="text-sm text-gray-500 dark:text-gray-400">No recent content available</div></div>';
       emptyState.classList.remove('hidden');
       return;
     }
-    
+
     emptyState.classList.add('hidden');
     resultsContainer.classList.remove('hidden');
-    
+
     // Add suggestions header
     resultsContainer.innerHTML = `
       <div class="px-6 py-2 text-xs font-medium text-gray-500 border-b border-gray-800 dark:border-gray-700">
         Suggestions
       </div>
-      ${suggestions.map((result: any) => {
-        const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
-        return `
+      ${suggestions
+        .map((result: any) => {
+          const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
+          return `
           <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
             <div class="flex items-start gap-3">
               <span class="text-base mt-0.5">${icon}</span>
@@ -327,29 +341,34 @@ const currentPath = Astro.url.pathname;
                 <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
                   ${escapeHtml(result.title)}
                 </h3>
-                ${result.description ? `
+                ${
+                  result.description
+                    ? `
                   <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">
                     ${escapeHtml(result.description)}
                   </p>
-                ` : ''}
+                `
+                    : ''
+                }
               </div>
             </div>
           </a>
         `;
-      }).join('')}
+        })
+        .join('')}
     `;
   }
 
   function renderSearchResults(results: any[], query: string = '') {
     const resultsContainer = document.getElementById('search-results-list');
     const emptyState = document.getElementById('search-empty-state');
-    
+
     if (!resultsContainer || !emptyState) return;
-    
+
     // Always keep the results container visible to prevent layout shifts
     emptyState.classList.add('hidden');
     resultsContainer.classList.remove('hidden');
-    
+
     if (results.length === 0) {
       resultsContainer.innerHTML = `
         <div class="px-6 py-8 text-center">
@@ -359,10 +378,11 @@ const currentPath = Astro.url.pathname;
       `;
       return;
     }
-    
-    resultsContainer.innerHTML = results.map((result: any) => {
-      const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
-      return `
+
+    resultsContainer.innerHTML = results
+      .map((result: any) => {
+        const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
+        return `
         <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
           <div class="flex items-start gap-3">
             <span class="text-base mt-0.5">${icon}</span>
@@ -370,37 +390,42 @@ const currentPath = Astro.url.pathname;
               <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
                 ${highlightText(result.title, query)}
               </h3>
-              ${result.description ? `
+              ${
+                result.description
+                  ? `
                 <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">
                   ${highlightText(result.description, query)}
                 </p>
-              ` : ''}
+              `
+                  : ''
+              }
             </div>
           </div>
         </a>
       `;
-    }).join('');
+      })
+      .join('');
   }
 
   async function openSearchModal() {
     const modal = document.getElementById('search-modal');
     const input = document.getElementById('search-input') as HTMLInputElement;
-    
+
     if (!modal || !input) return;
-    
+
     modal.classList.remove('hidden');
     modal.classList.add('flex');
     input.focus();
-    
+
     // Disable body scroll
     document.body.style.overflow = 'hidden';
-    
+
     // Load data and show suggestions if not already loaded
     if (!searchData) {
       const data = await fetchSearchData();
       searchData = data;
     }
-    
+
     // Show suggestions if search input is empty
     if (!input.value.trim()) {
       renderSuggestions();
@@ -410,22 +435,22 @@ const currentPath = Astro.url.pathname;
   function closeSearchModal() {
     const modal = document.getElementById('search-modal');
     const input = document.getElementById('search-input') as HTMLInputElement;
-    
+
     if (!modal || !input) return;
-    
+
     modal.classList.add('hidden');
     modal.classList.remove('flex');
     input.value = '';
-    
+
     // Reset results
     const resultsContainer = document.getElementById('search-results-list');
     const emptyState = document.getElementById('search-empty-state');
-    
+
     if (resultsContainer && emptyState) {
       resultsContainer.classList.add('hidden');
       emptyState.classList.add('hidden');
     }
-    
+
     // Re-enable body scroll
     document.body.style.overflow = '';
   }
@@ -439,17 +464,17 @@ const currentPath = Astro.url.pathname;
 
     // Open modal
     searchButton?.addEventListener('click', openSearchModal);
-    
+
     // Close modal
     searchClose?.addEventListener('click', closeSearchModal);
-    
+
     // Close on backdrop click
     modal?.addEventListener('click', (e) => {
       if (e.target === modal) {
         closeSearchModal();
       }
     });
-    
+
     // Close on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
@@ -461,7 +486,7 @@ const currentPath = Astro.url.pathname;
     searchInput?.addEventListener('input', async (e) => {
       const target = e.target as HTMLInputElement;
       const query = target.value.trim();
-      
+
       if (!query) {
         renderSuggestions();
         return;
@@ -472,17 +497,17 @@ const currentPath = Astro.url.pathname;
         const loading = document.getElementById('search-loading');
         const emptyState = document.getElementById('search-empty-state');
         const resultsContainer = document.getElementById('search-results-list');
-        
+
         if (loading && emptyState && resultsContainer) {
           loading.classList.remove('hidden');
           emptyState.classList.add('hidden');
           resultsContainer.classList.add('hidden');
         }
-        
+
         // Load data if not already loaded
         const data = await fetchSearchData();
         searchData = data;
-        
+
         if (loading) loading.classList.add('hidden');
       }
 
