@@ -5,6 +5,8 @@ import Header from '../../../../components/Header.astro';
 import Footer from '../../../../components/Footer.astro';
 import Prose from '../../../../components/Prose.astro';
 
+export const prerender = true;
+
 export async function getStaticPaths() {
   const updates = await getCollection('updates');
   const projects = await getCollection('projects');
