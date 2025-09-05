@@ -50,18 +50,7 @@ Start writing your content...`;
         >
           Publish
         </button>
-        <button
-          id="preview-button"
-          class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          Preview
-        </button>
       </div>
-    </div>
-
-    <div id="preview-container" class="hidden mt-8 bg-white rounded-lg shadow-lg p-6">
-      <h2 class="text-2xl font-bold mb-4">Preview</h2>
-      <div id="preview-content" class="prose max-w-none"></div>
     </div>
   </div>
 
@@ -77,21 +66,6 @@ Start writing your content...`;
       const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
       console.log('Publishing:', content);
       alert('Content published! (This would publish to your backend)');
-    });
-
-    document.getElementById('preview-button')?.addEventListener('click', () => {
-      const previewContainer = document.getElementById('preview-container');
-      const previewContent = document.getElementById('preview-content');
-      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
-      
-      if (previewContainer && previewContent) {
-        previewContainer.classList.toggle('hidden');
-        if (!previewContainer.classList.contains('hidden')) {
-          // Simple markdown to HTML conversion for preview
-          // In production, you'd use a proper MDX renderer
-          previewContent.innerHTML = `<pre>${content}</pre>`;
-        }
-      }
     });
   </script>
 </BaseLayout>

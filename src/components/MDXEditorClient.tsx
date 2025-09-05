@@ -14,6 +14,18 @@ import {
   codeMirrorPlugin,
   diffSourcePlugin,
   frontmatterPlugin,
+  toolbarPlugin,
+  BoldItalicUnderlineToggles,
+  BlockTypeSelect,
+  ListsToggle,
+  CreateLink,
+  InsertImage,
+  InsertTable,
+  InsertThematicBreak,
+  InsertCodeBlock,
+  UndoRedo,
+  DiffSourceToggleWrapper,
+  Separator,
   type MDXEditorMethods,
 } from '@mdxeditor/editor';
 import '@mdxeditor/editor/style.css';
@@ -34,6 +46,30 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
           onChange={onChange}
           readOnly={readOnly}
           plugins={[
+            toolbarPlugin({
+              toolbarContents: () => (
+                <>
+                  <UndoRedo />
+                  <Separator />
+                  <BoldItalicUnderlineToggles />
+                  <Separator />
+                  <BlockTypeSelect />
+                  <Separator />
+                  <ListsToggle />
+                  <Separator />
+                  <CreateLink />
+                  <InsertImage />
+                  <Separator />
+                  <InsertTable />
+                  <Separator />
+                  <InsertCodeBlock />
+                  <Separator />
+                  <InsertThematicBreak />
+                  <Separator />
+                  <DiffSourceToggleWrapper />
+                </>
+              ),
+            }),
             headingsPlugin(),
             listsPlugin(),
             quotePlugin(),
