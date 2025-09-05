@@ -1,17 +1,15 @@
 import mdx from '@astrojs/mdx';
-import node from '@astrojs/node';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
   site: 'https://yabood.com',
   output: 'server',
-  adapter: node({
-    mode: 'standalone',
-  }),
+  adapter: vercel(),
   integrations: [
     mdx({
       remarkPlugins: [remarkMath],
