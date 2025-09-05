@@ -55,7 +55,12 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
   modifiedDate={updatedDate}
   author={author}
   tags={tags}
-  image={typeof heroImage === 'object' ? heroImage.src : heroImage}>
+  image={typeof heroImage === 'object' ? heroImage.src : heroImage}
+  breadcrumbs={[
+    { name: 'Blog', url: '/blog' },
+    { name: title, url: `/blog/${currentPost?.slug || ''}` },
+  ]}
+  headings={headings}>
   <Header />
 
   <main id="main" class="py-12">
@@ -140,6 +145,45 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
         </div>
       </div>
     </article>
+
+    <!-- Author Bio Section -->
+    {
+      author && (
+        <section class="container mx-auto max-w-3xl px-4 mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+          <div class="flex items-start gap-4">
+            <div class="flex-shrink-0">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
+                {author.charAt(0).toUpperCase()}
+              </div>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                Written by {author}
+              </h3>
+              <p class="mt-1 text-gray-600 dark:text-gray-400">
+                Software engineer passionate about technology, development, and creativity. I build
+                modern web applications and explore the intersection of technology and user
+                experience.
+              </p>
+              <div class="mt-3 flex gap-4">
+                <a
+                  href="/about"
+                  class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                  Learn more about me →
+                </a>
+                <a
+                  href="https://twitter.com/yabood"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                  Follow on Twitter
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      )
+    }
 
     {currentPost && <RelatedArticles currentPost={currentPost} />}
   </main>

@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import { validateContentSEO, PROJECT_SEO_REQUIREMENTS } from '../../utils/seoValidation';
 
 export async function getStaticPaths() {
   const projects = await getCollection(
@@ -10,6 +11,9 @@ export async function getStaticPaths() {
     ({ data }) => import.meta.env.DEV || !data.draft
   );
   const updates = await getCollection('updates');
+
+  // Validate SEO fields during build
+  validateContentSEO(projects, 'project', PROJECT_SEO_REQUIREMENTS);
 
   return projects.map((project) => ({
     params: { slug: project.slug },
@@ -50,7 +54,20 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
 
 <BaseLayout
   title={`${project.data.title} - Project Journal`}
-  description={project.data.description}>
+  description={project.data.description}
+  type="project"
+  tags={project.data.tags}
+  modifiedDate={lastUpdatedDate}
+  breadcrumbs={[
+    { name: 'Projects', url: '/projects' },
+    { name: project.data.title, url: `/projects/${project.slug}` },
+  ]}
+  projectData={{
+    status: project.data.status,
+    startDate: project.data.startDate,
+    github: project.data.github,
+    website: project.data.website,
+  }}>
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">

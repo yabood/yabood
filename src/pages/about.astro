@@ -1,17 +1,33 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Header from '../components/Header.astro';
 import Prose from '../components/Prose.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
-<BaseLayout title="About" description="Learn more about Yabood and the person behind the blog">
+<BaseLayout
+  title="About Yousif Abood"
+  description="Learn about Yousif Abood, a software engineer passionate about web development, technology innovation, and creating elegant solutions to complex problems."
+  type="about">
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <Prose>
-      <h1>About</h1>
-      <p>Work in progress.</p>
+      <h1>About Yousif Abood</h1>
+      <p>Work in progress...</p>
+      <!-- <p>
+        I'm always interested in connecting with fellow developers and discussing technology,
+        interesting projects, or potential collaborations. Feel free to reach out through <a
+          href={SITE_CONFIG.social.twitter}
+          target="_blank"
+          rel="noopener noreferrer">Twitter</a
+        >
+        or check out my work on <a
+          href={SITE_CONFIG.social.github}
+          target="_blank"
+          rel="noopener noreferrer">GitHub</a
+        >.
+      </p> -->
     </Prose>
   </main>
 

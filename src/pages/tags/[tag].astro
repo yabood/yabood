@@ -35,7 +35,13 @@ const posts = await Promise.all(
 );
 ---
 
-<BaseLayout title={`Posts tagged "${tag}"`} description={`Blog posts about ${tag}`}>
+<BaseLayout
+  title={`Posts tagged "${tag}"`}
+  description={`Blog posts about ${tag}`}
+  breadcrumbs={[
+    { name: 'Tags', url: '/tags' },
+    { name: `#${tag}`, url: `/tags/${tag}` },
+  ]}>
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">

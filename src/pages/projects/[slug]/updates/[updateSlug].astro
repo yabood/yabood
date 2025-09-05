@@ -47,39 +47,20 @@ const phaseLabels = {
   archived: 'Archived',
 };
 
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'Article',
-  headline: update.data.title,
-  description: update.data.summary,
-  datePublished: update.data.date.toISOString(),
-  author: {
-    '@type': 'Person',
-    name: 'Yousif Abood',
-  },
-  publisher: {
-    '@type': 'Organization',
-    name: 'Yousif Abood',
-    url: 'https://yabood.com',
-  },
-  isPartOf: {
-    '@type': 'Blog',
-    name: project?.data.title || 'Project Journal',
-    url: `https://yabood.com/projects/${update.data.project}`,
-  },
-};
+const breadcrumbs = [
+  { name: 'Projects', url: '/projects' },
+  { name: project?.data.title || update.data.project, url: `/projects/${update.data.project}` },
+  { name: update.data.title, url: `/projects/${update.data.project}/updates/${update.slug}` },
+];
 ---
 
 <BaseLayout
   title={`${update.data.title} - ${project?.data.title || 'Project Update'}`}
-  description={update.data.summary}>
-  <script is:inline define:vars={{ jsonLd }}>
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(jsonLd);
-    document.head.appendChild(script);
-  </script>
-
+  description={update.data.summary}
+  type="article"
+  publishedDate={update.data.date}
+  breadcrumbs={breadcrumbs}
+  tags={update.data.tags}>
   <Header />
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">

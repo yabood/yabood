@@ -4,10 +4,16 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
+import { validateContentSEO, BLOG_SEO_REQUIREMENTS } from '../../utils/seoValidation';
 
 const posts = (await getCollection('blog'))
   .filter((post) => import.meta.env.DEV || !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// Validate SEO fields during build (only run once, not in individual post pages)
+if (posts.length > 0) {
+  validateContentSEO(posts, 'blog', BLOG_SEO_REQUIREMENTS);
+}
 
 const postsWithReadingTime = await Promise.all(
   posts.map(async (post) => {

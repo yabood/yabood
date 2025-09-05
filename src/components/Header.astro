@@ -28,7 +28,7 @@ const currentPath = Astro.url.pathname;
 <header
   id="sticky-header"
   class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-transparent transition-colors duration-200">
-  <nav class="container mx-auto max-w-3xl px-4 py-3 flex items-center">
+  <nav class="container mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
     <ul class="flex items-center leading-0">
       {
         navItems.map(({ href, label }, index) => (
@@ -56,8 +56,85 @@ const currentPath = Astro.url.pathname;
         ))
       }
     </ul>
+
+    <!-- Search Icon -->
+    <button
+      id="search-button"
+      class="p-2 text-gray-600 hover:text-accent dark:text-gray-400 dark:hover:text-accent-light transition-colors"
+      aria-label="Open search">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="m21 21-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+      </svg>
+    </button>
   </nav>
 </header>
+
+<!-- Search Modal -->
+<div
+  id="search-modal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-md"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="search-input">
+  <div class="relative mx-4 w-full max-w-2xl">
+    <div
+      class="rounded-xl bg-gray-900/95 dark:bg-gray-950/95 shadow-2xl border border-gray-800 dark:border-gray-700">
+      <!-- Search Input -->
+      <div class="p-6 pb-3">
+        <div class="relative">
+          <input
+            type="search"
+            id="search-input"
+            class="block w-full bg-transparent text-gray-100 placeholder-gray-500 text-base focus:outline-none"
+            placeholder="What are you searching for?"
+            autocomplete="off"
+          />
+          <button
+            id="search-close"
+            class="absolute right-0 top-0 text-xs px-2 py-1 rounded bg-gray-800 dark:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+            aria-label="Close search">
+            Esc
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div id="search-results" class="max-h-96 overflow-y-auto">
+        <div id="search-loading" class="hidden p-6 text-center">
+          <div class="text-sm text-gray-500">Searching...</div>
+        </div>
+        <div id="search-empty-state" class="hidden">
+          <div class="text-sm text-gray-500">Start typing to search</div>
+        </div>
+        <div id="search-results-list" class="hidden"></div>
+      </div>
+
+      <!-- Footer -->
+      <div class="border-t border-gray-800 dark:border-gray-700 px-6 py-3">
+        <div class="flex items-center justify-between text-xs text-gray-500">
+          <div class="flex items-center gap-4">
+            <span class="flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
+                >↵</kbd
+              >
+              <span>to select</span>
+            </span>
+            <span class="flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
+                >↑↓</kbd
+              >
+              <span>to navigate</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
   function handleScroll() {
@@ -72,6 +149,383 @@ const currentPath = Astro.url.pathname;
       }
     }
   }
+
+  // Search modal functionality
+  let searchData: any = null;
+
+  async function fetchSearchData() {
+    if (searchData) return searchData;
+
+    try {
+      const response = await fetch('/api/search-data.json');
+      searchData = await response.json();
+      return searchData;
+    } catch (error) {
+      console.error('Failed to fetch search data:', error);
+      return { blogPosts: [], projects: [], noiseEntries: [] };
+    }
+  }
+
+  function getRecentEntries() {
+    if (!searchData) return [];
+
+    const { blogPosts, projects, noiseEntries } = searchData;
+    const allEntries: any[] = [];
+
+    // Add all blog posts
+    for (const post of blogPosts) {
+      allEntries.push({
+        type: 'Blog Post',
+        title: post.title,
+        description: post.description,
+        url: `/blog/${post.slug}`,
+        publishedDate: new Date(post.pubDate),
+        tags: post.tags || [],
+      });
+    }
+
+    // Add all projects
+    for (const project of projects) {
+      allEntries.push({
+        type: 'Project',
+        title: project.title,
+        description: project.description,
+        url: `/projects/${project.slug}`,
+        publishedDate: new Date(project.startDate),
+        tags: project.tags || [],
+      });
+    }
+
+    // Add all noise entries (exclude image-only entries)
+    for (const noise of noiseEntries) {
+      // Skip if there's no text content (only image)
+      if (!noise.content || noise.content.trim() === '') continue;
+
+      allEntries.push({
+        type: 'Noise',
+        title: noise.content.substring(0, 100) + (noise.content.length > 100 ? '...' : ''),
+        description: '', // No description for noise entries
+        url: `/noise#${noise.id}`,
+        publishedDate: new Date(noise.publishedAt),
+        tags: [],
+      });
+    }
+
+    // Sort by date and return top 7
+    allEntries.sort((a, b) => b.publishedDate.getTime() - a.publishedDate.getTime());
+    return allEntries.slice(0, 7);
+  }
+
+  function performSearch(query: string) {
+    const { blogPosts, projects, noiseEntries } = searchData;
+    const q = query.toLowerCase();
+    const results: any[] = [];
+
+    // Search blog posts
+    for (const post of blogPosts) {
+      const titleMatch = post.title.toLowerCase().includes(q);
+      const descMatch = post.description.toLowerCase().includes(q);
+      const tagMatch = post.tags?.some((tag: string) => tag.toLowerCase().includes(q));
+
+      if (titleMatch || descMatch || tagMatch) {
+        results.push({
+          type: 'Blog Post',
+          title: post.title,
+          description: post.description,
+          url: `/blog/${post.slug}`,
+          publishedDate: new Date(post.pubDate),
+          tags: post.tags || [],
+          relevance: titleMatch ? 3 : descMatch ? 2 : 1,
+        });
+      }
+    }
+
+    // Search projects
+    for (const project of projects) {
+      const titleMatch = project.title.toLowerCase().includes(q);
+      const descMatch = project.description.toLowerCase().includes(q);
+      const tagMatch = project.tags?.some((tag: string) => tag.toLowerCase().includes(q));
+
+      if (titleMatch || descMatch || tagMatch) {
+        results.push({
+          type: 'Project',
+          title: project.title,
+          description: project.description,
+          url: `/projects/${project.slug}`,
+          publishedDate: new Date(project.startDate),
+          tags: project.tags || [],
+          relevance: titleMatch ? 3 : descMatch ? 2 : 1,
+        });
+      }
+    }
+
+    // Search noise entries
+    for (const noise of noiseEntries) {
+      // Skip if there's no text content (only image)
+      if (!noise.content || noise.content.trim() === '') continue;
+
+      const contentMatch = noise.content?.toLowerCase().includes(q);
+
+      if (contentMatch) {
+        results.push({
+          type: 'Noise',
+          title: noise.content.substring(0, 100) + (noise.content.length > 100 ? '...' : ''),
+          description: '', // No description for noise entries
+          url: `/noise#${noise.id}`,
+          publishedDate: new Date(noise.publishedAt),
+          tags: [],
+          relevance: 1,
+        });
+      }
+    }
+
+    // Sort by relevance, then by date
+    results.sort((a, b) => {
+      if (a.relevance !== b.relevance) {
+        return b.relevance - a.relevance;
+      }
+      return b.publishedDate.getTime() - a.publishedDate.getTime();
+    });
+
+    return results;
+  }
+
+  function escapeHtml(text: string): string {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  function highlightText(text: string, query: string): string {
+    if (!query.trim()) return escapeHtml(text);
+    const escapedText = escapeHtml(text);
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return escapedText.replace(
+      regex,
+      '<mark class="bg-blue-500/30 text-blue-300 rounded px-0.5">$1</mark>'
+    );
+  }
+
+  function renderSuggestions() {
+    const resultsContainer = document.getElementById('search-results-list');
+    const emptyState = document.getElementById('search-empty-state');
+
+    if (!resultsContainer || !emptyState) return;
+
+    const suggestions = getRecentEntries();
+
+    if (suggestions.length === 0) {
+      resultsContainer.classList.add('hidden');
+      emptyState.innerHTML =
+        '<div class="p-6 text-center"><div class="text-sm text-gray-500 dark:text-gray-400">No recent content available</div></div>';
+      emptyState.classList.remove('hidden');
+      return;
+    }
+
+    emptyState.classList.add('hidden');
+    resultsContainer.classList.remove('hidden');
+
+    // Add suggestions header
+    resultsContainer.innerHTML = `
+      <div class="px-6 py-2 text-xs font-medium text-gray-500 border-b border-gray-800 dark:border-gray-700">
+        Suggestions
+      </div>
+      ${suggestions
+        .map((result: any) => {
+          const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
+          return `
+          <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
+            <div class="flex items-start gap-3">
+              <span class="text-base mt-0.5">${icon}</span>
+              <div class="flex-1 min-w-0">
+                <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
+                  ${escapeHtml(result.title)}
+                </h3>
+                ${
+                  result.description
+                    ? `
+                  <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                    ${escapeHtml(result.description)}
+                  </p>
+                `
+                    : ''
+                }
+              </div>
+            </div>
+          </a>
+        `;
+        })
+        .join('')}
+    `;
+  }
+
+  function renderSearchResults(results: any[], query: string = '') {
+    const resultsContainer = document.getElementById('search-results-list');
+    const emptyState = document.getElementById('search-empty-state');
+
+    if (!resultsContainer || !emptyState) return;
+
+    // Always keep the results container visible to prevent layout shifts
+    emptyState.classList.add('hidden');
+    resultsContainer.classList.remove('hidden');
+
+    if (results.length === 0) {
+      resultsContainer.innerHTML = `
+        <div class="px-6 py-8 text-center">
+          <div class="text-sm text-gray-500">No results found for "${escapeHtml(query)}"</div>
+          <div class="text-xs text-gray-600 mt-2">Try different keywords</div>
+        </div>
+      `;
+      return;
+    }
+
+    resultsContainer.innerHTML = results
+      .map((result: any) => {
+        const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
+        return `
+        <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
+          <div class="flex items-start gap-3">
+            <span class="text-base mt-0.5">${icon}</span>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
+                ${highlightText(result.title, query)}
+              </h3>
+              ${
+                result.description
+                  ? `
+                <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">
+                  ${highlightText(result.description, query)}
+                </p>
+              `
+                  : ''
+              }
+            </div>
+          </div>
+        </a>
+      `;
+      })
+      .join('');
+  }
+
+  async function openSearchModal() {
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+
+    if (!modal || !input) return;
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    input.focus();
+
+    // Disable body scroll
+    document.body.style.overflow = 'hidden';
+
+    // Load data and show suggestions if not already loaded
+    if (!searchData) {
+      const data = await fetchSearchData();
+      searchData = data;
+    }
+
+    // Show suggestions if search input is empty
+    if (!input.value.trim()) {
+      renderSuggestions();
+    }
+  }
+
+  function closeSearchModal() {
+    const modal = document.getElementById('search-modal');
+    const input = document.getElementById('search-input') as HTMLInputElement;
+
+    if (!modal || !input) return;
+
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    input.value = '';
+
+    // Reset results
+    const resultsContainer = document.getElementById('search-results-list');
+    const emptyState = document.getElementById('search-empty-state');
+
+    if (resultsContainer && emptyState) {
+      resultsContainer.classList.add('hidden');
+      emptyState.classList.add('hidden');
+    }
+
+    // Re-enable body scroll
+    document.body.style.overflow = '';
+  }
+
+  // Event listeners
+  document.addEventListener('DOMContentLoaded', () => {
+    const searchButton = document.getElementById('search-button');
+    const searchClose = document.getElementById('search-close');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement;
+    const modal = document.getElementById('search-modal');
+
+    // Open modal
+    searchButton?.addEventListener('click', openSearchModal);
+
+    // Close modal
+    searchClose?.addEventListener('click', closeSearchModal);
+
+    // Close on backdrop click
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        closeSearchModal();
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+        closeSearchModal();
+      }
+    });
+
+    // Search functionality
+    searchInput?.addEventListener('input', async (e) => {
+      const target = e.target as HTMLInputElement;
+      const query = target.value.trim();
+
+      if (!query) {
+        renderSuggestions();
+        return;
+      }
+
+      // Only show loading state if we don't have data yet
+      if (!searchData) {
+        const loading = document.getElementById('search-loading');
+        const emptyState = document.getElementById('search-empty-state');
+        const resultsContainer = document.getElementById('search-results-list');
+
+        if (loading && emptyState && resultsContainer) {
+          loading.classList.remove('hidden');
+          emptyState.classList.add('hidden');
+          resultsContainer.classList.add('hidden');
+        }
+
+        // Load data if not already loaded
+        const data = await fetchSearchData();
+        searchData = data;
+
+        if (loading) loading.classList.add('hidden');
+      }
+
+      // Perform search immediately without hiding results
+      const results = performSearch(query);
+      renderSearchResults(results, query);
+    });
+
+    // Handle enter key to go to first result
+    searchInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const firstResult = document.querySelector('#search-results-list a') as HTMLAnchorElement;
+        if (firstResult) {
+          window.location.href = firstResult.href;
+        }
+      }
+    });
+  });
 
   // Add scroll listener
   window.addEventListener('scroll', handleScroll);

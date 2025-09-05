@@ -1,31 +1,64 @@
 ---
+import { SITE_CONFIG } from '../config/site.ts';
+
 export interface Props {
   title: string;
   description: string;
   image?: string | { src: string };
   canonical?: string;
-  type?: 'website' | 'article';
+  type?: 'website' | 'article' | 'project' | 'about' | 'contact' | 'collection';
   publishedDate?: Date;
   modifiedDate?: Date;
   author?: string;
   tags?: string[];
+  breadcrumbs?: Array<{ name: string; url: string }>;
+  articleSection?: string;
+  headings?: Array<{
+    depth: number;
+    slug: string;
+    text: string;
+  }>;
+  projectData?: {
+    status: string;
+    startDate: Date;
+    github?: string;
+    website?: string;
+  };
+  collectionData?: {
+    items: Array<{
+      title: string;
+      description: string;
+      url: string;
+      publishedDate: Date;
+    }>;
+    parentEntity?: {
+      name: string;
+      url: string;
+      type: string;
+    };
+  };
 }
 
 const {
   title,
   description,
-  image = '/og-image.jpg',
+  image = SITE_CONFIG.ogImage,
   canonical,
   type = 'website',
   publishedDate,
   modifiedDate,
-  author = 'Yousif Abood',
+  author = SITE_CONFIG.author.name,
   tags = [],
+  breadcrumbs,
+  articleSection,
+  headings,
+  projectData,
+  collectionData,
 } = Astro.props;
 
-const siteUrl = 'https://yabood.com';
-const siteName = 'Yabood';
-const twitterHandle = '@yabood';
+const siteUrl = SITE_CONFIG.url;
+const siteName = SITE_CONFIG.name;
+const twitterHandle = SITE_CONFIG.author.twitter;
 
 const canonicalURL = canonical || new URL(Astro.url.pathname, siteUrl).toString();
 const imageURL =
@@ -39,63 +72,66 @@ const jsonLdBase = {
   '@context': 'https://schema.org',
 };
 
-let jsonLd: any[] = [];
+// Organization schema - appears on all pages
+const organizationSchema = {
+  ...jsonLdBase,
+  ...SITE_CONFIG.organization,
+  '@id': `${siteUrl}/#organization`,
+  url: siteUrl,
+  logo: {
+    ...SITE_CONFIG.organization.logo,
+    url: `${siteUrl}${SITE_CONFIG.favicon}`,
+    contentUrl: `${siteUrl}${SITE_CONFIG.favicon}`,
+    caption: siteName,
+  },
+  founder: {
+    '@type': 'Person',
+    name: author,
+    url: `${siteUrl}/about`,
+  },
+  contactPoint: {
+    '@type': 'ContactPoint',
+    contactType: 'general inquiry',
+    url: `${siteUrl}/contact`,
+  },
+};
 
-if (type === 'website') {
-  jsonLd.push({
-    ...jsonLdBase,
-    '@type': 'WebSite',
-    name: siteName,
-    url: siteUrl,
-    description: description,
-    author: {
-      '@type': 'Person',
-      name: author,
-      url: `${siteUrl}/about`,
-    },
-    potentialAction: {
-      '@type': 'SearchAction',
-      target: {
-        '@type': 'EntryPoint',
-        urlTemplate: `${siteUrl}/search?q={search_term_string}`,
-      },
-      'query-input': 'required name=search_term_string',
-    },
-  });
-} else if (type === 'article' && publishedDate) {
-  jsonLd.push({
-    ...jsonLdBase,
-    '@type': 'BlogPosting',
-    headline: title,
-    description: description,
-    image: imageURL,
-    datePublished: publishedDate.toISOString(),
-    dateModified: (modifiedDate || publishedDate).toISOString(),
-    author: {
-      '@type': 'Person',
-      name: author,
-      url: `${siteUrl}/about`,
-    },
-    publisher: {
-      '@type': 'Organization',
-      name: siteName,
-      logo: {
-        '@type': 'ImageObject',
-        url: `${siteUrl}/favicon.svg`,
-      },
-    },
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': canonicalURL,
-    },
-    keywords: tags.join(', '),
-  });
+let jsonLd: any[] = [organizationSchema];
 
+// Generate breadcrumbs based on URL path or provided breadcrumbs
+const generateBreadcrumbs = () => {
+  if (breadcrumbs && breadcrumbs.length > 0) {
+    return [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      ...breadcrumbs.map((crumb, index) => ({
+        '@type': 'ListItem',
+        position: index + 2,
+        name: crumb.name,
+        item: crumb.url.startsWith('http') ? crumb.url : `${siteUrl}${crumb.url}`,
+      })),
+    ];
+  }
+
+  // Auto-generate from URL path
   if (Astro.url.pathname !== '/' && Astro.url.pathname !== '/404') {
     const pathParts = Astro.url.pathname.split('/').filter(Boolean);
     const breadcrumbItems = pathParts.map((part, index) => {
       const url = `${siteUrl}/${pathParts.slice(0, index + 1).join('/')}`;
-      const name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+      let name = part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' ');
+
+      // Improve naming for common sections
+      if (part === 'blog') name = 'Blog';
+      if (part === 'projects') name = 'Projects';
+      if (part === 'about') name = 'About';
+      if (part === 'contact') name = 'Contact';
+      if (part === 'tags') name = 'Tags';
+      if (part === 'noise') name = 'Noise';
+
       return {
         '@type': 'ListItem',
         position: index + 2,
@@ -104,33 +140,312 @@ if (type === 'website') {
       };
     });
 
-    jsonLd.push({
-      ...jsonLdBase,
-      '@type': 'BreadcrumbList',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'Home',
-          item: siteUrl,
-        },
-        ...breadcrumbItems,
-      ],
-    });
+    return [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: siteUrl,
+      },
+      ...breadcrumbItems,
+    ];
   }
-}
 
-const personSchema = {
-  ...jsonLdBase,
-  '@type': 'Person',
-  name: author,
-  url: `${siteUrl}/about`,
-  sameAs: [`https://twitter.com/${twitterHandle.replace('@', '')}`, `https://github.com/yabood`],
+  return null;
 };
 
-if (Astro.url.pathname === '/about' || Astro.url.pathname === '/about/') {
-  jsonLd.push(personSchema);
+const breadcrumbList = generateBreadcrumbs();
+if (breadcrumbList) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'BreadcrumbList',
+    '@id': `${canonicalURL}#breadcrumb`,
+    name: 'Breadcrumb',
+    itemListElement: breadcrumbList,
+  });
 }
+
+// Page-specific schemas
+if (type === 'website') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'WebSite',
+    '@id': `${siteUrl}/#website`,
+    name: siteName,
+    url: siteUrl,
+    description: description,
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    inLanguage: 'en-US',
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${siteUrl}/?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  });
+
+  // Add Person schema for the homepage to improve Google recognition
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'Person',
+    '@id': `${siteUrl}/about/#person`,
+    name: author,
+    url: `${siteUrl}/about`,
+    image: imageURL,
+    sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
+    jobTitle: 'Software Engineer',
+    description: 'Software engineer passionate about technology, development, and creativity',
+    knowsAbout: ['Software Development', 'Web Development', 'Technology', 'Programming'],
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${siteUrl}/`,
+    },
+  });
+} else if (type === 'article' && publishedDate) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'BlogPosting',
+    '@id': canonicalURL,
+    headline: title,
+    name: title,
+    description: description,
+    image: {
+      '@type': 'ImageObject',
+      url: imageURL,
+      contentUrl: imageURL,
+    },
+    datePublished: publishedDate.toISOString(),
+    dateModified: (modifiedDate || publishedDate).toISOString(),
+    author: {
+      '@type': 'Person',
+      name: author,
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalURL,
+    },
+    keywords: tags.join(', '),
+    ...(articleSection && { articleSection }),
+    inLanguage: 'en-US',
+    copyrightHolder: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    copyrightYear: publishedDate.getFullYear(),
+    ...(headings &&
+      headings.length > 0 && {
+        hasPart: headings
+          .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
+          .map((heading, index) => ({
+            '@type': 'WebPageElement',
+            '@id': `${canonicalURL}#${heading.slug}`,
+            name: heading.text,
+            url: `${canonicalURL}#${heading.slug}`,
+            position: index + 1,
+            cssSelector: `#${heading.slug}`,
+          })),
+        speakable: {
+          '@type': 'SpeakableSpecification',
+          cssSelector: headings
+            .filter((heading) => heading.depth >= 2 && heading.depth <= 4)
+            .map((heading) => `#${heading.slug}`)
+            .slice(0, 5) // Limit to first 5 headings for speakable content
+            .join(', '),
+        },
+      }),
+  });
+
+  // Table of Contents removed - was causing Google validation errors
+  // The heading structure is already included in the BlogPosting schema's hasPart property
+} else if (type === 'project' && projectData) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'CreativeWork',
+    '@id': canonicalURL,
+    name: title,
+    headline: title,
+    description: description,
+    image: {
+      '@type': 'ImageObject',
+      url: imageURL,
+      contentUrl: imageURL,
+    },
+    dateCreated: projectData.startDate.toISOString(),
+    dateModified: (modifiedDate || projectData.startDate).toISOString(),
+    creator: {
+      '@type': 'Person',
+      name: author,
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': canonicalURL,
+    },
+    keywords: tags.join(', '),
+    license: projectData.github ? `${projectData.github}/blob/main/LICENSE` : undefined,
+    codeRepository: projectData.github,
+    url: projectData.website || canonicalURL,
+    inLanguage: 'en-US',
+    copyrightHolder: {
+      '@id': `${siteUrl}/#organization`,
+    },
+  });
+} else if (type === 'about') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'ProfilePage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    mainEntity: {
+      '@type': 'Person',
+      '@id': `${siteUrl}/about/#person`,
+      name: author,
+      url: `${siteUrl}/about`,
+      image: imageURL,
+      sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
+      jobTitle: 'Software Engineer',
+      worksFor: {
+        '@id': `${siteUrl}/#organization`,
+      },
+    },
+    breadcrumb: {
+      '@id': `${canonicalURL}#breadcrumb`,
+    },
+    inLanguage: 'en-US',
+  });
+} else if (type === 'contact') {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'ContactPage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    mainEntity: {
+      '@id': `${siteUrl}/#organization`,
+    },
+    contactPoint: [
+      {
+        '@type': 'ContactPoint',
+        contactType: 'social media',
+        url: SITE_CONFIG.social.twitter,
+        name: 'Twitter',
+        availableLanguage: 'en',
+      },
+      {
+        '@type': 'ContactPoint',
+        contactType: 'code repository',
+        url: SITE_CONFIG.social.github,
+        name: 'GitHub',
+        availableLanguage: 'en',
+      },
+    ],
+    breadcrumb: {
+      '@id': `${canonicalURL}#breadcrumb`,
+    },
+    inLanguage: 'en-US',
+  });
+} else if (type === 'collection' && collectionData) {
+  jsonLd.push({
+    ...jsonLdBase,
+    '@type': 'CollectionPage',
+    '@id': canonicalURL,
+    name: title,
+    description: description,
+    url: canonicalURL,
+    numberOfItems: collectionData.items.length,
+    isPartOf: collectionData.parentEntity
+      ? {
+          '@type': collectionData.parentEntity.type,
+          name: collectionData.parentEntity.name,
+          url: collectionData.parentEntity.url,
+        }
+      : {
+          '@id': `${siteUrl}/#website`,
+        },
+    mainEntity: {
+      '@type': 'ItemList',
+      '@id': `${canonicalURL}#itemlist`,
+      name: title,
+      numberOfItems: collectionData.items.length,
+      itemListOrder: 'https://schema.org/ItemListOrderDescending',
+      itemListElement: collectionData.items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Article',
+          '@id': item.url,
+          headline: item.title,
+          name: item.title,
+          description: item.description,
+          url: item.url,
+          datePublished: item.publishedDate.toISOString(),
+          author: {
+            '@type': 'Person',
+            name: author,
+            url: `${siteUrl}/about`,
+          },
+          publisher: {
+            '@id': `${siteUrl}/#organization`,
+          },
+        },
+      })),
+    },
+    breadcrumb: breadcrumbList
+      ? {
+          '@id': `${canonicalURL}#breadcrumb`,
+        }
+      : undefined,
+    inLanguage: 'en-US',
+  });
+}
+
+// Add WebPage schema for better page identification
+jsonLd.push({
+  ...jsonLdBase,
+  '@type': 'WebPage',
+  '@id': canonicalURL,
+  name: title,
+  description: description,
+  url: canonicalURL,
+  inLanguage: 'en-US',
+  isPartOf: {
+    '@id': `${siteUrl}/#website`,
+  },
+  about:
+    type === 'about'
+      ? {
+          '@id': `${siteUrl}/about/#person`,
+        }
+      : undefined,
+  mainEntity:
+    type === 'article'
+      ? {
+          '@id': canonicalURL,
+        }
+      : type === 'project'
+        ? {
+            '@id': canonicalURL,
+          }
+        : undefined,
+  breadcrumb: breadcrumbList
+    ? {
+        '@id': `${canonicalURL}#breadcrumb`,
+      }
+    : undefined,
+  datePublished: publishedDate?.toISOString(),
+  dateModified: (modifiedDate || publishedDate)?.toISOString(),
+});
 ---
 
 <title>{title} | {siteName}</title>
