@@ -9,7 +9,11 @@ const user = Astro.locals.user;
 // The middleware already handles authentication and admin check
 // If we reach here, the user is authenticated and is an admin
 
-const initialContent = `# Welcome to MDX Editor
+// Check if we're editing existing content
+const collection = Astro.url.searchParams.get('collection');
+const slug = Astro.url.searchParams.get('slug');
+
+let initialContent = `# Welcome to MDX Editor
 
 Write your content here. The editor supports:
 
@@ -21,18 +25,62 @@ Write your content here. The editor supports:
 - Images
 
 Start writing your content...`;
+
+let editingExistingContent = false;
+let contentData: any = null;
+
+// If collection and slug are provided, load the existing content
+if (collection && slug) {
+  try {
+    const response = await fetch(`${Astro.url.origin}/api/content/${collection}/${slug}`);
+    if (response.ok) {
+      contentData = await response.json();
+      initialContent = contentData.content;
+      editingExistingContent = true;
+    }
+  } catch (error) {
+    console.error('Error loading content for editing:', error);
+  }
+}
 ---
 
 <BaseLayout title="Compose - Admin Only">
   <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
-      <h1 class="text-3xl font-bold mb-2">Compose Content</h1>
-      <p class="text-gray-600">Create and edit MDX content (Admin Only)</p>
+      <h1 class="text-3xl font-bold mb-2">
+        {editingExistingContent ? `Editing: ${contentData?.data?.title || slug}` : 'Compose Content'}
+      </h1>
+      <p class="text-gray-600">
+        {editingExistingContent 
+          ? `Editing existing content from ${collection}/${slug}` 
+          : 'Create and edit MDX content (Admin Only)'}
+      </p>
       <div class="mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
         <span class="mr-2">👤</span>
         Logged in as: {user?.email} ({user?.role || 'admin'})
       </div>
+      
+      {editingExistingContent && (
+        <div class="mt-2 inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm ml-2">
+          <span class="mr-2">✏️</span>
+          Edit Mode
+        </div>
+      )}
     </div>
+
+    {!editingExistingContent && (
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-3">Edit Existing Content</h2>
+        <p class="text-sm text-gray-600 mb-3">Select existing content to edit, or continue creating new content below.</p>
+        <button
+          id="browse-content-button"
+          class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Browse Existing Content
+        </button>
+        <div id="content-selector" class="hidden mt-4"></div>
+      </div>
+    )}
 
     <div class="bg-white rounded-lg shadow-lg p-6">
       <MDXEditorAstro initialContent={initialContent} />
@@ -41,31 +89,140 @@ Start writing your content...`;
         <button
           id="save-button"
           class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          data-editing={editingExistingContent}
+          data-collection={collection}
+          data-slug={slug}
         >
-          Save Draft
+          {editingExistingContent ? 'Update Content' : 'Save Draft'}
         </button>
         <button
           id="publish-button"
           class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          data-editing={editingExistingContent}
         >
-          Publish
+          {editingExistingContent ? 'Save Changes' : 'Publish'}
         </button>
+        {editingExistingContent && (
+          <a
+            href="/compose"
+            class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors inline-block text-center"
+          >
+            New Content
+          </a>
+        )}
       </div>
     </div>
   </div>
 
   <script>
-    // Button handlers
-    document.getElementById('save-button')?.addEventListener('click', () => {
-      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
-      console.log('Saving draft:', content);
-      alert('Draft saved! (This would save to your backend)');
+    // Load and display content selector
+    async function loadContentSelector() {
+      try {
+        const response = await fetch('/api/content/list');
+        const data = await response.json();
+        
+        const selector = document.getElementById('content-selector');
+        if (!selector) return;
+
+        let html = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-96 overflow-y-auto">';
+        
+        // Loop through collections
+        Object.entries(data).forEach(([collectionName, entries]: [string, any[]]) => {
+          if (entries.length > 0) {
+            html += `<div class="col-span-full"><h3 class="font-semibold text-lg text-gray-800 mb-2">${collectionName.charAt(0).toUpperCase() + collectionName.slice(1)}</h3></div>`;
+            entries.forEach(entry => {
+              const statusBadge = entry.draft 
+                ? '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Draft</span>'
+                : '<span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Published</span>';
+              
+              html += `
+                <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer" 
+                     onclick="editContent('${collectionName}', '${entry.slug}')">
+                  <h4 class="font-medium text-sm mb-1 truncate">${entry.title}</h4>
+                  <p class="text-xs text-gray-600 mb-2 line-clamp-2">${entry.description || 'No description'}</p>
+                  <div class="flex items-center justify-between">
+                    ${statusBadge}
+                    <span class="text-xs text-gray-500">${entry.pubDate ? new Date(entry.pubDate).toLocaleDateString() : 'No date'}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        });
+        
+        html += '</div>';
+        selector.innerHTML = html;
+      } catch (error) {
+        console.error('Error loading content:', error);
+      }
+    }
+
+    // Edit content function
+    function editContent(collection: string, slug: string) {
+      window.location.href = `/compose?collection=${collection}&slug=${slug}`;
+    }
+
+    // Browse content button
+    document.getElementById('browse-content-button')?.addEventListener('click', async () => {
+      const selector = document.getElementById('content-selector');
+      if (selector?.classList.contains('hidden')) {
+        selector.classList.remove('hidden');
+        await loadContentSelector();
+      } else {
+        selector?.classList.add('hidden');
+      }
     });
 
-    document.getElementById('publish-button')?.addEventListener('click', () => {
+    // Save/Update button handler
+    document.getElementById('save-button')?.addEventListener('click', async () => {
+      const button = document.getElementById('save-button') as HTMLButtonElement;
+      const isEditing = button.dataset.editing === 'true';
+      const collection = button.dataset.collection;
+      const slug = button.dataset.slug;
+      
       const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
-      console.log('Publishing:', content);
-      alert('Content published! (This would publish to your backend)');
+      
+      if (isEditing && collection && slug) {
+        // Update existing content
+        try {
+          const response = await fetch(`/api/content/${collection}/${slug}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+          });
+          
+          const result = await response.json();
+          if (response.ok) {
+            alert('Content updated successfully!');
+          } else {
+            alert(`Error: ${result.error}`);
+          }
+        } catch (error) {
+          console.error('Error updating content:', error);
+          alert('Error updating content');
+        }
+      } else {
+        // Create new content (existing functionality)
+        console.log('Saving draft:', content);
+        alert('Draft saved! (This would save to your backend)');
+      }
+    });
+
+    // Publish button handler
+    document.getElementById('publish-button')?.addEventListener('click', async () => {
+      const button = document.getElementById('publish-button') as HTMLButtonElement;
+      const isEditing = button.dataset.editing === 'true';
+      
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      
+      if (isEditing) {
+        // Same as save for existing content
+        document.getElementById('save-button')?.click();
+      } else {
+        // Publish new content (existing functionality)
+        console.log('Publishing:', content);
+        alert('Content published! (This would publish to your backend)');
+      }
     });
   </script>
 </BaseLayout>
