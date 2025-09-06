@@ -1,0 +1,41 @@
+---
+export interface Props {
+  initialContent?: string;
+}
+
+const { initialContent = '# Start writing...' } = Astro.props;
+---
+
+<div id="mdx-editor-root" data-initial-content={initialContent}></div>
+
+<script>
+  // Wait for DOM to be ready
+  document.addEventListener('DOMContentLoaded', async () => {
+    const root = document.getElementById('mdx-editor-root');
+    if (!root) return;
+
+    const initialContent = root.dataset.initialContent || '';
+
+    // Dynamically import React and the editor
+    const { default: React } = await import('react');
+    const { createRoot } = await import('react-dom/client');
+    const { default: MDXEditorComponent } = await import('./MDXEditorComponent');
+
+    const reactRoot = createRoot(root);
+
+    let currentContent = initialContent;
+
+    const handleChange = (content: string) => {
+      currentContent = content;
+      // Store in global for access from page
+      (window as Window & { mdxEditorContent?: string }).mdxEditorContent = content;
+    };
+
+    reactRoot.render(
+      React.createElement(MDXEditorComponent, {
+        initialContent: initialContent,
+        onChange: handleChange,
+      })
+    );
+  });
+</script>

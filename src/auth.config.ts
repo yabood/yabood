@@ -39,6 +39,14 @@ export const authConfig: AuthConfig = {
         token.name = user.name;
         token.picture = user.image;
         token.provider = account?.provider;
+
+        // Assign role based on email domain
+        const email = user.email as string;
+        if (email && email.endsWith('@yabood.com')) {
+          token.role = 'admin';
+        } else {
+          token.role = 'user';
+        }
       }
       return token;
     },
@@ -47,6 +55,7 @@ export const authConfig: AuthConfig = {
       if (token && sess.user) {
         (sess.user as any).id = token.id as string;
         (sess.user as any).provider = token.provider as string;
+        (sess.user as any).role = token.role as string;
       }
 
       const accessToken = jwt.sign(
@@ -55,6 +64,7 @@ export const authConfig: AuthConfig = {
           email: token.email,
           name: token.name,
           provider: token.provider,
+          role: token.role,
         },
         AUTH_SECRET as string,
         { expiresIn: '1d' }

@@ -1,0 +1,542 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MDXEditorAstro from '../components/MDXEditorAstro.astro';
+
+// Get the session from middleware (middleware handles auth check)
+const session = Astro.locals.session;
+const user = Astro.locals.user;
+
+// The middleware already handles authentication and admin check
+// If we reach here, the user is authenticated and is an admin
+
+// Check if we're editing existing content
+const collection = Astro.url.searchParams.get('collection');
+const slug = Astro.url.searchParams.get('slug');
+const isDraft = Astro.url.searchParams.get('draft') === 'true';
+
+let initialContent = '';
+let editingExistingContent = false;
+let contentData: any = null;
+let branchName: string | null = null;
+let previewUrl: string | null = null;
+
+// If collection and slug are provided, load the existing content
+if (collection && slug) {
+  try {
+    const url = isDraft
+      ? `${Astro.url.origin}/api/content/${collection}/${slug}?draft=true`
+      : `${Astro.url.origin}/api/content/${collection}/${slug}`;
+
+    const response = await fetch(url);
+    if (response.ok) {
+      contentData = await response.json();
+      initialContent = contentData.content;
+      editingExistingContent = true;
+      branchName = contentData.branch || null;
+      previewUrl = contentData.previewUrl || null;
+    }
+  } catch (error) {
+    console.error('Error loading content for editing:', error);
+  }
+}
+
+// Default content for new posts
+if (!initialContent) {
+  initialContent = `---
+title: "New Post"
+description: ""
+pubDate: ${new Date().toISOString().split('T')[0]}
+author: "Yousif Abood"
+tags: []
+draft: true
+---
+
+# New Post
+
+Start writing your content here...`;
+}
+---
+
+<BaseLayout title="Compose - Admin Only" description="Create and manage content drafts">
+  <div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-2">
+        {
+          editingExistingContent
+            ? `Editing: ${contentData?.data?.title || contentData?.title || slug}`
+            : 'Compose Content'
+        }
+      </h1>
+      <p class="text-gray-600">
+        {
+          editingExistingContent
+            ? `Editing existing content from ${collection}/${slug}`
+            : 'Create and edit MDX content (Admin Only)'
+        }
+      </p>
+      <div
+        class="mt-2 inline-flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+        <span class="mr-2">👤</span>
+        Logged in as: {user?.email} ({user?.role || 'admin'})
+      </div>
+
+      {
+        editingExistingContent && (
+          <div class="mt-2 inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm ml-2">
+            <span class="mr-2">✏️</span>
+            {isDraft ? 'Draft Mode' : 'Edit Mode'}
+          </div>
+        )
+      }
+
+      {
+        previewUrl && (
+          <a
+            href={previewUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="mt-2 inline-flex items-center px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm ml-2 hover:bg-purple-200 transition-colors">
+            <span class="mr-2">👁️</span>
+            Preview
+          </a>
+        )
+      }
+    </div>
+
+    {
+      !editingExistingContent && (
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h2 class="text-lg font-semibold mb-3">Create New Content</h2>
+              <div class="space-y-4">
+                <div>
+                  <label for="new-title" class="block text-sm font-medium text-gray-700 mb-1">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    id="new-title"
+                    placeholder="Enter your post title"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label for="new-slug" class="block text-sm font-medium text-gray-700 mb-1">
+                    Slug (URL)
+                  </label>
+                  <input
+                    type="text"
+                    id="new-slug"
+                    placeholder="auto-generated-from-title"
+                    readonly
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-600"
+                  />
+                </div>
+                <div>
+                  <label for="new-collection" class="block text-sm font-medium text-gray-700 mb-1">
+                    Collection
+                  </label>
+                  <select
+                    id="new-collection"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="blog">Blog</option>
+                    <option value="noise">Noise</option>
+                    <option value="updates">Updates</option>
+                  </select>
+                </div>
+                <button
+                  id="create-draft-button"
+                  class="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  Create Draft
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <h2 class="text-lg font-semibold mb-3">Or Edit Existing</h2>
+              <button
+                id="browse-drafts-button"
+                class="w-full px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors mb-3">
+                Browse Draft Content
+              </button>
+              <button
+                id="browse-published-button"
+                class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                Browse Published Content
+              </button>
+              <div id="content-selector" class="hidden mt-4" />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    <div class="bg-white rounded-lg shadow-lg p-6">
+      <MDXEditorAstro initialContent={initialContent} />
+
+      <div
+        class="mt-6 flex gap-4 flex-wrap"
+        data-branch={branchName}
+        data-collection={collection}
+        data-slug={slug}>
+        <button
+          id="save-button"
+          class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          data-editing={editingExistingContent}>
+          Save Draft
+        </button>
+        {
+          isDraft && (
+            <button
+              id="publish-button"
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              Publish to Production
+            </button>
+          )
+        }
+        {
+          isDraft && (
+            <button
+              id="delete-button"
+              class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              Delete Draft
+            </button>
+          )
+        }
+        {
+          editingExistingContent && (
+            <a
+              href="/compose"
+              class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors inline-block text-center">
+              New Content
+            </a>
+          )
+        }
+        <div id="status-message" class="hidden px-4 py-2 rounded-lg text-sm"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Generate slug from title
+    function generateSlug(title: string): string {
+      return title
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+    }
+
+    // Auto-generate slug from title
+    document.getElementById('new-title')?.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      const title = target.value;
+      const slugInput = document.getElementById('new-slug') as HTMLInputElement;
+      if (slugInput) {
+        slugInput.value = generateSlug(title);
+      }
+    });
+
+    // Show status message
+    function showStatus(message: string, type: 'success' | 'error' | 'info'): void {
+      const statusDiv = document.getElementById('status-message');
+      if (!statusDiv) return;
+
+      statusDiv.textContent = message;
+      statusDiv.className = `px-4 py-2 rounded-lg text-sm ${
+        type === 'success'
+          ? 'bg-green-100 text-green-800'
+          : type === 'error'
+            ? 'bg-red-100 text-red-800'
+            : 'bg-blue-100 text-blue-800'
+      }`;
+      statusDiv.classList.remove('hidden');
+
+      setTimeout(() => {
+        statusDiv.classList.add('hidden');
+      }, 5000);
+    }
+
+    // Load draft branches
+    async function loadDraftBranches() {
+      try {
+        const response = await fetch('/api/content/branches');
+        const data = await response.json();
+
+        const selector = document.getElementById('content-selector');
+        if (!selector) return;
+
+        if (data.drafts.length === 0) {
+          selector.innerHTML = '<p class="text-gray-600">No drafts found</p>';
+          return;
+        }
+
+        let html = '<div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">';
+        data.drafts.forEach(
+          (draft: {
+            collection: string;
+            slug: string;
+            title: string;
+            description: string;
+            previewUrl: string;
+          }) => {
+            html += `
+            <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer draft-item" 
+                 data-collection="${draft.collection}" data-slug="${draft.slug}">
+              <h4 class="font-medium text-sm mb-1">${draft.title}</h4>
+              <p class="text-xs text-gray-600 mb-2">${draft.description || 'No description'}</p>
+              <div class="flex items-center justify-between">
+                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Draft</span>
+                <a href="${draft.previewUrl}" target="_blank" class="text-xs text-blue-600 hover:underline">Preview</a>
+              </div>
+            </div>
+          `;
+          }
+        );
+        html += '</div>';
+        selector.innerHTML = html;
+
+        // Add click handlers
+        selector.querySelectorAll('.draft-item').forEach((item) => {
+          item.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+            const collection = target.dataset.collection;
+            const slug = target.dataset.slug;
+            if (collection && slug) {
+              window.location.href = `/compose?collection=${collection}&slug=${slug}&draft=true`;
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error loading drafts:', error);
+        showStatus('Failed to load drafts', 'error');
+      }
+    }
+
+    // Load published content
+    async function loadPublishedContent() {
+      try {
+        const response = await fetch('/api/content/list');
+        const data = await response.json();
+
+        const selector = document.getElementById('content-selector');
+        if (!selector) return;
+
+        let html = '<div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">';
+        Object.entries(data).forEach(([collectionName, entries]) => {
+          const entriesArray = entries as Array<{
+            title: string;
+            description: string;
+            pubDate: string;
+            draft: boolean;
+            slug: string;
+          }>;
+          const publishedEntries = entriesArray.filter((e) => !e.draft);
+          if (publishedEntries.length > 0) {
+            html += `<h3 class="font-semibold text-lg text-gray-800 mb-2">${collectionName.charAt(0).toUpperCase() + collectionName.slice(1)}</h3>`;
+            publishedEntries.forEach((entry) => {
+              html += `
+                <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer published-item" 
+                     data-collection="${collectionName}" data-slug="${entry.slug}">
+                  <h4 class="font-medium text-sm mb-1">${entry.title}</h4>
+                  <p class="text-xs text-gray-600 mb-2">${entry.description || 'No description'}</p>
+                  <div class="flex items-center justify-between">
+                    <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Published</span>
+                    <span class="text-xs text-gray-500">${entry.pubDate ? new Date(entry.pubDate).toLocaleDateString() : ''}</span>
+                  </div>
+                </div>
+              `;
+            });
+          }
+        });
+        html += '</div>';
+        selector.innerHTML = html;
+
+        // Add click handlers
+        selector.querySelectorAll('.published-item').forEach((item) => {
+          item.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+            const collection = target.dataset.collection;
+            const slug = target.dataset.slug;
+            if (collection && slug) {
+              window.location.href = `/compose?collection=${collection}&slug=${slug}`;
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error loading content:', error);
+        showStatus('Failed to load content', 'error');
+      }
+    }
+
+    // Create new draft
+    document.getElementById('create-draft-button')?.addEventListener('click', async () => {
+      const titleInput = document.getElementById('new-title') as HTMLInputElement;
+      const collectionSelect = document.getElementById('new-collection') as HTMLSelectElement;
+      const title = titleInput?.value;
+      const collection = collectionSelect?.value;
+
+      if (!title) {
+        showStatus('Please enter a title', 'error');
+        return;
+      }
+
+      try {
+        showStatus('Creating draft...', 'info');
+        const response = await fetch('/api/content/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, collection }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          showStatus('Draft created successfully!', 'success');
+          setTimeout(() => {
+            window.location.href = `/compose?collection=${collection}&slug=${result.slug}&draft=true`;
+          }, 1000);
+        } else {
+          showStatus(result.error || 'Failed to create draft', 'error');
+        }
+      } catch (error) {
+        console.error('Error creating draft:', error);
+        showStatus('Failed to create draft', 'error');
+      }
+    });
+
+    // Browse drafts button
+    document.getElementById('browse-drafts-button')?.addEventListener('click', async () => {
+      const selector = document.getElementById('content-selector');
+      if (selector) {
+        selector.classList.remove('hidden');
+        await loadDraftBranches();
+      }
+    });
+
+    // Browse published button
+    document.getElementById('browse-published-button')?.addEventListener('click', async () => {
+      const selector = document.getElementById('content-selector');
+      if (selector) {
+        selector.classList.remove('hidden');
+        await loadPublishedContent();
+      }
+    });
+
+    // Save button handler
+    document.getElementById('save-button')?.addEventListener('click', async () => {
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      const container = document.querySelector('[data-branch]') as HTMLElement;
+      const branch = container?.dataset.branch;
+      const collection = container?.dataset.collection;
+      const slug = container?.dataset.slug;
+
+      if (!branch || !collection || !slug) {
+        showStatus('Missing required data', 'error');
+        return;
+      }
+
+      try {
+        showStatus('Saving draft...', 'info');
+        const response = await fetch(`/api/content/${collection}/${slug}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content, branch }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          showStatus('Draft saved successfully!', 'success');
+          if (result.previewUrl) {
+            console.log('Preview URL:', result.previewUrl);
+          }
+        } else {
+          showStatus(result.error || 'Failed to save draft', 'error');
+        }
+      } catch (error) {
+        console.error('Error saving draft:', error);
+        showStatus('Failed to save draft', 'error');
+      }
+    });
+
+    // Publish button handler
+    document.getElementById('publish-button')?.addEventListener('click', async () => {
+      const container = document.querySelector('[data-branch]') as HTMLElement;
+      const collection = container?.dataset.collection;
+      const slug = container?.dataset.slug;
+
+      if (!collection || !slug) {
+        showStatus('Missing required data', 'error');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to publish this draft to production?')) {
+        return;
+      }
+
+      try {
+        showStatus('Publishing to production...', 'info');
+        const response = await fetch(`/api/content/${collection}/${slug}/publish`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          if (result.requiresManualMerge) {
+            showStatus('Pull request created. Manual merge may be required.', 'info');
+          } else {
+            showStatus('Published successfully!', 'success');
+            setTimeout(() => {
+              window.location.href = result.productionUrl || '/';
+            }, 2000);
+          }
+        } else {
+          showStatus(result.error || 'Failed to publish', 'error');
+        }
+      } catch (error) {
+        console.error('Error publishing:', error);
+        showStatus('Failed to publish', 'error');
+      }
+    });
+
+    // Delete button handler
+    document.getElementById('delete-button')?.addEventListener('click', async () => {
+      const container = document.querySelector('[data-branch]') as HTMLElement;
+      const collection = container?.dataset.collection;
+      const slug = container?.dataset.slug;
+
+      if (!collection || !slug) {
+        showStatus('Missing required data', 'error');
+        return;
+      }
+
+      if (!confirm('Are you sure you want to delete this draft? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        showStatus('Deleting draft...', 'info');
+        const response = await fetch(`/api/content/${collection}/${slug}/delete`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          showStatus('Draft deleted successfully!', 'success');
+          setTimeout(() => {
+            window.location.href = '/compose';
+          }, 1000);
+        } else {
+          showStatus(result.error || 'Failed to delete draft', 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting draft:', error);
+        showStatus('Failed to delete draft', 'error');
+      }
+    });
+  </script>
+</BaseLayout>
