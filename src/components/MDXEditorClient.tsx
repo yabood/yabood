@@ -67,7 +67,9 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                   <Separator />
                   <InsertThematicBreak />
                   <Separator />
-                  <DiffSourceToggleWrapper />
+                  <DiffSourceToggleWrapper options={['rich-text', 'source']}>
+                    <></>
+                  </DiffSourceToggleWrapper>
                 </>
               ),
             }),
@@ -180,7 +182,7 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                     { name: 'style', type: 'string' },
                   ],
                   hasChildren: true,
-                  Editor: ({ children }) => React.createElement('div', {}, children)
+                  Editor: ({ children }: any) => React.createElement('div', {}, children)
                 }
               ]
             }),

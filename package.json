@@ -21,6 +21,7 @@
     "@astrojs/vercel": "^8.2.7",
     "@auth/core": "^0.40.0",
     "@mdxeditor/editor": "^3.42.0",
+    "@octokit/rest": "^22.0.0",
     "@tailwindcss/postcss": "^4.0.0",
     "astro": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
