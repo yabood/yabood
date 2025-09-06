@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getUserFromToken, type AuthUser } from '../../../utils/auth.js';
+import { getUserFromToken } from '../../../utils/auth.js';
 
 export const GET: APIRoute = async ({ request }) => {
   try {

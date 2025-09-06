@@ -5,7 +5,7 @@ const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 
-export const POST: APIRoute = async ({ params, request }) => {
+export const POST: APIRoute = async ({ params }) => {
   const { collection, slug } = params;
 
   if (!collection || !slug) {
