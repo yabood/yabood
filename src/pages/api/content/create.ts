@@ -11,19 +11,19 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     // Check for required environment variables
     if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
-      return new Response(
-        JSON.stringify({ error: 'GitHub configuration missing' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'GitHub configuration missing' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     const { title, collection = 'blog', description = '', tags = [] } = await request.json();
 
     if (!title) {
-      return new Response(
-        JSON.stringify({ error: 'Title is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Title is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Initialize GitHub service
@@ -41,7 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
 
     // Get existing draft branches to ensure unique slug
     const draftBranches = await github.listBranches('draft/');
-    const existingSlugs = draftBranches.map(branch => branch.replace('draft/', ''));
+    const existingSlugs = draftBranches.map((branch) => branch.replace('draft/', ''));
     slug = ensureUniqueSlug(slug, existingSlugs);
 
     // Create branch name
@@ -93,9 +93,9 @@ Start writing your content here...
   } catch (error: any) {
     console.error('Error creating content:', error);
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to create content', 
-        details: error.message 
+      JSON.stringify({
+        error: 'Failed to create content',
+        details: error.message,
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );

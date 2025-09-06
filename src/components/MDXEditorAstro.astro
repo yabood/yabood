@@ -8,10 +8,7 @@ export interface Props {
 const { initialContent = '# Start writing...' } = Astro.props;
 ---
 
-<MDXEditorReact 
-  client:only="react"
-  initialContent={initialContent}
-/>
+<MDXEditorReact client:only="react" initialContent={initialContent} />
 
 <style>
   /* Ensure the editor styles are loaded */

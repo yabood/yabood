@@ -11,7 +11,7 @@ function mapEntryData(entry: any, collectionName: string) {
         description: entry.data.description,
         pubDate: entry.data.pubDate,
         draft: entry.data.draft,
-        tags: entry.data.tags
+        tags: entry.data.tags,
       };
     case 'noise':
       return {
@@ -21,7 +21,7 @@ function mapEntryData(entry: any, collectionName: string) {
         description: entry.data.summary || '',
         pubDate: entry.data.publishedAt,
         draft: entry.data.draft,
-        tags: []
+        tags: [],
       };
     case 'updates':
       return {
@@ -31,7 +31,7 @@ function mapEntryData(entry: any, collectionName: string) {
         description: entry.data.summary,
         pubDate: entry.data.date,
         draft: entry.data.draft,
-        tags: entry.data.tags
+        tags: entry.data.tags,
       };
     case 'projects':
       return {
@@ -41,7 +41,7 @@ function mapEntryData(entry: any, collectionName: string) {
         description: entry.data.description,
         pubDate: entry.data.startDate,
         draft: entry.data.draft,
-        tags: entry.data.tags
+        tags: entry.data.tags,
       };
     default:
       return {
@@ -51,7 +51,7 @@ function mapEntryData(entry: any, collectionName: string) {
         description: '',
         pubDate: null,
         draft: false,
-        tags: []
+        tags: [],
       };
   }
 }
@@ -72,7 +72,9 @@ export const GET: APIRoute = async ({ url }) => {
       // Get all collections
       for (const collectionName of collections) {
         try {
-          const entries = await getCollection(collectionName as 'blog' | 'noise' | 'updates' | 'projects');
+          const entries = await getCollection(
+            collectionName as 'blog' | 'noise' | 'updates' | 'projects'
+          );
           result[collectionName] = entries.map((entry) => mapEntryData(entry, collectionName));
         } catch (error) {
           console.error(`Error loading collection ${collectionName}:`, error);
@@ -83,13 +85,13 @@ export const GET: APIRoute = async ({ url }) => {
 
     return new Response(JSON.stringify(result), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Error listing content:', error);
     return new Response(JSON.stringify({ error: 'Failed to list content' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 };

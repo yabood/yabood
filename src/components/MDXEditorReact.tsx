@@ -5,7 +5,9 @@ interface MDXEditorReactProps {
   initialContent?: string;
 }
 
-const MDXEditorReact: React.FC<MDXEditorReactProps> = ({ initialContent = '# Start writing...' }) => {
+const MDXEditorReact: React.FC<MDXEditorReactProps> = ({
+  initialContent = '# Start writing...',
+}) => {
   const handleChange = (content: string) => {
     // Store content globally for access from other scripts
     if (typeof window !== 'undefined') {

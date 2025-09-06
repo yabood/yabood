@@ -7,19 +7,19 @@ const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 
 export const DELETE: APIRoute = async ({ params }) => {
   const { collection, slug } = params;
-  
+
   if (!collection || !slug) {
     return new Response(JSON.stringify({ error: 'Collection and slug are required' }), {
       status: 400,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
-    return new Response(
-      JSON.stringify({ error: 'GitHub configuration missing' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: 'GitHub configuration missing' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   try {
@@ -34,10 +34,10 @@ export const DELETE: APIRoute = async ({ params }) => {
     // Check if draft branch exists
     const branchExists = await github.branchExists(branchName);
     if (!branchExists) {
-      return new Response(
-        JSON.stringify({ error: 'Draft not found' }),
-        { status: 404, headers: { 'Content-Type': 'application/json' } }
-      );
+      return new Response(JSON.stringify({ error: 'Draft not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     // Delete the branch (this will also delete all files in that branch)
@@ -56,9 +56,9 @@ export const DELETE: APIRoute = async ({ params }) => {
   } catch (error: any) {
     console.error('Error deleting draft:', error);
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to delete draft', 
-        details: error.message 
+      JSON.stringify({
+        error: 'Failed to delete draft',
+        details: error.message,
       }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );

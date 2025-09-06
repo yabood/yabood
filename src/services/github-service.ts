@@ -205,9 +205,7 @@ export class GitHubService {
       per_page: 100,
     });
 
-    return branches
-      .map(branch => branch.name)
-      .filter(name => name.startsWith(pattern));
+    return branches.map((branch) => branch.name).filter((name) => name.startsWith(pattern));
   }
 
   /**
@@ -232,7 +230,10 @@ export class GitHubService {
   /**
    * Get all files in a directory from a branch
    */
-  async getDirectoryContents(path: string, branch: string): Promise<Array<{ name: string; path: string }>> {
+  async getDirectoryContents(
+    path: string,
+    branch: string
+  ): Promise<Array<{ name: string; path: string }>> {
     try {
       const { data } = await this.octokit.repos.getContent({
         owner: this.owner,
@@ -243,8 +244,8 @@ export class GitHubService {
 
       if (Array.isArray(data)) {
         return data
-          .filter(item => item.type === 'file')
-          .map(item => ({
+          .filter((item) => item.type === 'file')
+          .map((item) => ({
             name: item.name,
             path: item.path,
           }));

@@ -9,7 +9,9 @@ interface MDXEditorComponentProps {
 
 const MDXEditorComponent = React.forwardRef<MDXEditorMethods, MDXEditorComponentProps>(
   ({ initialContent = '', onChange, readOnly = false }, ref) => {
-    const [MDXEditor, setMDXEditor] = React.useState<typeof import('@mdxeditor/editor').MDXEditor | null>(null);
+    const [MDXEditor, setMDXEditor] = React.useState<
+      typeof import('@mdxeditor/editor').MDXEditor | null
+    >(null);
     const [plugins, setPlugins] = React.useState<never[]>([]);
 
     React.useEffect(() => {

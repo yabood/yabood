@@ -32,7 +32,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       if (authUser) {
         session.user = {
           ...session.user,
-          role: authUser.role
+          role: authUser.role,
         };
       }
     }

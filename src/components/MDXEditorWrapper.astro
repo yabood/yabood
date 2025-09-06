@@ -22,7 +22,7 @@ const { initialContent = '# Start writing...' } = Astro.props;
     const { default: MDXEditorComponent } = await import('./MDXEditorComponent');
 
     const reactRoot = createRoot(root);
-    
+
     let currentContent = initialContent;
 
     const handleChange = (content: string) => {
