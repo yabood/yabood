@@ -1,5 +1,5 @@
 import React from 'react';
-import type { MDXEditorMethods, MDXEditorProps } from '@mdxeditor/editor';
+import type { MDXEditorMethods } from '@mdxeditor/editor';
 
 interface MDXEditorComponentProps {
   initialContent?: string;
@@ -12,13 +12,12 @@ const MDXEditorComponent = React.forwardRef<MDXEditorMethods, MDXEditorComponent
     const [MDXEditor, setMDXEditor] = React.useState<
       typeof import('@mdxeditor/editor').MDXEditor | null
     >(null);
-    const [plugins, setPlugins] = React.useState<never[]>([]);
 
     React.useEffect(() => {
       // Dynamically import MDXEditor to avoid SSR issues
       import('@mdxeditor/editor').then((mod) => {
         setMDXEditor(() => mod.MDXEditor as typeof mod.MDXEditor);
-        setPlugins([] as never[]); // Fix: TypeScript issue with plugin types
+        // Plugins are temporarily disabled for stability
         /*setPlugins([
           mod.headingsPlugin(),
           mod.listsPlugin(),
@@ -84,10 +83,11 @@ const MDXEditorComponent = React.forwardRef<MDXEditorMethods, MDXEditorComponent
                   { name: 'decoding', type: 'string' },
                 ],
                 hasChildren: false,
-                Editor: ({ mdastNode }) => {
-                  const props = mdastNode.attributes || [];
+                Editor: (props: { mdastNode: { name: string; type: 'mdxJsxFlowElement' | 'mdxJsxTextElement'; attributes: Array<{ name: string; type: string; value: any }>; children: any[] }; children?: React.ReactNode }) => {
+                  const { mdastNode } = props;
+                  const attributes = mdastNode.attributes || [];
                   const getAttr = (name: string) => {
-                    const attr = props.find((p: any) => p.name === name);
+                    const attr = attributes.find((p: { name: string; value: string }) => p.name === name);
                     return attr?.value || '';
                   };
                   
@@ -138,7 +138,7 @@ const MDXEditorComponent = React.forwardRef<MDXEditorMethods, MDXEditorComponent
                   { name: 'style', type: 'string' },
                 ],
                 hasChildren: true,
-                Editor: (props: { children?: React.ReactNode }) => React.createElement('div', {}, props.children || null)
+                Editor: (props: { mdastNode?: any; children?: React.ReactNode }) => React.createElement('div', { className: 'jsx-div' }, props.children)
               }
             ]
           }),

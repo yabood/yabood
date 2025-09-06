@@ -68,7 +68,9 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                   <InsertThematicBreak />
                   <Separator />
                   <DiffSourceToggleWrapper options={['rich-text', 'source']}>
-                    <></>
+                    <BoldItalicUnderlineToggles />
+                    <Separator />
+                    <BlockTypeSelect />
                   </DiffSourceToggleWrapper>
                 </>
               ),
@@ -128,10 +130,13 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                     { name: 'decoding', type: 'string' },
                   ],
                   hasChildren: false,
-                  Editor: ({ mdastNode }) => {
-                    const props = mdastNode.attributes || [];
+                  Editor: (props: any) => {
+                    const { mdastNode } = props;
+                    const attributes = mdastNode.attributes || [];
                     const getAttr = (name: string) => {
-                      const attr = props.find((p: any) => p.name === name);
+                      const attr = attributes.find(
+                        (p: { name: string; value: string }) => p.name === name
+                      );
                       return attr?.value || '';
                     };
 
@@ -209,7 +214,9 @@ const MDXEditorClient = React.forwardRef<MDXEditorMethods, MDXEditorClientProps>
                     { name: 'style', type: 'string' },
                   ],
                   hasChildren: true,
-                  Editor: ({ children }: any) => React.createElement('div', {}, children),
+                  Editor: (props: { mdastNode?: any; children?: React.ReactNode }) => {
+                    return React.createElement('div', { className: 'jsx-div' }, props.children);
+                  },
                 },
               ],
             }),

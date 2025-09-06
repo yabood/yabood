@@ -2,8 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import MDXEditorAstro from '../components/MDXEditorAstro.astro';
 
-// Get the session from middleware (middleware handles auth check)
-const session = Astro.locals.session;
+// Get the user from middleware (middleware handles auth check)
 const user = Astro.locals.user;
 
 // The middleware already handles authentication and admin check
@@ -57,7 +56,9 @@ Start writing your content here...`;
 }
 ---
 
-<BaseLayout title="Compose - Admin Only" description="Create and manage content drafts">
+<BaseLayout
+  title="Compose - Admin Only"
+  description="Create and manage content drafts - Admin access required">
   <div class="container mx-auto px-4 py-8">
     <div class="mb-6">
       <h1 class="text-3xl font-bold mb-2">
@@ -219,6 +220,23 @@ Start writing your content here...`;
   </div>
 
   <script>
+    // Type definitions
+    interface Draft {
+      collection: string;
+      slug: string;
+      title: string;
+      description: string;
+      previewUrl: string;
+    }
+
+    interface PublishedEntry {
+      title: string;
+      description: string;
+      pubDate: string;
+      draft: boolean;
+      slug: string;
+    }
+
     // Generate slug from title
     function generateSlug(title: string): string {
       return title
@@ -275,15 +293,8 @@ Start writing your content here...`;
         }
 
         let html = '<div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">';
-        data.drafts.forEach(
-          (draft: {
-            collection: string;
-            slug: string;
-            title: string;
-            description: string;
-            previewUrl: string;
-          }) => {
-            html += `
+        (data.drafts as Draft[]).forEach((draft) => {
+          html += `
             <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer draft-item" 
                  data-collection="${draft.collection}" data-slug="${draft.slug}">
               <h4 class="font-medium text-sm mb-1">${draft.title}</h4>
@@ -294,8 +305,7 @@ Start writing your content here...`;
               </div>
             </div>
           `;
-          }
-        );
+        });
         html += '</div>';
         selector.innerHTML = html;
 
@@ -326,15 +336,8 @@ Start writing your content here...`;
         if (!selector) return;
 
         let html = '<div class="grid grid-cols-1 gap-4 max-h-96 overflow-y-auto">';
-        Object.entries(data).forEach(([collectionName, entries]) => {
-          const entriesArray = entries as Array<{
-            title: string;
-            description: string;
-            pubDate: string;
-            draft: boolean;
-            slug: string;
-          }>;
-          const publishedEntries = entriesArray.filter((e) => !e.draft);
+        Object.entries(data).forEach(([collectionName, entries]: [string, unknown]) => {
+          const publishedEntries = (entries as PublishedEntry[]).filter((e) => !e.draft);
           if (publishedEntries.length > 0) {
             html += `<h3 class="font-semibold text-lg text-gray-800 mb-2">${collectionName.charAt(0).toUpperCase() + collectionName.slice(1)}</h3>`;
             publishedEntries.forEach((entry) => {

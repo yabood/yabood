@@ -6,7 +6,7 @@ const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 const VERCEL_PROJECT_NAME = import.meta.env.VERCEL_PROJECT_NAME || 'yabood';
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async () => {
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
     return new Response(JSON.stringify({ error: 'GitHub configuration missing' }), {
       status: 500,
@@ -33,7 +33,6 @@ export const GET: APIRoute = async ({ url }) => {
           // Try to find the MDX file in different collections
           const collections = ['blog', 'noise', 'updates'];
           let contentData = null;
-          let foundCollection = null;
 
           for (const collection of collections) {
             const filePath = `src/content/${collection}/${slug}.mdx`;
@@ -58,7 +57,6 @@ export const GET: APIRoute = async ({ url }) => {
                   : [],
                 previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
               };
-              foundCollection = collection;
               break;
             } catch {
               // File not found in this collection, try next
