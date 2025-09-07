@@ -8,19 +8,17 @@ const user = Astro.locals.user;
 // If we reach here, the user is authenticated and is an admin
 ---
 
-<BaseLayout
-  title="Admin Dashboard"
-  description="Admin management interface">
+<BaseLayout title="Admin Dashboard" description="Admin management interface">
   <div class="flex h-screen bg-gray-50">
     <!-- Left Sidebar -->
-    <div class="w-64 bg-white shadow-lg">
-      <div class="p-6">
+    <div class="w-72 bg-white shadow-lg">
+      <div class="p-8">
         <h1 class="text-2xl font-bold text-gray-800">Admin Panel</h1>
         <div class="mt-2 text-sm text-gray-600">
           Logged in as: {user?.email}
         </div>
       </div>
-      
+
       <nav class="mt-6">
         <button
           class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-blue-500 bg-blue-50"
@@ -42,8 +40,14 @@ const user = Astro.locals.user;
             class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent flex items-center justify-between"
             data-category="projects">
             <span class="font-medium">Projects</span>
-            <svg id="projects-chevron" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <svg
+              id="projects-chevron"
+              class="w-4 h-4 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
+              ></path>
             </svg>
           </button>
           <div id="project-subnav" class="hidden bg-gray-50">
@@ -52,7 +56,7 @@ const user = Astro.locals.user;
         </div>
       </nav>
 
-      <div class="absolute bottom-0 w-64 p-6 border-t">
+      <div class="absolute bottom-0 w-72 p-6 border-t">
         <a
           href="/admin/compose"
           class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors">
@@ -66,9 +70,11 @@ const user = Astro.locals.user;
       <div class="p-8">
         <div class="mb-6">
           <div>
-            <h2 id="content-title" class="text-3xl font-bold text-gray-800">All Content</h2>
-            <div class="flex justify-between items-center mt-2">
-              <p id="content-description" class="text-gray-600">Showing all published and draft content</p>
+            <h2 id="content-title" class="text-2xl font-bold text-gray-800">All Content</h2>
+            <div class="flex justify-between items-center mt-1">
+              <p id="content-description" class="text-sm text-gray-600">
+                Showing all published and draft content
+              </p>
               <div id="content-filter" class="hidden">
                 <div class="flex gap-2">
                   <button
@@ -94,9 +100,7 @@ const user = Astro.locals.user;
 
         <!-- Content List -->
         <div id="content-list" class="grid grid-cols-1 gap-4">
-          <div class="text-center py-8 text-gray-500">
-            Loading content...
-          </div>
+          <div class="text-center py-8 text-gray-500">Loading content...</div>
         </div>
       </div>
     </div>
@@ -151,34 +155,34 @@ const user = Astro.locals.user;
 
         // Populate project subnav
         populateProjectSubnav();
-        
+
         displayContent(currentCategory);
       } catch (error) {
         console.error('Error loading content:', error);
         showError('Failed to load content');
       }
     }
-    
+
     // Populate project subnav
     function populateProjectSubnav() {
       const projectSubnav = document.getElementById('project-subnav');
       if (!projectSubnav) return;
-      
+
       let html = '';
-      allProjects.forEach(project => {
+      allProjects.forEach((project) => {
         html += `
           <button
-            class="project-item w-full text-left px-12 py-2 hover:bg-gray-100 transition-colors text-sm"
+            class="project-item w-full text-left px-12 py-3 hover:bg-gray-100 transition-colors"
             data-project="${project.slug}">
             ${project.title}
           </button>
         `;
       });
-      
+
       projectSubnav.innerHTML = html;
-      
+
       // Add click handlers for project items
-      projectSubnav.querySelectorAll('.project-item').forEach(item => {
+      projectSubnav.querySelectorAll('.project-item').forEach((item) => {
         item.addEventListener('click', (e) => {
           e.stopPropagation();
           const target = e.currentTarget as HTMLElement;
@@ -189,20 +193,20 @@ const user = Astro.locals.user;
         });
       });
     }
-    
+
     // Select a specific project
     function selectProject(projectSlug: string) {
       currentProject = projectSlug;
       currentCategory = 'project-updates';
-      
+
       // Update sidebar active state
-      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
         btn.classList.remove('border-blue-500', 'bg-blue-50');
         btn.classList.add('border-transparent');
       });
-      
+
       // Highlight selected project
-      document.querySelectorAll('.project-item').forEach(item => {
+      document.querySelectorAll('.project-item').forEach((item) => {
         const itemElement = item as HTMLElement;
         if (itemElement.dataset.project === projectSlug) {
           itemElement.classList.add('bg-blue-50', 'font-medium');
@@ -210,40 +214,41 @@ const user = Astro.locals.user;
           itemElement.classList.remove('bg-blue-50', 'font-medium');
         }
       });
-      
+
       // Display project updates
       displayProjectUpdates(projectSlug);
     }
-    
+
     // Display updates for a specific project
     function displayProjectUpdates(projectSlug: string) {
       const contentList = document.getElementById('content-list');
       const titleElement = document.getElementById('content-title');
       const descriptionElement = document.getElementById('content-description');
-      
+
       if (!contentList || !titleElement || !descriptionElement) return;
-      
-      const project = allProjects.find(p => p.slug === projectSlug);
+
+      const project = allProjects.find((p) => p.slug === projectSlug);
       if (!project) return;
-      
+
       titleElement.textContent = `${project.title} - Updates`;
       descriptionElement.textContent = project.description || 'Project updates and progress';
-      
+
       // Filter updates for this project
-      const projectUpdates = allUpdates.filter(update => 
-        (update as any).project === projectSlug
-      );
-      
+      const projectUpdates = allUpdates.filter((update) => (update as any).project === projectSlug);
+
       let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
-      
+
       if (projectUpdates.length === 0) {
-        html += '<div class="px-6 py-8 text-center text-gray-500">No updates found for this project</div>';
+        html +=
+          '<div class="px-6 py-8 text-center text-gray-500">No updates found for this project</div>';
       } else {
-        projectUpdates.forEach(update => {
+        projectUpdates.forEach((update) => {
           const isDraft = update.draft === true;
-          const badgeClass = isDraft ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+          const badgeClass = isDraft
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-green-100 text-green-800';
           const badgeText = isDraft ? 'Draft' : 'Published';
-          
+
           html += `
             <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
               <div class="flex gap-4 items-center">
@@ -285,7 +290,7 @@ const user = Astro.locals.user;
           `;
         });
       }
-      
+
       html += '</div>';
       contentList.innerHTML = html;
     }
@@ -296,27 +301,32 @@ const user = Astro.locals.user;
       const titleElement = document.getElementById('content-title');
       const descriptionElement = document.getElementById('content-description');
       const contentFilter = document.getElementById('content-filter');
-      
+
       if (!contentList || !titleElement || !descriptionElement) return;
 
       currentCategory = category;
       currentProject = null; // Reset current project when switching categories
       currentFilter = 'all'; // Reset filter when switching categories
-      
+
       // Show/hide content filter based on category
       if (contentFilter) {
-        if (category === 'all' || category === 'blog' || category === 'noise' || category === 'projects') {
+        if (
+          category === 'all' ||
+          category === 'blog' ||
+          category === 'noise' ||
+          category === 'projects'
+        ) {
           contentFilter.classList.remove('hidden');
         } else {
           contentFilter.classList.add('hidden');
         }
       }
-      
+
       // Reset filter buttons
       updateFilterButtons();
-      
+
       // Update sidebar active state
-      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
         const btnElement = btn as HTMLElement;
         if (btnElement.dataset.category === category) {
           btnElement.classList.add('border-blue-500', 'bg-blue-50');
@@ -326,12 +336,12 @@ const user = Astro.locals.user;
           btnElement.classList.add('border-transparent');
         }
       });
-      
+
       // Clear project selection
-      document.querySelectorAll('.project-item').forEach(item => {
+      document.querySelectorAll('.project-item').forEach((item) => {
         item.classList.remove('bg-blue-50', 'font-medium');
       });
-      
+
       // Handle projects expand/collapse
       const projectSubnav = document.getElementById('project-subnav');
       const projectsChevron = document.getElementById('projects-chevron');
@@ -355,17 +365,21 @@ const user = Astro.locals.user;
           break;
         case 'blog':
           titleElement.textContent = 'Blog Posts';
-          descriptionElement.textContent = getFilteredDescription('Published and draft blog articles');
+          descriptionElement.textContent = getFilteredDescription(
+            'Published and draft blog articles'
+          );
           break;
         case 'projects':
           titleElement.textContent = 'Projects';
-          descriptionElement.textContent = getFilteredDescription('Portfolio projects and case studies');
+          descriptionElement.textContent = getFilteredDescription(
+            'Portfolio projects and case studies'
+          );
           break;
       }
 
       renderFilteredContent();
     }
-    
+
     // Helper function to get filtered description
     function getFilteredDescription(baseText?: string): string {
       if (!baseText) {
@@ -378,20 +392,24 @@ const user = Astro.locals.user;
             return 'Showing all published and draft content';
         }
       }
-      
+
       switch (currentFilter) {
         case 'published':
-          return baseText.replace(/published and draft|draft and published/g, 'published').replace(/and published/, '');
+          return baseText
+            .replace(/published and draft|draft and published/g, 'published')
+            .replace(/and published/, '');
         case 'draft':
-          return baseText.replace(/published and draft|draft and published/g, 'draft').replace(/published and /, '');
+          return baseText
+            .replace(/published and draft|draft and published/g, 'draft')
+            .replace(/published and /, '');
         default:
           return baseText;
       }
     }
-    
+
     // Update filter button styles
     function updateFilterButtons() {
-      document.querySelectorAll('.filter-btn').forEach(btn => {
+      document.querySelectorAll('.filter-btn').forEach((btn) => {
         const btnElement = btn as HTMLElement;
         if (btnElement.dataset.filter === currentFilter) {
           btnElement.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
@@ -402,62 +420,65 @@ const user = Astro.locals.user;
         }
       });
     }
-    
+
     // Apply current filter to content
     function applyContentFilter(filter: string) {
       currentFilter = filter;
       updateFilterButtons();
-      
+
       // Update description
       const descriptionElement = document.getElementById('content-description');
       if (descriptionElement) {
         descriptionElement.textContent = getFilteredDescription();
       }
-      
+
       renderFilteredContent();
     }
-    
+
     // Render content with current filters applied
     function renderFilteredContent() {
       const contentList = document.getElementById('content-list');
       if (!contentList) return;
-      
+
       let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
       let hasContent = false;
-      
+
       // Combine drafts and published content into a flat list
-      const allEntries: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }> = [];
-      
+      const allEntries: Array<
+        ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }
+      > = [];
+
       // Add GitHub branch drafts
-      const filteredDrafts = currentCategory === 'all' 
-        ? allDrafts 
-        : allDrafts.filter(draft => draft.collection === currentCategory);
-      
-      filteredDrafts.forEach(draft => {
+      const filteredDrafts =
+        currentCategory === 'all'
+          ? allDrafts
+          : allDrafts.filter((draft) => draft.collection === currentCategory);
+
+      filteredDrafts.forEach((draft) => {
         allEntries.push({
           ...draft,
           isDraft: true,
           isGitHubDraft: true,
-          draft: true
+          draft: true,
         });
       });
-      
+
       // Add all content (including local drafts and published)
       if (currentCategory === 'all') {
         Object.entries(allContent).forEach(([collectionName, entries]) => {
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             // Check if this is a local draft that's not already in GitHub branches
             const isLocalDraft = entry.draft === true;
             const alreadyInGitHub = filteredDrafts.some(
-              d => d.collection === collectionName && d.slug === entry.slug
+              (d) => d.collection === collectionName && d.slug === entry.slug
             );
-            
+
             if (!alreadyInGitHub) {
               allEntries.push({
                 ...entry,
                 isDraft: isLocalDraft,
                 isGitHubDraft: false,
-                collection: collectionName
+                collection: collectionName,
               });
             }
           });
@@ -465,33 +486,33 @@ const user = Astro.locals.user;
       } else {
         const entries = allContent[currentCategory];
         if (entries) {
-          entries.forEach(entry => {
+          entries.forEach((entry) => {
             // Check if this is a local draft that's not already in GitHub branches
             const isLocalDraft = entry.draft === true;
             const alreadyInGitHub = filteredDrafts.some(
-              d => d.collection === currentCategory && d.slug === entry.slug
+              (d) => d.collection === currentCategory && d.slug === entry.slug
             );
-            
+
             if (!alreadyInGitHub) {
               allEntries.push({
                 ...entry,
                 isDraft: isLocalDraft,
                 isGitHubDraft: false,
-                collection: currentCategory
+                collection: currentCategory,
               });
             }
           });
         }
       }
-      
+
       // Apply current filter
       let filteredEntries = allEntries;
       if (currentFilter === 'published') {
-        filteredEntries = allEntries.filter(entry => !entry.isDraft);
+        filteredEntries = allEntries.filter((entry) => !entry.isDraft);
       } else if (currentFilter === 'draft') {
-        filteredEntries = allEntries.filter(entry => entry.isDraft);
+        filteredEntries = allEntries.filter((entry) => entry.isDraft);
       }
-      
+
       // Sort entries (drafts first, then by date)
       filteredEntries.sort((a, b) => {
         if (a.isDraft && !b.isDraft) return -1;
@@ -501,16 +522,20 @@ const user = Astro.locals.user;
         const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
         return dateB - dateA;
       });
-      
+
       // Create flat list
       filteredEntries.forEach((entry, index) => {
         hasContent = true;
-        const viewUrl = entry.isGitHubDraft ? entry.previewUrl : 
-                       entry.collection === 'blog' ? `/blog/${entry.slug}` : 
-                       entry.collection === 'noise' ? `/noise/${entry.slug}` :
-                       entry.collection === 'projects' ? `/projects/${entry.slug}` : 
-                       `/${entry.collection}/${entry.slug}`;
-        
+        const viewUrl = entry.isGitHubDraft
+          ? entry.previewUrl
+          : entry.collection === 'blog'
+            ? `/blog/${entry.slug}`
+            : entry.collection === 'noise'
+              ? `/noise/${entry.slug}`
+              : entry.collection === 'projects'
+                ? `/projects/${entry.slug}`
+                : `/${entry.collection}/${entry.slug}`;
+
         // Determine badge color and text
         let badgeClass = 'bg-green-100 text-green-800';
         let badgeText = 'Published';
@@ -518,7 +543,7 @@ const user = Astro.locals.user;
           badgeClass = 'bg-yellow-100 text-yellow-800';
           badgeText = 'Draft';
         }
-        
+
         // Process hero image path if it exists
         let imageUrl = '';
         if (entry.heroImage) {
@@ -532,32 +557,40 @@ const user = Astro.locals.user;
               // This is a simplified approach - in production you might need more robust handling
               imageUrl = entry.heroImage.replace('../../assets/', '/src/assets/');
             }
-          } else if (entry.heroImage && typeof entry.heroImage === 'object' && entry.heroImage.src) {
+          } else if (
+            entry.heroImage &&
+            typeof entry.heroImage === 'object' &&
+            entry.heroImage.src
+          ) {
             imageUrl = entry.heroImage.src;
           }
         }
-        
+
         html += `
           <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
             <div class="flex gap-4 items-center">
-              ${imageUrl ? `
+              ${
+                imageUrl
+                  ? `
                 <div class="flex-shrink-0">
                   <div class="w-[100px] h-[75px] bg-gray-100 rounded overflow-hidden">
-                    <img 
-                      src="${imageUrl}" 
+                    <img
+                      src="${imageUrl}"
                       alt="${entry.title}"
                       class="w-full h-full object-cover"
                       onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>No image</div>'"
                     />
                   </div>
                 </div>
-              ` : `
+              `
+                  : `
                 <div class="flex-shrink-0">
                   <div class="w-[100px] h-[75px] bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
                     No image
                   </div>
                 </div>
-              `}
+              `
+              }
               <div class="flex-1 flex justify-between items-center">
                 <div class="flex-1">
                   <div class="flex items-center gap-3">
@@ -590,16 +623,16 @@ const user = Astro.locals.user;
           </div>
         `;
       });
-      
+
       html += '</div>';
 
       if (!hasContent) {
-        html = '<div class="text-center py-8 text-gray-500">No content found in this category</div>';
+        html =
+          '<div class="text-center py-8 text-gray-500">No content found in this category</div>';
       }
 
       contentList.innerHTML = html;
     }
-
 
     // Show error message
     function showError(message: string) {
@@ -618,7 +651,7 @@ const user = Astro.locals.user;
 
     // Add click handlers for sidebar buttons
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const target = e.currentTarget as HTMLElement;
           const category = target.dataset.category;
@@ -627,9 +660,9 @@ const user = Astro.locals.user;
           }
         });
       });
-      
+
       // Add click handlers for filter buttons
-      document.querySelectorAll('.filter-btn').forEach(btn => {
+      document.querySelectorAll('.filter-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const target = e.currentTarget as HTMLElement;
           const filter = target.dataset.filter;
