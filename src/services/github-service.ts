@@ -37,7 +37,7 @@ export class GitHubService {
   /**
    * Create a new branch from a base branch
    */
-  async createBranch(branchName: string, baseBranch: string = 'drafts'): Promise<void> {
+  async createBranch(branchName: string, baseBranch: string = 'main'): Promise<void> {
     try {
       // Get the SHA of the base branch
       const { data: baseBranchData } = await this.octokit.git.getRef({
@@ -260,13 +260,5 @@ export class GitHubService {
     }
   }
 
-  /**
-   * Create initial drafts branch if it doesn't exist
-   */
-  async ensureDraftsBranch(): Promise<void> {
-    const exists = await this.branchExists('drafts');
-    if (!exists) {
-      await this.createBranch('drafts', this.defaultBranch);
-    }
-  }
+  async ensureDraftsBranch(): Promise<void> {}
 }

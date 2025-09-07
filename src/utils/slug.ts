@@ -1,4 +1,12 @@
 /**
+ * Generate a short GUID for branch names
+ * @returns A short GUID (8 characters)
+ */
+export function generateShortGuid(): string {
+  return Math.random().toString(36).substring(2, 10);
+}
+
+/**
  * Generate a URL-friendly slug from a title
  * @param title - The title to convert to a slug
  * @returns A URL-friendly slug
