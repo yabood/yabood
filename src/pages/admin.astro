@@ -1,0 +1,334 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Get the user from middleware (middleware handles auth check)
+const user = Astro.locals.user;
+
+// The middleware already handles authentication and admin check
+// If we reach here, the user is authenticated and is an admin
+---
+
+<BaseLayout
+  title="Admin Dashboard"
+  description="Admin management interface">
+  <div class="flex h-screen bg-gray-50">
+    <!-- Left Sidebar -->
+    <div class="w-64 bg-white shadow-lg">
+      <div class="p-6">
+        <h1 class="text-2xl font-bold text-gray-800">Admin Panel</h1>
+        <div class="mt-2 text-sm text-gray-600">
+          Logged in as: {user?.email}
+        </div>
+      </div>
+      
+      <nav class="mt-6">
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-blue-500 bg-blue-50"
+          data-category="all">
+          <span class="font-medium">All</span>
+        </button>
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+          data-category="noise">
+          <span class="font-medium">Noise</span>
+        </button>
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+          data-category="blog">
+          <span class="font-medium">Blog</span>
+        </button>
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+          data-category="projects">
+          <span class="font-medium">Projects</span>
+        </button>
+      </nav>
+
+      <div class="absolute bottom-0 w-64 p-6 border-t">
+        <a
+          href="/compose"
+          class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors">
+          Compose New
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-auto">
+      <div class="p-8">
+        <div class="mb-6">
+          <h2 id="content-title" class="text-3xl font-bold text-gray-800">All Content</h2>
+          <p id="content-description" class="text-gray-600 mt-2">Showing all published and draft content</p>
+        </div>
+
+        <!-- Content List -->
+        <div id="content-list" class="grid grid-cols-1 gap-4">
+          <div class="text-center py-8 text-gray-500">
+            Loading content...
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    interface ContentEntry {
+      title: string;
+      description?: string;
+      pubDate?: string;
+      draft?: boolean;
+      slug: string;
+      collection?: string;
+      branch?: string;
+      previewUrl?: string;
+    }
+
+    interface DraftEntry {
+      collection: string;
+      slug: string;
+      title: string;
+      description?: string;
+      previewUrl: string;
+      branch: string;
+    }
+
+    let currentCategory = 'all';
+    let allContent: Record<string, ContentEntry[]> = {};
+    let allDrafts: DraftEntry[] = [];
+
+    // Load all content
+    async function loadAllContent() {
+      try {
+        // Load published content
+        const publishedResponse = await fetch('/api/content/list');
+        if (publishedResponse.ok) {
+          allContent = await publishedResponse.json();
+        }
+
+        // Load draft content
+        const draftsResponse = await fetch('/api/content/branches');
+        if (draftsResponse.ok) {
+          const draftsData = await draftsResponse.json();
+          allDrafts = draftsData.drafts || [];
+        }
+
+        displayContent(currentCategory);
+      } catch (error) {
+        console.error('Error loading content:', error);
+        showError('Failed to load content');
+      }
+    }
+
+    // Display content based on selected category
+    function displayContent(category: string) {
+      const contentList = document.getElementById('content-list');
+      const titleElement = document.getElementById('content-title');
+      const descriptionElement = document.getElementById('content-description');
+      
+      if (!contentList || !titleElement || !descriptionElement) return;
+
+      currentCategory = category;
+      
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        const btnElement = btn as HTMLElement;
+        if (btnElement.dataset.category === category) {
+          btnElement.classList.add('border-blue-500', 'bg-blue-50');
+          btnElement.classList.remove('border-transparent');
+        } else {
+          btnElement.classList.remove('border-blue-500', 'bg-blue-50');
+          btnElement.classList.add('border-transparent');
+        }
+      });
+
+      // Update title and description
+      switch (category) {
+        case 'all':
+          titleElement.textContent = 'All Content';
+          descriptionElement.textContent = 'Showing all published and draft content';
+          break;
+        case 'noise':
+          titleElement.textContent = 'Noise';
+          descriptionElement.textContent = 'Quick thoughts and updates';
+          break;
+        case 'blog':
+          titleElement.textContent = 'Blog Posts';
+          descriptionElement.textContent = 'Published and draft blog articles';
+          break;
+        case 'projects':
+          titleElement.textContent = 'Projects';
+          descriptionElement.textContent = 'Portfolio projects and case studies';
+          break;
+      }
+
+      // Filter and display content
+      let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
+      let hasContent = false;
+      
+      // Combine drafts and published content into a flat list
+      const allEntries: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }> = [];
+      
+      // Add GitHub branch drafts
+      const filteredDrafts = category === 'all' 
+        ? allDrafts 
+        : allDrafts.filter(draft => draft.collection === category);
+      
+      filteredDrafts.forEach(draft => {
+        allEntries.push({
+          ...draft,
+          isDraft: true,
+          isGitHubDraft: true,
+          draft: true
+        });
+      });
+      
+      // Add all content (including local drafts and published)
+      if (category === 'all') {
+        Object.entries(allContent).forEach(([collectionName, entries]) => {
+          entries.forEach(entry => {
+            // Check if this is a local draft that's not already in GitHub branches
+            const isLocalDraft = entry.draft === true;
+            const alreadyInGitHub = filteredDrafts.some(
+              d => d.collection === collectionName && d.slug === entry.slug
+            );
+            
+            if (!alreadyInGitHub) {
+              allEntries.push({
+                ...entry,
+                isDraft: isLocalDraft,
+                isGitHubDraft: false,
+                collection: collectionName
+              });
+            }
+          });
+        });
+      } else {
+        const entries = allContent[category];
+        if (entries) {
+          entries.forEach(entry => {
+            // Check if this is a local draft that's not already in GitHub branches
+            const isLocalDraft = entry.draft === true;
+            const alreadyInGitHub = filteredDrafts.some(
+              d => d.collection === category && d.slug === entry.slug
+            );
+            
+            if (!alreadyInGitHub) {
+              allEntries.push({
+                ...entry,
+                isDraft: isLocalDraft,
+                isGitHubDraft: false,
+                collection: category
+              });
+            }
+          });
+        }
+      }
+      
+      // Sort entries (drafts first, then by date)
+      allEntries.sort((a, b) => {
+        if (a.isDraft && !b.isDraft) return -1;
+        if (!a.isDraft && b.isDraft) return 1;
+        // Sort by date for same type
+        const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
+        const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
+        return dateB - dateA;
+      });
+      
+      // Create flat list
+      allEntries.forEach((entry, index) => {
+        hasContent = true;
+        const viewUrl = entry.isGitHubDraft ? entry.previewUrl : 
+                       entry.collection === 'blog' ? `/blog/${entry.slug}` : 
+                       entry.collection === 'noise' ? `/noise/${entry.slug}` :
+                       entry.collection === 'projects' ? `/projects/${entry.slug}` : 
+                       `/${entry.collection}/${entry.slug}`;
+        
+        // Determine badge color and text
+        let badgeClass = 'bg-green-100 text-green-800';
+        let badgeText = 'Published';
+        if (entry.isDraft) {
+          if (entry.isGitHubDraft) {
+            badgeClass = 'bg-purple-100 text-purple-800';
+            badgeText = 'Draft (PR)';
+          } else {
+            badgeClass = 'bg-yellow-100 text-yellow-800';
+            badgeText = 'Draft (Local)';
+          }
+        }
+        
+        html += `
+          <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div class="flex justify-between items-center">
+              <div class="flex-1">
+                <div class="flex items-center gap-3">
+                  <h4 class="text-base font-semibold text-gray-800">${entry.title}</h4>
+                  <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                    ${badgeText}
+                  </span>
+                  ${category === 'all' ? `<span class="text-xs text-gray-500">${entry.collection}</span>` : ''}
+                </div>
+                <div class="mt-1 flex items-center gap-4">
+                  <p class="text-gray-600 text-sm">${entry.description || 'No description'}</p>
+                  ${entry.pubDate ? `<span class="text-xs text-gray-400">${new Date(entry.pubDate).toLocaleDateString()}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex gap-2 ml-4">
+                <a
+                  href="/compose?collection=${entry.collection}&slug=${entry.slug}${entry.isGitHubDraft ? '&draft=true' : ''}"
+                  class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                  Edit
+                </a>
+                <a
+                  href="${viewUrl}"
+                  target="_blank"
+                  class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+                  ${entry.isGitHubDraft ? 'Preview' : 'View'}
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+
+      if (!hasContent) {
+        html = '<div class="text-center py-8 text-gray-500">No content found in this category</div>';
+      }
+
+      contentList.innerHTML = html;
+    }
+
+
+    // Show error message
+    function showError(message: string) {
+      const contentList = document.getElementById('content-list');
+      if (contentList) {
+        contentList.innerHTML = `
+          <div class="text-center py-8 text-red-600">
+            <p class="text-lg">${message}</p>
+            <button onclick="loadAllContent()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Add click handlers for sidebar buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const category = target.dataset.category;
+          if (category) {
+            displayContent(category);
+          }
+        });
+      });
+
+      // Load initial content
+      loadAllContent();
+    });
+  </script>
+</BaseLayout>
