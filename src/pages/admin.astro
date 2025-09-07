@@ -116,6 +116,7 @@ const user = Astro.locals.user;
       collection?: string;
       branch?: string;
       previewUrl?: string;
+      heroImage?: string | { src: string };
     }
 
     interface DraftEntry {
@@ -128,7 +129,6 @@ const user = Astro.locals.user;
     }
 
     let currentCategory = 'all';
-    let currentProject: string | null = null;
     let currentFilter = 'all'; // all, published, draft
     let allContent: Record<string, ContentEntry[]> = {};
     let allDrafts: DraftEntry[] = [];
@@ -196,7 +196,6 @@ const user = Astro.locals.user;
 
     // Select a specific project
     function selectProject(projectSlug: string) {
-      currentProject = projectSlug;
       currentCategory = 'project-updates';
 
       // Update sidebar active state
@@ -305,7 +304,6 @@ const user = Astro.locals.user;
       if (!contentList || !titleElement || !descriptionElement) return;
 
       currentCategory = category;
-      currentProject = null; // Reset current project when switching categories
       currentFilter = 'all'; // Reset filter when switching categories
 
       // Show/hide content filter based on category
@@ -524,7 +522,7 @@ const user = Astro.locals.user;
       });
 
       // Create flat list
-      filteredEntries.forEach((entry, index) => {
+      filteredEntries.forEach((entry) => {
         hasContent = true;
         const viewUrl = entry.isGitHubDraft
           ? entry.previewUrl

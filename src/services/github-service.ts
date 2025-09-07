@@ -25,13 +25,11 @@ export class GitHubService {
   private octokit: Octokit;
   private owner: string;
   private repo: string;
-  private defaultBranch: string;
 
   constructor(config: GitHubConfig) {
     this.octokit = new Octokit({ auth: config.token });
     this.owner = config.owner;
     this.repo = config.repo;
-    this.defaultBranch = config.defaultBranch || 'main';
   }
 
   /**
