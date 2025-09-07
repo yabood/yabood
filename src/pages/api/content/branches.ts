@@ -17,7 +17,7 @@ export const GET: APIRoute = async ({ url }) => {
   // Determine the base URL for preview links
   // In development, use localhost; in production, use Vercel preview URLs
   const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-  const baseUrl = isLocalDev 
+  const baseUrl = isLocalDev
     ? `${url.protocol}//${url.host}`
     : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
@@ -50,8 +50,10 @@ export const GET: APIRoute = async ({ url }) => {
 
             if (files.length > 0) {
               // Get all MDX files in this collection
-              const mdxFiles = files.filter((f) => f.name.endsWith('.mdx') || f.name.endsWith('.md'));
-              
+              const mdxFiles = files.filter(
+                (f) => f.name.endsWith('.mdx') || f.name.endsWith('.md')
+              );
+
               for (const mdxFile of mdxFiles) {
                 const content = await github.getFileContent(mdxFile.path, branchName);
                 const slug = mdxFile.name.replace(/\.(mdx|md)$/, '');
@@ -59,7 +61,7 @@ export const GET: APIRoute = async ({ url }) => {
                 // Check if this file is marked as draft
                 const isDraftMatch = content.match(/^draft:\s*(true|false)/m);
                 const isDraft = isDraftMatch ? isDraftMatch[1] === 'true' : false;
-                
+
                 // Only include files that are drafts
                 if (isDraft) {
                   // Extract metadata from frontmatter
@@ -69,9 +71,10 @@ export const GET: APIRoute = async ({ url }) => {
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
 
                   // Generate preview URL based on environment
-                  const previewUrl = isLocalDev 
+                  const previewUrl = isLocalDev
                     ? `${baseUrl}/${collection}/${slug}`
-                    : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
+                    : baseUrl.replace('{branch}', branchName.replace('/', '-')) +
+                      `/${collection}/${slug}`;
 
                   allDraftContent.push({
                     slug,
@@ -101,9 +104,7 @@ export const GET: APIRoute = async ({ url }) => {
     );
 
     // Flatten the results and filter out any null results
-    const validDrafts = drafts
-      .filter((draft) => draft !== null)
-      .flat();
+    const validDrafts = drafts.filter((draft) => draft !== null).flat();
 
     return new Response(
       JSON.stringify({

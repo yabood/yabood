@@ -19,7 +19,7 @@ export const POST: APIRoute = async ({ request, url }) => {
 
     // Determine the base URL for preview links
     const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
-    const baseUrl = isLocalDev 
+    const baseUrl = isLocalDev
       ? `${url.protocol}//${url.host}`
       : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
@@ -79,7 +79,7 @@ Start writing your content here...
     });
 
     // Generate preview URL based on environment
-    const previewUrl = isLocalDev 
+    const previewUrl = isLocalDev
       ? `${baseUrl}/${collection}/${slug}`
       : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
 
