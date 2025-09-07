@@ -467,7 +467,7 @@ const user = Astro.locals.user;
           entries.forEach((entry) => {
             // Check if this is a local draft that's not already in GitHub branches
             const isLocalDraft = entry.draft === true;
-            const alreadyInGitHub = filteredDrafts.some(
+            const alreadyInGitHub = allDrafts.some(
               (d) => d.collection === collectionName && d.slug === entry.slug
             );
 
@@ -487,7 +487,7 @@ const user = Astro.locals.user;
           entries.forEach((entry) => {
             // Check if this is a local draft that's not already in GitHub branches
             const isLocalDraft = entry.draft === true;
-            const alreadyInGitHub = filteredDrafts.some(
+            const alreadyInGitHub = allDrafts.some(
               (d) => d.collection === currentCategory && d.slug === entry.slug
             );
 

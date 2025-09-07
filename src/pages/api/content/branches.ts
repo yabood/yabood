@@ -32,7 +32,7 @@ export const GET: APIRoute = async () => {
         try {
           // Try to find the MDX file in different collections
           const collections = ['blog', 'noise', 'updates'];
-          let contentData = null;
+          const allDraftContent = [];
 
           for (const collection of collections) {
             // Get all files in the collection directory
@@ -42,50 +42,45 @@ export const GET: APIRoute = async () => {
             );
 
             if (files.length > 0) {
-              // Found MDX file in this collection
-              const mdxFile = files.find((f) => f.name.endsWith('.mdx'));
-              if (mdxFile) {
+              // Get all MDX files in this collection
+              const mdxFiles = files.filter((f) => f.name.endsWith('.mdx') || f.name.endsWith('.md'));
+              
+              for (const mdxFile of mdxFiles) {
                 const content = await github.getFileContent(mdxFile.path, branchName);
-                const slug = mdxFile.name.replace('.mdx', '');
+                const slug = mdxFile.name.replace(/\.(mdx|md)$/, '');
 
-                // Extract metadata from frontmatter
-                const titleMatch = content.match(/^title:\s*["'](.+)["']/m);
-                const descriptionMatch = content.match(/^description:\s*["'](.+)["']/m);
-                const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
-                const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
+                // Check if this file is marked as draft
+                const isDraftMatch = content.match(/^draft:\s*(true|false)/m);
+                const isDraft = isDraftMatch ? isDraftMatch[1] === 'true' : false;
+                
+                // Only include files that are drafts
+                if (isDraft) {
+                  // Extract metadata from frontmatter
+                  const titleMatch = content.match(/^title:\s*["'](.+)["']/m);
+                  const descriptionMatch = content.match(/^description:\s*["'](.+)["']/m);
+                  const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
+                  const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
 
-                contentData = {
-                  slug,
-                  branch: branchName,
-                  branchId,
-                  collection,
-                  title: titleMatch ? titleMatch[1] : slug,
-                  description: descriptionMatch ? descriptionMatch[1] : '',
-                  pubDate: dateMatch ? dateMatch[1] : null,
-                  tags: tagsMatch
-                    ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
-                    : [],
-                  previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
-                };
-                break;
+                  allDraftContent.push({
+                    slug,
+                    branch: branchName,
+                    branchId,
+                    collection,
+                    title: titleMatch ? titleMatch[1] : slug,
+                    description: descriptionMatch ? descriptionMatch[1] : '',
+                    pubDate: dateMatch ? dateMatch[1] : null,
+                    tags: tagsMatch
+                      ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
+                      : [],
+                    previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app/${collection}/${slug}`,
+                  });
+                }
               }
             }
           }
 
-          if (contentData) {
-            return contentData;
-          }
-
-          // If no content found in any collection, return basic info
-          return {
-            slug: branchId,
-            branch: branchName,
-            branchId,
-            collection: 'unknown',
-            title: 'Unknown Draft',
-            description: 'Draft content',
-            previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
-          };
+          // Return all draft content found in this branch
+          return allDraftContent.length > 0 ? allDraftContent : null;
         } catch (error) {
           console.error(`Error processing branch ${branchName}:`, error);
           return null;
@@ -93,8 +88,10 @@ export const GET: APIRoute = async () => {
       })
     );
 
-    // Filter out any null results
-    const validDrafts = drafts.filter((draft) => draft !== null);
+    // Flatten the results and filter out any null results
+    const validDrafts = drafts
+      .filter((draft) => draft !== null)
+      .flat();
 
     return new Response(
       JSON.stringify({
