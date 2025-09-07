@@ -12,6 +12,7 @@ function mapEntryData(entry: any, collectionName: string) {
         pubDate: entry.data.pubDate,
         draft: entry.data.draft,
         tags: entry.data.tags,
+        heroImage: entry.data.heroImage,
       };
     case 'noise':
       return {
@@ -32,6 +33,9 @@ function mapEntryData(entry: any, collectionName: string) {
         pubDate: entry.data.date,
         draft: entry.data.draft,
         tags: entry.data.tags,
+        project: entry.data.project,
+        phase: entry.data.phase,
+        summary: entry.data.summary,
       };
     case 'projects':
       return {

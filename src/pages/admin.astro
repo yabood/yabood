@@ -1,0 +1,677 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// Get the user from middleware (middleware handles auth check)
+const user = Astro.locals.user;
+
+// The middleware already handles authentication and admin check
+// If we reach here, the user is authenticated and is an admin
+---
+
+<BaseLayout title="Admin Dashboard" description="Admin management interface">
+  <div class="flex h-screen bg-gray-50">
+    <!-- Left Sidebar -->
+    <div class="w-72 bg-white shadow-lg">
+      <div class="p-8">
+        <h1 class="text-2xl font-bold text-gray-800">Admin Panel</h1>
+        <div class="mt-2 text-sm text-gray-600">
+          Logged in as: {user?.email}
+        </div>
+      </div>
+
+      <nav class="mt-6">
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-blue-500 bg-blue-50"
+          data-category="all">
+          <span class="font-medium">All</span>
+        </button>
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+          data-category="noise">
+          <span class="font-medium">Noise</span>
+        </button>
+        <button
+          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
+          data-category="blog">
+          <span class="font-medium">Blog</span>
+        </button>
+        <div class="projects-section">
+          <button
+            class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent flex items-center justify-between"
+            data-category="projects">
+            <span class="font-medium">Projects</span>
+            <svg
+              id="projects-chevron"
+              class="w-4 h-4 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
+              ></path>
+            </svg>
+          </button>
+          <div id="project-subnav" class="hidden bg-gray-50">
+            <!-- Project items will be populated here -->
+          </div>
+        </div>
+      </nav>
+
+      <div class="absolute bottom-0 w-72 p-6 border-t">
+        <a
+          href="/admin/compose"
+          class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors">
+          Compose New
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-auto">
+      <div class="p-8">
+        <div class="mb-6">
+          <div>
+            <h2 id="content-title" class="text-2xl font-bold text-gray-800">All Content</h2>
+            <div class="flex justify-between items-center mt-1">
+              <p id="content-description" class="text-sm text-gray-600">
+                Showing all published and draft content
+              </p>
+              <div id="content-filter" class="hidden">
+                <div class="flex gap-2">
+                  <button
+                    class="filter-btn px-3 py-1 text-sm rounded border bg-blue-600 text-white border-blue-600"
+                    data-filter="all">
+                    All
+                  </button>
+                  <button
+                    class="filter-btn px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50"
+                    data-filter="published">
+                    Published
+                  </button>
+                  <button
+                    class="filter-btn px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50"
+                    data-filter="draft">
+                    Draft
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content List -->
+        <div id="content-list" class="grid grid-cols-1 gap-4">
+          <div class="text-center py-8 text-gray-500">Loading content...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    interface ContentEntry {
+      title: string;
+      description?: string;
+      pubDate?: string;
+      draft?: boolean;
+      slug: string;
+      collection?: string;
+      branch?: string;
+      previewUrl?: string;
+      heroImage?: string | { src: string };
+    }
+
+    interface DraftEntry {
+      collection: string;
+      slug: string;
+      title: string;
+      description?: string;
+      previewUrl: string;
+      branch: string;
+    }
+
+    let currentCategory = 'all';
+    let currentFilter = 'all'; // all, published, draft
+    let allContent: Record<string, ContentEntry[]> = {};
+    let allDrafts: DraftEntry[] = [];
+    let allProjects: ContentEntry[] = [];
+    let allUpdates: ContentEntry[] = [];
+
+    // Load all content
+    async function loadAllContent() {
+      try {
+        // Load published content
+        const publishedResponse = await fetch('/api/content/list');
+        if (publishedResponse.ok) {
+          allContent = await publishedResponse.json();
+          allProjects = allContent.projects || [];
+          allUpdates = allContent.updates || [];
+        }
+
+        // Load draft content
+        const draftsResponse = await fetch('/api/content/branches');
+        if (draftsResponse.ok) {
+          const draftsData = await draftsResponse.json();
+          allDrafts = draftsData.drafts || [];
+        }
+
+        // Populate project subnav
+        populateProjectSubnav();
+
+        displayContent(currentCategory);
+      } catch (error) {
+        console.error('Error loading content:', error);
+        showError('Failed to load content');
+      }
+    }
+
+    // Populate project subnav
+    function populateProjectSubnav() {
+      const projectSubnav = document.getElementById('project-subnav');
+      if (!projectSubnav) return;
+
+      let html = '';
+      allProjects.forEach((project) => {
+        html += `
+          <button
+            class="project-item w-full text-left px-12 py-3 hover:bg-gray-100 transition-colors"
+            data-project="${project.slug}">
+            ${project.title}
+          </button>
+        `;
+      });
+
+      projectSubnav.innerHTML = html;
+
+      // Add click handlers for project items
+      projectSubnav.querySelectorAll('.project-item').forEach((item) => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const target = e.currentTarget as HTMLElement;
+          const projectSlug = target.dataset.project;
+          if (projectSlug) {
+            selectProject(projectSlug);
+          }
+        });
+      });
+    }
+
+    // Select a specific project
+    function selectProject(projectSlug: string) {
+      currentCategory = 'project-updates';
+
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+        btn.classList.remove('border-blue-500', 'bg-blue-50');
+        btn.classList.add('border-transparent');
+      });
+
+      // Highlight selected project
+      document.querySelectorAll('.project-item').forEach((item) => {
+        const itemElement = item as HTMLElement;
+        if (itemElement.dataset.project === projectSlug) {
+          itemElement.classList.add('bg-blue-50', 'font-medium');
+        } else {
+          itemElement.classList.remove('bg-blue-50', 'font-medium');
+        }
+      });
+
+      // Display project updates
+      displayProjectUpdates(projectSlug);
+    }
+
+    // Display updates for a specific project
+    function displayProjectUpdates(projectSlug: string) {
+      const contentList = document.getElementById('content-list');
+      const titleElement = document.getElementById('content-title');
+      const descriptionElement = document.getElementById('content-description');
+
+      if (!contentList || !titleElement || !descriptionElement) return;
+
+      const project = allProjects.find((p) => p.slug === projectSlug);
+      if (!project) return;
+
+      titleElement.textContent = `${project.title} - Updates`;
+      descriptionElement.textContent = project.description || 'Project updates and progress';
+
+      // Filter updates for this project
+      const projectUpdates = allUpdates.filter((update) => (update as any).project === projectSlug);
+
+      let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
+
+      if (projectUpdates.length === 0) {
+        html +=
+          '<div class="px-6 py-8 text-center text-gray-500">No updates found for this project</div>';
+      } else {
+        projectUpdates.forEach((update) => {
+          const isDraft = update.draft === true;
+          const badgeClass = isDraft
+            ? 'bg-yellow-100 text-yellow-800'
+            : 'bg-green-100 text-green-800';
+          const badgeText = isDraft ? 'Draft' : 'Published';
+
+          html += `
+            <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+              <div class="flex gap-4 items-center">
+                <div class="flex-shrink-0">
+                  <div class="w-[100px] h-[75px] bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
+                    No image
+                  </div>
+                </div>
+                <div class="flex-1 flex justify-between items-center">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-3">
+                      <h4 class="text-base font-semibold text-gray-800">${update.title}</h4>
+                      <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                        ${badgeText}
+                      </span>
+                      ${(update as any).phase ? `<span class="text-xs text-gray-500">Phase: ${(update as any).phase}</span>` : ''}
+                    </div>
+                    <div class="mt-1 flex items-center gap-4">
+                      <p class="text-gray-600 text-sm">${(update as any).summary || update.description || 'No description'}</p>
+                      ${update.pubDate ? `<span class="text-xs text-gray-400">${new Date(update.pubDate).toLocaleDateString()}</span>` : ''}
+                    </div>
+                  </div>
+                  <div class="flex gap-2 ml-4">
+                    <a
+                      href="/admin/compose?collection=updates&slug=${update.slug}"
+                      class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                      Edit
+                    </a>
+                    <a
+                      href="/updates/${update.slug}"
+                      target="_blank"
+                      class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+                      View
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      html += '</div>';
+      contentList.innerHTML = html;
+    }
+
+    // Display content based on selected category
+    function displayContent(category: string) {
+      const contentList = document.getElementById('content-list');
+      const titleElement = document.getElementById('content-title');
+      const descriptionElement = document.getElementById('content-description');
+      const contentFilter = document.getElementById('content-filter');
+
+      if (!contentList || !titleElement || !descriptionElement) return;
+
+      currentCategory = category;
+      currentFilter = 'all'; // Reset filter when switching categories
+
+      // Show/hide content filter based on category
+      if (contentFilter) {
+        if (
+          category === 'all' ||
+          category === 'blog' ||
+          category === 'noise' ||
+          category === 'projects'
+        ) {
+          contentFilter.classList.remove('hidden');
+        } else {
+          contentFilter.classList.add('hidden');
+        }
+      }
+
+      // Reset filter buttons
+      updateFilterButtons();
+
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+        const btnElement = btn as HTMLElement;
+        if (btnElement.dataset.category === category) {
+          btnElement.classList.add('border-blue-500', 'bg-blue-50');
+          btnElement.classList.remove('border-transparent');
+        } else {
+          btnElement.classList.remove('border-blue-500', 'bg-blue-50');
+          btnElement.classList.add('border-transparent');
+        }
+      });
+
+      // Clear project selection
+      document.querySelectorAll('.project-item').forEach((item) => {
+        item.classList.remove('bg-blue-50', 'font-medium');
+      });
+
+      // Handle projects expand/collapse
+      const projectSubnav = document.getElementById('project-subnav');
+      const projectsChevron = document.getElementById('projects-chevron');
+      if (category === 'projects' && projectSubnav && projectsChevron) {
+        projectSubnav.classList.remove('hidden');
+        projectsChevron.classList.add('rotate-90');
+      } else if (projectSubnav && projectsChevron) {
+        projectSubnav.classList.add('hidden');
+        projectsChevron.classList.remove('rotate-90');
+      }
+
+      // Update title and description
+      switch (category) {
+        case 'all':
+          titleElement.textContent = 'All Content';
+          descriptionElement.textContent = getFilteredDescription();
+          break;
+        case 'noise':
+          titleElement.textContent = 'Noise';
+          descriptionElement.textContent = getFilteredDescription('Quick thoughts and updates');
+          break;
+        case 'blog':
+          titleElement.textContent = 'Blog Posts';
+          descriptionElement.textContent = getFilteredDescription(
+            'Published and draft blog articles'
+          );
+          break;
+        case 'projects':
+          titleElement.textContent = 'Projects';
+          descriptionElement.textContent = getFilteredDescription(
+            'Portfolio projects and case studies'
+          );
+          break;
+      }
+
+      renderFilteredContent();
+    }
+
+    // Helper function to get filtered description
+    function getFilteredDescription(baseText?: string): string {
+      if (!baseText) {
+        switch (currentFilter) {
+          case 'published':
+            return 'Showing published content';
+          case 'draft':
+            return 'Showing draft content';
+          default:
+            return 'Showing all published and draft content';
+        }
+      }
+
+      switch (currentFilter) {
+        case 'published':
+          return baseText
+            .replace(/published and draft|draft and published/g, 'published')
+            .replace(/and published/, '');
+        case 'draft':
+          return baseText
+            .replace(/published and draft|draft and published/g, 'draft')
+            .replace(/published and /, '');
+        default:
+          return baseText;
+      }
+    }
+
+    // Update filter button styles
+    function updateFilterButtons() {
+      document.querySelectorAll('.filter-btn').forEach((btn) => {
+        const btnElement = btn as HTMLElement;
+        if (btnElement.dataset.filter === currentFilter) {
+          btnElement.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
+          btnElement.classList.remove('border-gray-300', 'hover:bg-gray-50');
+        } else {
+          btnElement.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
+          btnElement.classList.add('border-gray-300', 'hover:bg-gray-50');
+        }
+      });
+    }
+
+    // Apply current filter to content
+    function applyContentFilter(filter: string) {
+      currentFilter = filter;
+      updateFilterButtons();
+
+      // Update description
+      const descriptionElement = document.getElementById('content-description');
+      if (descriptionElement) {
+        descriptionElement.textContent = getFilteredDescription();
+      }
+
+      renderFilteredContent();
+    }
+
+    // Render content with current filters applied
+    function renderFilteredContent() {
+      const contentList = document.getElementById('content-list');
+      if (!contentList) return;
+
+      let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
+      let hasContent = false;
+
+      // Combine drafts and published content into a flat list
+      const allEntries: Array<
+        ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }
+      > = [];
+
+      // Add GitHub branch drafts
+      const filteredDrafts =
+        currentCategory === 'all'
+          ? allDrafts
+          : allDrafts.filter((draft) => draft.collection === currentCategory);
+
+      filteredDrafts.forEach((draft) => {
+        allEntries.push({
+          ...draft,
+          isDraft: true,
+          isGitHubDraft: true,
+          draft: true,
+        });
+      });
+
+      // Add all content (including local drafts and published)
+      if (currentCategory === 'all') {
+        Object.entries(allContent).forEach(([collectionName, entries]) => {
+          entries.forEach((entry) => {
+            // Check if this is a local draft that's not already in GitHub branches
+            const isLocalDraft = entry.draft === true;
+            const alreadyInGitHub = filteredDrafts.some(
+              (d) => d.collection === collectionName && d.slug === entry.slug
+            );
+
+            if (!alreadyInGitHub) {
+              allEntries.push({
+                ...entry,
+                isDraft: isLocalDraft,
+                isGitHubDraft: false,
+                collection: collectionName,
+              });
+            }
+          });
+        });
+      } else {
+        const entries = allContent[currentCategory];
+        if (entries) {
+          entries.forEach((entry) => {
+            // Check if this is a local draft that's not already in GitHub branches
+            const isLocalDraft = entry.draft === true;
+            const alreadyInGitHub = filteredDrafts.some(
+              (d) => d.collection === currentCategory && d.slug === entry.slug
+            );
+
+            if (!alreadyInGitHub) {
+              allEntries.push({
+                ...entry,
+                isDraft: isLocalDraft,
+                isGitHubDraft: false,
+                collection: currentCategory,
+              });
+            }
+          });
+        }
+      }
+
+      // Apply current filter
+      let filteredEntries = allEntries;
+      if (currentFilter === 'published') {
+        filteredEntries = allEntries.filter((entry) => !entry.isDraft);
+      } else if (currentFilter === 'draft') {
+        filteredEntries = allEntries.filter((entry) => entry.isDraft);
+      }
+
+      // Sort entries (drafts first, then by date)
+      filteredEntries.sort((a, b) => {
+        if (a.isDraft && !b.isDraft) return -1;
+        if (!a.isDraft && b.isDraft) return 1;
+        // Sort by date for same type
+        const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
+        const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      // Create flat list
+      filteredEntries.forEach((entry) => {
+        hasContent = true;
+        const viewUrl = entry.isGitHubDraft
+          ? entry.previewUrl
+          : entry.collection === 'blog'
+            ? `/blog/${entry.slug}`
+            : entry.collection === 'noise'
+              ? `/noise/${entry.slug}`
+              : entry.collection === 'projects'
+                ? `/projects/${entry.slug}`
+                : `/${entry.collection}/${entry.slug}`;
+
+        // Determine badge color and text
+        let badgeClass = 'bg-green-100 text-green-800';
+        let badgeText = 'Published';
+        if (entry.isDraft) {
+          badgeClass = 'bg-yellow-100 text-yellow-800';
+          badgeText = 'Draft';
+        }
+
+        // Process hero image path if it exists
+        let imageUrl = '';
+        if (entry.heroImage) {
+          // Handle relative paths from content files
+          if (typeof entry.heroImage === 'string') {
+            // If it starts with http, use as is
+            if (entry.heroImage.startsWith('http')) {
+              imageUrl = entry.heroImage;
+            } else {
+              // For relative paths, we need to construct the proper URL
+              // This is a simplified approach - in production you might need more robust handling
+              imageUrl = entry.heroImage.replace('../../assets/', '/src/assets/');
+            }
+          } else if (
+            entry.heroImage &&
+            typeof entry.heroImage === 'object' &&
+            entry.heroImage.src
+          ) {
+            imageUrl = entry.heroImage.src;
+          }
+        }
+
+        html += `
+          <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div class="flex gap-4 items-center">
+              ${
+                imageUrl
+                  ? `
+                <div class="flex-shrink-0">
+                  <div class="w-[100px] h-[75px] bg-gray-100 rounded overflow-hidden">
+                    <img
+                      src="${imageUrl}"
+                      alt="${entry.title}"
+                      class="w-full h-full object-cover"
+                      onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>No image</div>'"
+                    />
+                  </div>
+                </div>
+              `
+                  : `
+                <div class="flex-shrink-0">
+                  <div class="w-[100px] h-[75px] bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
+                    No image
+                  </div>
+                </div>
+              `
+              }
+              <div class="flex-1 flex justify-between items-center">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-base font-semibold text-gray-800">${entry.title}</h4>
+                    <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                      ${badgeText}
+                    </span>
+                    ${currentCategory === 'all' ? `<span class="text-xs text-gray-500">${entry.collection}</span>` : ''}
+                  </div>
+                  <div class="mt-1 flex items-center gap-4">
+                    <p class="text-gray-600 text-sm">${entry.description || 'No description'}</p>
+                    ${entry.pubDate ? `<span class="text-xs text-gray-400">${new Date(entry.pubDate).toLocaleDateString()}</span>` : ''}
+                  </div>
+                </div>
+                <div class="flex gap-2 ml-4">
+                  <a
+                    href="/admin/compose?collection=${entry.collection}&slug=${entry.slug}${entry.isGitHubDraft ? '&draft=true' : ''}"
+                    class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                    Edit
+                  </a>
+                  <a
+                    href="${viewUrl}"
+                    target="_blank"
+                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+                    ${entry.isGitHubDraft ? 'Preview' : 'View'}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+
+      if (!hasContent) {
+        html =
+          '<div class="text-center py-8 text-gray-500">No content found in this category</div>';
+      }
+
+      contentList.innerHTML = html;
+    }
+
+    // Show error message
+    function showError(message: string) {
+      const contentList = document.getElementById('content-list');
+      if (contentList) {
+        contentList.innerHTML = `
+          <div class="text-center py-8 text-red-600">
+            <p class="text-lg">${message}</p>
+            <button onclick="loadAllContent()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+              Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // Add click handlers for sidebar buttons
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const category = target.dataset.category;
+          if (category) {
+            displayContent(category);
+          }
+        });
+      });
+
+      // Add click handlers for filter buttons
+      document.querySelectorAll('.filter-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const target = e.currentTarget as HTMLElement;
+          const filter = target.dataset.filter;
+          if (filter) {
+            applyContentFilter(filter);
+          }
+        });
+      });
+
+      // Load initial content
+      loadAllContent();
+    });
+  </script>
+</BaseLayout>

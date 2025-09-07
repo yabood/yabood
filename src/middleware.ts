@@ -3,7 +3,7 @@ import { getUserFromToken, isAdmin } from './utils/auth';
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   const protectedRoutes = ['/admin', '/profile', '/dashboard'];
-  const adminOnlyRoutes = ['/compose', '/admin'];
+  const adminOnlyRoutes = ['/admin'];
   const pathname = new URL(context.request.url).pathname;
 
   const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
