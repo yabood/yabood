@@ -10,7 +10,7 @@ const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 const VERCEL_PROJECT_NAME = import.meta.env.VERCEL_PROJECT_NAME || 'yabood';
 
 // GET /api/content/:collection/:slug - Get content for editing
-export const GET: APIRoute = async ({ params, request }) => {
+export const GET: APIRoute = async ({ params, request, url }) => {
   const { collection, slug } = params;
 
   if (!collection || !slug) {
@@ -19,6 +19,12 @@ export const GET: APIRoute = async ({ params, request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // Determine the base URL for preview links
+  const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const baseUrl = isLocalDev 
+    ? `${url.protocol}//${url.host}`
+    : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
   try {
     // Check if this is a draft (from a draft branch)
@@ -37,7 +43,9 @@ export const GET: APIRoute = async ({ params, request }) => {
 
       try {
         const content = await github.getFileContent(filePath, branchName);
-        const previewUrl = `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`;
+        const previewUrl = isLocalDev 
+          ? `${baseUrl}/${collection}/${slug}`
+          : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
 
         return new Response(
           JSON.stringify({
@@ -99,7 +107,7 @@ export const GET: APIRoute = async ({ params, request }) => {
 };
 
 // PUT /api/content/:collection/:slug - Update content
-export const PUT: APIRoute = async ({ params, request }) => {
+export const PUT: APIRoute = async ({ params, request, url }) => {
   const { collection, slug } = params;
 
   if (!collection || !slug) {
@@ -108,6 +116,12 @@ export const PUT: APIRoute = async ({ params, request }) => {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // Determine the base URL for preview links
+  const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const baseUrl = isLocalDev 
+    ? `${url.protocol}//${url.host}`
+    : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
   try {
     const { content, branch } = await request.json();
@@ -136,7 +150,9 @@ export const PUT: APIRoute = async ({ params, request }) => {
         branch,
       });
 
-      const previewUrl = `https://${VERCEL_PROJECT_NAME}-${branch.replace('/', '-')}.vercel.app`;
+      const previewUrl = isLocalDev 
+        ? `${baseUrl}/${collection}/${slug}`
+        : baseUrl.replace('{branch}', branch.replace('/', '-')) + `/${collection}/${slug}`;
 
       return new Response(
         JSON.stringify({

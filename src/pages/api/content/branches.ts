@@ -6,13 +6,20 @@ const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 const VERCEL_PROJECT_NAME = import.meta.env.VERCEL_PROJECT_NAME || 'yabood';
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ url }) => {
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
     return new Response(JSON.stringify({ error: 'GitHub configuration missing' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // Determine the base URL for preview links
+  // In development, use localhost; in production, use Vercel preview URLs
+  const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+  const baseUrl = isLocalDev 
+    ? `${url.protocol}//${url.host}`
+    : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
   try {
     const github = new GitHubService({
@@ -61,6 +68,11 @@ export const GET: APIRoute = async () => {
                   const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
 
+                  // Generate preview URL based on environment
+                  const previewUrl = isLocalDev 
+                    ? `${baseUrl}/${collection}/${slug}`
+                    : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
+
                   allDraftContent.push({
                     slug,
                     branch: branchName,
@@ -72,7 +84,7 @@ export const GET: APIRoute = async () => {
                     tags: tagsMatch
                       ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
                       : [],
-                    previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app/${collection}/${slug}`,
+                    previewUrl,
                   });
                 }
               }
