@@ -208,7 +208,7 @@ Start writing your content here...`;
         {
           editingExistingContent && (
             <a
-              href="/compose"
+              href="/admin/compose"
               class="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors inline-block text-center">
               New Content
             </a>
@@ -316,7 +316,7 @@ Start writing your content here...`;
             const collection = target.dataset.collection;
             const slug = target.dataset.slug;
             if (collection && slug) {
-              window.location.href = `/compose?collection=${collection}&slug=${slug}&draft=true`;
+              window.location.href = `/admin/compose?collection=${collection}&slug=${slug}&draft=true`;
             }
           });
         });
@@ -365,7 +365,7 @@ Start writing your content here...`;
             const collection = target.dataset.collection;
             const slug = target.dataset.slug;
             if (collection && slug) {
-              window.location.href = `/compose?collection=${collection}&slug=${slug}`;
+              window.location.href = `/admin/compose?collection=${collection}&slug=${slug}`;
             }
           });
         });
@@ -399,7 +399,7 @@ Start writing your content here...`;
         if (response.ok) {
           showStatus('Draft created successfully!', 'success');
           setTimeout(() => {
-            window.location.href = `/compose?collection=${collection}&slug=${result.slug}&draft=true`;
+            window.location.href = `/admin/compose?collection=${collection}&slug=${result.slug}&draft=true`;
           }, 1000);
         } else {
           showStatus(result.error || 'Failed to create draft', 'error');
@@ -531,7 +531,7 @@ Start writing your content here...`;
         if (response.ok) {
           showStatus('Draft deleted successfully!', 'success');
           setTimeout(() => {
-            window.location.href = '/compose';
+            window.location.href = '/admin/compose';
           }, 1000);
         } else {
           showStatus(result.error || 'Failed to delete draft', 'error');

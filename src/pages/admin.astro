@@ -46,7 +46,7 @@ const user = Astro.locals.user;
 
       <div class="absolute bottom-0 w-64 p-6 border-t">
         <a
-          href="/compose"
+          href="/admin/compose"
           class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors">
           Compose New
         </a>
@@ -274,7 +274,7 @@ const user = Astro.locals.user;
               </div>
               <div class="flex gap-2 ml-4">
                 <a
-                  href="/compose?collection=${entry.collection}&slug=${entry.slug}${entry.isGitHubDraft ? '&draft=true' : ''}"
+                  href="/admin/compose?collection=${entry.collection}&slug=${entry.slug}${entry.isGitHubDraft ? '&draft=true' : ''}"
                   class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
                   Edit
                 </a>
