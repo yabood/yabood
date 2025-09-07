@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { GitHubService } from '../../../services/github-service';
-import { generateSlug, ensureUniqueSlug } from '../../../utils/slug';
+import { generateSlug, ensureUniqueSlug, generateShortGuid } from '../../../utils/slug';
 
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
@@ -33,10 +33,7 @@ export const POST: APIRoute = async ({ request }) => {
       repo: GITHUB_REPO,
     });
 
-    // Ensure drafts branch exists
-    await github.ensureDraftsBranch();
-
-    // Generate slug from title
+    // Generate slug from title for the file name
     let slug = generateSlug(title);
 
     // Get existing draft branches to ensure unique slug
@@ -44,11 +41,11 @@ export const POST: APIRoute = async ({ request }) => {
     const existingSlugs = draftBranches.map((branch) => branch.replace('draft/', ''));
     slug = ensureUniqueSlug(slug, existingSlugs);
 
-    // Create branch name
-    const branchName = `draft/${slug}`;
+    // Create branch name with short GUID
+    const branchId = generateShortGuid();
+    const branchName = `draft/${branchId}`;
 
-    // Create the branch
-    await github.createBranch(branchName, 'drafts');
+    await github.createBranch(branchName, 'main');
 
     // Generate MDX content with frontmatter
     const currentDate = new Date().toISOString().split('T')[0];
@@ -84,6 +81,8 @@ Start writing your content here...
         slug,
         collection,
         branch: branchName,
+        branchId,
+        title,
         filePath,
         previewUrl,
         message: `Draft created successfully`,

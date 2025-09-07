@@ -27,7 +27,7 @@ export const GET: APIRoute = async () => {
     // For each branch, get the content metadata
     const drafts = await Promise.all(
       draftBranches.map(async (branchName) => {
-        const slug = branchName.replace('draft/', '');
+        const branchId = branchName.replace('draft/', '');
 
         try {
           // Try to find the MDX file in different collections
@@ -35,32 +35,40 @@ export const GET: APIRoute = async () => {
           let contentData = null;
 
           for (const collection of collections) {
-            const filePath = `src/content/${collection}/${slug}.mdx`;
-            try {
-              const content = await github.getFileContent(filePath, branchName);
+            // Get all files in the collection directory
+            const files = await github.getDirectoryContents(
+              `src/content/${collection}`,
+              branchName
+            );
 
-              // Extract metadata from frontmatter
-              const titleMatch = content.match(/^title:\s*["'](.+)["']/m);
-              const descriptionMatch = content.match(/^description:\s*["'](.+)["']/m);
-              const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
-              const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
+            if (files.length > 0) {
+              // Found MDX file in this collection
+              const mdxFile = files.find((f) => f.name.endsWith('.mdx'));
+              if (mdxFile) {
+                const content = await github.getFileContent(mdxFile.path, branchName);
+                const slug = mdxFile.name.replace('.mdx', '');
 
-              contentData = {
-                slug,
-                branch: branchName,
-                collection,
-                title: titleMatch ? titleMatch[1] : slug,
-                description: descriptionMatch ? descriptionMatch[1] : '',
-                pubDate: dateMatch ? dateMatch[1] : null,
-                tags: tagsMatch
-                  ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
-                  : [],
-                previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
-              };
-              break;
-            } catch {
-              // File not found in this collection, try next
-              continue;
+                // Extract metadata from frontmatter
+                const titleMatch = content.match(/^title:\s*["'](.+)["']/m);
+                const descriptionMatch = content.match(/^description:\s*["'](.+)["']/m);
+                const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
+                const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
+
+                contentData = {
+                  slug,
+                  branch: branchName,
+                  branchId,
+                  collection,
+                  title: titleMatch ? titleMatch[1] : slug,
+                  description: descriptionMatch ? descriptionMatch[1] : '',
+                  pubDate: dateMatch ? dateMatch[1] : null,
+                  tags: tagsMatch
+                    ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
+                    : [],
+                  previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
+                };
+                break;
+              }
             }
           }
 
@@ -70,10 +78,11 @@ export const GET: APIRoute = async () => {
 
           // If no content found in any collection, return basic info
           return {
-            slug,
+            slug: branchId,
             branch: branchName,
+            branchId,
             collection: 'unknown',
-            title: slug,
+            title: 'Unknown Draft',
             description: 'Draft content',
             previewUrl: `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`,
           };
