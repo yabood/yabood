@@ -277,7 +277,7 @@ const user = Astro.locals.user;
                       Edit
                     </a>
                     <a
-                      href="/updates/${update.slug}"
+                      href="/projects/${projectSlug}/updates/${update.slug}"
                       target="_blank"
                       class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
                       View
@@ -527,15 +527,24 @@ const user = Astro.locals.user;
       // Create flat list
       filteredEntries.forEach((entry) => {
         hasContent = true;
-        const viewUrl = entry.isGitHubDraft
-          ? entry.previewUrl
-          : entry.collection === 'blog'
-            ? `/blog/${entry.slug}`
-            : entry.collection === 'noise'
-              ? `/noise/${entry.slug}`
-              : entry.collection === 'projects'
-                ? `/projects/${entry.slug}`
-                : `/${entry.collection}/${entry.slug}`;
+        // For GitHub drafts from feature branches, use the preview URL
+        // For main branch content (drafts or published), use regular URLs
+        let viewUrl;
+        if (entry.isGitHubDraft && entry.branch !== 'main') {
+          viewUrl = entry.previewUrl;
+        } else if (entry.collection === 'blog') {
+          viewUrl = `/blog/${entry.slug}`;
+        } else if (entry.collection === 'noise') {
+          viewUrl = `/noise/${entry.slug}`;
+        } else if (entry.collection === 'projects') {
+          viewUrl = `/projects/${entry.slug}`;
+        } else if (entry.collection === 'updates') {
+          // Updates need the project slug to build the correct URL
+          const projectSlug = (entry as any).project;
+          viewUrl = projectSlug ? `/projects/${projectSlug}/updates/${entry.slug}` : `#`;
+        } else {
+          viewUrl = `/${entry.collection}/${entry.slug}`;
+        }
 
         // Determine badge color and text
         let badgeClass = 'bg-green-100 text-green-800';
@@ -629,7 +638,7 @@ const user = Astro.locals.user;
                     href="${viewUrl}"
                     target="_blank"
                     class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
-                    ${entry.isGitHubDraft ? 'Preview' : 'View'}
+                    ${entry.isGitHubDraft && entry.branch !== 'main' ? 'Preview' : 'View'}
                   </a>
                 </div>
               </div>

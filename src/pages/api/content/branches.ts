@@ -72,6 +72,8 @@ export const GET: APIRoute = async ({ url }) => {
                   const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
                   const publishedAtMatch = content.match(/^publishedAt:\s*["']?(.+?)["']?$/m);
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
+                  const projectMatch = content.match(/^project:\s*["']?(.+?)["']?$/m);
+                  const phaseMatch = content.match(/^phase:\s*["']?(.+?)["']?$/m);
                   
                   // For noise entries without a summary, extract first part of body content
                   let extractedDescription = descriptionMatch ? descriptionMatch[1] : summaryMatch ? summaryMatch[1] : '';
@@ -92,7 +94,20 @@ export const GET: APIRoute = async ({ url }) => {
 
                   // Generate preview URL based on environment and branch
                   let previewUrl;
-                  if (branchName === 'main') {
+                  if (collection === 'updates' && projectMatch) {
+                    // Special handling for project updates
+                    const projectSlug = projectMatch[1];
+                    if (branchName === 'main') {
+                      previewUrl = isLocalDev
+                        ? `${baseUrl}/projects/${projectSlug}/updates/${slug}`
+                        : `https://${VERCEL_PROJECT_NAME}.vercel.app/projects/${projectSlug}/updates/${slug}`;
+                    } else {
+                      previewUrl = isLocalDev
+                        ? `${baseUrl}/projects/${projectSlug}/updates/${slug}`
+                        : baseUrl.replace('{branch}', branchName.replace('/', '-')) +
+                          `/projects/${projectSlug}/updates/${slug}`;
+                    }
+                  } else if (branchName === 'main') {
                     // For main branch drafts, use the regular production URL
                     previewUrl = isLocalDev
                       ? `${baseUrl}/${collection}/${slug}`
@@ -105,7 +120,7 @@ export const GET: APIRoute = async ({ url }) => {
                         `/${collection}/${slug}`;
                   }
 
-                  allDraftContent.push({
+                  const draftData: any = {
                     slug,
                     branch: branchName,
                     branchId,
@@ -117,7 +132,15 @@ export const GET: APIRoute = async ({ url }) => {
                       ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
                       : [],
                     previewUrl,
-                  });
+                  };
+                  
+                  // Add project-specific fields for updates
+                  if (collection === 'updates') {
+                    if (projectMatch) draftData.project = projectMatch[1];
+                    if (phaseMatch) draftData.phase = phaseMatch[1];
+                  }
+                  
+                  allDraftContent.push(draftData);
                 }
               }
             }
