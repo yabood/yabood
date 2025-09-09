@@ -28,12 +28,13 @@ export const GET: APIRoute = async ({ url }) => {
       repo: GITHUB_REPO,
     });
 
-    // Get all draft branches
+    // Get all draft branches AND main branch
     const draftBranches = await github.listBranches('draft/');
+    const allBranches = ['main', ...draftBranches]; // Include main branch to get all drafts
 
     // For each branch, get the content metadata
     const drafts = await Promise.all(
-      draftBranches.map(async (branchName) => {
+      allBranches.map(async (branchName) => {
         const branchId = branchName.replace('draft/', '');
 
         try {
@@ -70,11 +71,20 @@ export const GET: APIRoute = async ({ url }) => {
                   const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
 
-                  // Generate preview URL based on environment
-                  const previewUrl = isLocalDev
-                    ? `${baseUrl}/${collection}/${slug}`
-                    : baseUrl.replace('{branch}', branchName.replace('/', '-')) +
-                      `/${collection}/${slug}`;
+                  // Generate preview URL based on environment and branch
+                  let previewUrl;
+                  if (branchName === 'main') {
+                    // For main branch drafts, use the regular production URL
+                    previewUrl = isLocalDev
+                      ? `${baseUrl}/${collection}/${slug}`
+                      : `https://${VERCEL_PROJECT_NAME}.vercel.app/${collection}/${slug}`;
+                  } else {
+                    // For feature branches, use preview URLs
+                    previewUrl = isLocalDev
+                      ? `${baseUrl}/${collection}/${slug}`
+                      : baseUrl.replace('{branch}', branchName.replace('/', '-')) +
+                        `/${collection}/${slug}`;
+                  }
 
                   allDraftContent.push({
                     slug,
