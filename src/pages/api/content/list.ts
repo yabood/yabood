@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 
-function mapEntryData(entry: any, collectionName: string) {
+async function mapEntryData(entry: any, collectionName: string) {
   switch (collectionName) {
     case 'blog':
       return {
@@ -15,11 +15,22 @@ function mapEntryData(entry: any, collectionName: string) {
         heroImage: entry.data.heroImage,
       };
     case 'noise':
+      // For noise entries, if no summary, try to extract from body
+      let description = entry.data.summary || '';
+      if (!description && entry.body) {
+        // Extract first 150 chars from body, removing markdown
+        description = entry.body
+          .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+          .replace(/\[.*?\]\(.*?\)/g, '') // Remove links
+          .replace(/[#*_`]/g, '') // Remove markdown formatting
+          .trim()
+          .substring(0, 150);
+      }
       return {
         slug: entry.slug,
         collection: collectionName,
         title: entry.data.id || entry.slug,
-        description: entry.data.summary || '',
+        description,
         pubDate: entry.data.publishedAt,
         draft: entry.data.draft,
         tags: [],
@@ -71,7 +82,9 @@ export const GET: APIRoute = async ({ url }) => {
     if (collection && collections.includes(collection)) {
       // Get specific collection
       const entries = await getCollection(collection as 'blog' | 'noise' | 'updates' | 'projects');
-      result[collection] = entries.map((entry) => mapEntryData(entry, collection));
+      result[collection] = await Promise.all(
+        entries.map((entry) => mapEntryData(entry, collection))
+      );
     } else {
       // Get all collections
       for (const collectionName of collections) {
@@ -79,7 +92,9 @@ export const GET: APIRoute = async ({ url }) => {
           const entries = await getCollection(
             collectionName as 'blog' | 'noise' | 'updates' | 'projects'
           );
-          result[collectionName] = entries.map((entry) => mapEntryData(entry, collectionName));
+          result[collectionName] = await Promise.all(
+            entries.map((entry) => mapEntryData(entry, collectionName))
+          );
         } catch (error) {
           console.error(`Error loading collection ${collectionName}:`, error);
           result[collectionName] = [];

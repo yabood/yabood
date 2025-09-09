@@ -7,7 +7,7 @@ const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 const VERCEL_PROJECT_NAME = import.meta.env.VERCEL_PROJECT_NAME || 'yabood';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, url }) => {
   try {
     // Check for required environment variables
     if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
@@ -16,6 +16,12 @@ export const POST: APIRoute = async ({ request }) => {
         headers: { 'Content-Type': 'application/json' },
       });
     }
+
+    // Determine the base URL for preview links
+    const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+    const baseUrl = isLocalDev
+      ? `${url.protocol}//${url.host}`
+      : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
 
     const { title, collection = 'blog', description = '', tags = [] } = await request.json();
 
@@ -72,8 +78,10 @@ Start writing your content here...
       branch: branchName,
     });
 
-    // Generate Vercel preview URL
-    const previewUrl = `https://${VERCEL_PROJECT_NAME}-${branchName.replace('/', '-')}.vercel.app`;
+    // Generate preview URL based on environment
+    const previewUrl = isLocalDev
+      ? `${baseUrl}/${collection}/${slug}`
+      : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
 
     return new Response(
       JSON.stringify({
