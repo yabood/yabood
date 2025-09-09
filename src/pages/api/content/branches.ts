@@ -68,8 +68,27 @@ export const GET: APIRoute = async ({ url }) => {
                   // Extract metadata from frontmatter
                   const titleMatch = content.match(/^title:\s*["'](.+)["']/m);
                   const descriptionMatch = content.match(/^description:\s*["'](.+)["']/m);
+                  const summaryMatch = content.match(/^summary:\s*["'](.+)["']/m);
                   const dateMatch = content.match(/^pubDate:\s*(.+)$/m);
+                  const publishedAtMatch = content.match(/^publishedAt:\s*["']?(.+?)["']?$/m);
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
+                  
+                  // For noise entries without a summary, extract first part of body content
+                  let extractedDescription = descriptionMatch ? descriptionMatch[1] : summaryMatch ? summaryMatch[1] : '';
+                  if (!extractedDescription && collection === 'noise') {
+                    // Extract content after frontmatter (after the second ---)
+                    const bodyMatch = content.match(/^---[\s\S]*?---\s*([\s\S]*?)$/m);
+                    if (bodyMatch && bodyMatch[1]) {
+                      // Get first 150 chars of content, remove markdown formatting
+                      const bodyContent = bodyMatch[1]
+                        .replace(/!\[.*?\]\(.*?\)/g, '') // Remove images
+                        .replace(/\[.*?\]\(.*?\)/g, '') // Remove links
+                        .replace(/[#*_`]/g, '') // Remove markdown formatting
+                        .trim()
+                        .substring(0, 150);
+                      extractedDescription = bodyContent;
+                    }
+                  }
 
                   // Generate preview URL based on environment and branch
                   let previewUrl;
@@ -92,8 +111,8 @@ export const GET: APIRoute = async ({ url }) => {
                     branchId,
                     collection,
                     title: titleMatch ? titleMatch[1] : slug,
-                    description: descriptionMatch ? descriptionMatch[1] : '',
-                    pubDate: dateMatch ? dateMatch[1] : null,
+                    description: extractedDescription,
+                    pubDate: dateMatch ? dateMatch[1] : publishedAtMatch ? publishedAtMatch[1] : null,
                     tags: tagsMatch
                       ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
                       : [],

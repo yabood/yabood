@@ -445,33 +445,38 @@ const user = Astro.locals.user;
       const allEntries: Array<
         ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }
       > = [];
+      
+      // Track what we've already added to avoid duplicates
+      const addedEntries = new Set<string>();
 
-      // Add GitHub branch drafts
+      // Add GitHub branch drafts first (they take priority)
       const filteredDrafts =
         currentCategory === 'all'
           ? allDrafts
           : allDrafts.filter((draft) => draft.collection === currentCategory);
 
       filteredDrafts.forEach((draft) => {
-        allEntries.push({
-          ...draft,
-          isDraft: true,
-          isGitHubDraft: true,
-          draft: true,
-        });
+        const entryKey = `${draft.collection}-${draft.slug}`;
+        if (!addedEntries.has(entryKey)) {
+          addedEntries.add(entryKey);
+          allEntries.push({
+            ...draft,
+            isDraft: true,
+            isGitHubDraft: true,
+            draft: true,
+          });
+        }
       });
 
       // Add all content (including local drafts and published)
       if (currentCategory === 'all') {
         Object.entries(allContent).forEach(([collectionName, entries]) => {
           entries.forEach((entry) => {
-            // Check if this is a local draft that's not already in GitHub branches
-            const isLocalDraft = entry.draft === true;
-            const alreadyInGitHub = allDrafts.some(
-              (d) => d.collection === collectionName && d.slug === entry.slug
-            );
-
-            if (!alreadyInGitHub) {
+            const entryKey = `${collectionName}-${entry.slug}`;
+            // Only add if not already added from GitHub drafts
+            if (!addedEntries.has(entryKey)) {
+              addedEntries.add(entryKey);
+              const isLocalDraft = entry.draft === true;
               allEntries.push({
                 ...entry,
                 isDraft: isLocalDraft,
@@ -485,13 +490,11 @@ const user = Astro.locals.user;
         const entries = allContent[currentCategory];
         if (entries) {
           entries.forEach((entry) => {
-            // Check if this is a local draft that's not already in GitHub branches
-            const isLocalDraft = entry.draft === true;
-            const alreadyInGitHub = allDrafts.some(
-              (d) => d.collection === currentCategory && d.slug === entry.slug
-            );
-
-            if (!alreadyInGitHub) {
+            const entryKey = `${currentCategory}-${entry.slug}`;
+            // Only add if not already added from GitHub drafts
+            if (!addedEntries.has(entryKey)) {
+              addedEntries.add(entryKey);
+              const isLocalDraft = entry.draft === true;
               allEntries.push({
                 ...entry,
                 isDraft: isLocalDraft,
@@ -591,17 +594,30 @@ const user = Astro.locals.user;
               }
               <div class="flex-1 flex justify-between items-center">
                 <div class="flex-1">
-                  <div class="flex items-center gap-3">
-                    <h4 class="text-base font-semibold text-gray-800">${entry.title}</h4>
-                    <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
-                      ${badgeText}
-                    </span>
-                    ${currentCategory === 'all' ? `<span class="text-xs text-gray-500">${entry.collection}</span>` : ''}
-                  </div>
-                  <div class="mt-1 flex items-center gap-4">
-                    <p class="text-gray-600 text-sm">${entry.description || 'No description'}</p>
-                    ${entry.pubDate ? `<span class="text-xs text-gray-400">${new Date(entry.pubDate).toLocaleDateString()}</span>` : ''}
-                  </div>
+                  ${entry.collection === 'noise' ? `
+                    <div class="flex items-center gap-3">
+                      <p class="text-gray-800 text-sm line-clamp-2">${entry.description || 'No content'}</p>
+                      <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                        ${badgeText}
+                      </span>
+                      ${currentCategory === 'all' ? `<span class="text-xs text-gray-500">${entry.collection}</span>` : ''}
+                    </div>
+                    <div class="mt-1">
+                      ${entry.pubDate ? `<span class="text-xs text-gray-400">${new Date(entry.pubDate).toLocaleDateString()}</span>` : ''}
+                    </div>
+                  ` : `
+                    <div class="flex items-center gap-3">
+                      <h4 class="text-base font-semibold text-gray-800">${entry.title}</h4>
+                      <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                        ${badgeText}
+                      </span>
+                      ${currentCategory === 'all' ? `<span class="text-xs text-gray-500">${entry.collection}</span>` : ''}
+                    </div>
+                    <div class="mt-1 flex items-center gap-4">
+                      <p class="text-gray-600 text-sm">${entry.description || 'No description'}</p>
+                      ${entry.pubDate ? `<span class="text-xs text-gray-400">${new Date(entry.pubDate).toLocaleDateString()}</span>` : ''}
+                    </div>
+                  `}
                 </div>
                 <div class="flex gap-2 ml-4">
                   <a
