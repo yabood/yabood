@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 
 async function mapEntryData(entry: any, collectionName: string) {
   switch (collectionName) {
