@@ -74,9 +74,13 @@ export const GET: APIRoute = async ({ url }) => {
                   const tagsMatch = content.match(/^tags:\s*\[(.+)\]/m);
                   const projectMatch = content.match(/^project:\s*["']?(.+?)["']?$/m);
                   const phaseMatch = content.match(/^phase:\s*["']?(.+?)["']?$/m);
-                  
+
                   // For noise entries without a summary, extract first part of body content
-                  let extractedDescription = descriptionMatch ? descriptionMatch[1] : summaryMatch ? summaryMatch[1] : '';
+                  let extractedDescription = descriptionMatch
+                    ? descriptionMatch[1]
+                    : summaryMatch
+                      ? summaryMatch[1]
+                      : '';
                   if (!extractedDescription && collection === 'noise') {
                     // Extract content after frontmatter (after the second ---)
                     const bodyMatch = content.match(/^---[\s\S]*?---\s*([\s\S]*?)$/m);
@@ -127,19 +131,23 @@ export const GET: APIRoute = async ({ url }) => {
                     collection,
                     title: titleMatch ? titleMatch[1] : slug,
                     description: extractedDescription,
-                    pubDate: dateMatch ? dateMatch[1] : publishedAtMatch ? publishedAtMatch[1] : null,
+                    pubDate: dateMatch
+                      ? dateMatch[1]
+                      : publishedAtMatch
+                        ? publishedAtMatch[1]
+                        : null,
                     tags: tagsMatch
                       ? tagsMatch[1].split(',').map((t) => t.trim().replace(/['"]/g, ''))
                       : [],
                     previewUrl,
                   };
-                  
+
                   // Add project-specific fields for updates
                   if (collection === 'updates') {
                     if (projectMatch) draftData.project = projectMatch[1];
                     if (phaseMatch) draftData.phase = phaseMatch[1];
                   }
-                  
+
                   allDraftContent.push(draftData);
                 }
               }
