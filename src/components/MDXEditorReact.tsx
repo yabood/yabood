@@ -20,7 +20,7 @@ const MDXEditorReact: React.FC<MDXEditorReactProps> = ({
     if (typeof window !== 'undefined') {
       (window as Window & { mdxEditorContent?: string }).mdxEditorContent = initialContent;
     }
-  }, []);
+  }, [initialContent]);
 
   return <MDXEditorClient initialContent={initialContent} onChange={handleChange} />;
 };

@@ -38,21 +38,35 @@ export const GET: APIRoute = async ({ params, request, url }) => {
         repo: GITHUB_REPO,
       });
 
-      const branchName = `draft/${slug}`;
-      const filePath = `src/content/${collection}/${slug}.mdx`;
+      // Find the correct draft branch by scanning all draft branches
+      const draftBranches = await github.listBranches('draft/');
+      let foundBranch: string | null = null;
+      let foundContent: string | null = null;
 
-      try {
-        const content = await github.getFileContent(filePath, branchName);
+      for (const branchName of draftBranches) {
+        try {
+          const filePath = `src/content/${collection}/${slug}.mdx`;
+          const content = await github.getFileContent(filePath, branchName);
+          foundBranch = branchName;
+          foundContent = content;
+          break;
+        } catch (error: any) {
+          // Continue searching other branches
+          continue;
+        }
+      }
+
+      if (foundBranch && foundContent) {
         const previewUrl = isLocalDev
           ? `${baseUrl}/${collection}/${slug}`
-          : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
+          : baseUrl.replace('{branch}', foundBranch.replace('/', '-')) + `/${collection}/${slug}`;
 
         return new Response(
           JSON.stringify({
             slug,
             collection,
-            content,
-            branch: branchName,
+            content: foundContent,
+            branch: foundBranch,
             previewUrl,
             isDraft: true,
           }),
@@ -61,13 +75,9 @@ export const GET: APIRoute = async ({ params, request, url }) => {
             headers: { 'Content-Type': 'application/json' },
           }
         );
-      } catch (error: any) {
-        if (error.message === 'File not found') {
-          // Fall back to local file system
-        } else {
-          throw error;
-        }
       }
+
+      // If not found in any draft branch, fall back to local file system
     }
 
     // Get from local file system (published content or no GitHub config)
