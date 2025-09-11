@@ -8,11 +8,11 @@ const socialLinks = [
 ];
 ---
 
-<footer class="mt-auto bg-white dark:bg-gray-900">
+<footer class="mt-auto bg-white">
   <div class="container mx-auto max-w-3xl px-4 py-8">
     <div class="flex items-center justify-between">
       <div class="flex flex-col gap-2">
-        <p class="text-sm text-gray-600 dark:text-gray-400">
+        <p class="text-sm text-gray-600">
           © {currentYear} Yabood. All rights reserved.
         </p>
 
@@ -22,28 +22,28 @@ const socialLinks = [
               <>
                 <a
                   href={href}
-                  class="text-sm text-gray-600 transition-colors hover:text-accent dark:text-gray-400 dark:hover:text-accent-light"
+                  class="text-sm text-gray-600 transition-colors hover:text-accent"
                   rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
                   target={href.startsWith('http') ? '_blank' : undefined}>
                   {label}
                 </a>
                 {index < socialLinks.length - 1 && (
-                  <span class="mx-3 text-gray-400 dark:text-gray-600">·</span>
+                  <span class="mx-3 text-gray-400">·</span>
                 )}
               </>
             ))
           }
-          <span class="mx-3 text-gray-400 dark:text-gray-600">·</span>
+          <span class="mx-3 text-gray-400">·</span>
           <a
             href="/contact"
-            class="text-sm text-gray-600 transition-colors hover:text-accent dark:text-gray-400 dark:hover:text-accent-light">
+            class="text-sm text-gray-600 transition-colors hover:text-accent">
             Contact
           </a>
         </div>
       </div>
 
       <svg
-        class="text-gray-400 dark:text-gray-600 flex-shrink-0"
+        class="text-gray-400 flex-shrink-0"
         viewBox="0 0 384 384"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

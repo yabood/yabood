@@ -67,20 +67,20 @@ const breadcrumbs = [
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <nav class="mb-8">
-      <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+      <ol class="flex flex-wrap items-center gap-2 text-sm text-gray-600">
         <li>
-          <a href="/projects" class="hover:text-accent dark:hover:text-accent-light">Projects</a>
+          <a href="/projects" class="hover:text-accent">Projects</a>
         </li>
         <li>/</li>
         <li>
           <a
             href={`/projects/${update.data.project}`}
-            class="hover:text-accent dark:hover:text-accent-light">
+            class="hover:text-accent">
             {project?.data.title || update.data.project}
           </a>
         </li>
         <li>/</li>
-        <li class="font-medium text-gray-900 dark:text-white">
+        <li class="font-medium text-gray-900">
           {update.data.title}
         </li>
       </ol>
@@ -90,17 +90,17 @@ const breadcrumbs = [
       <header class="mb-8">
         <div class="mb-4">
           <span
-            class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
             {phaseLabels[update.data.phase]}
           </span>
         </div>
 
         <h1
-          class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          class="mb-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           {update.data.title}
         </h1>
 
-        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+        <div class="flex flex-wrap items-center gap-4 text-sm text-gray-600">
           <time datetime={update.data.date.toISOString()}>
             {
               update.data.date.toLocaleDateString('en-US', {
@@ -116,7 +116,7 @@ const breadcrumbs = [
                 <span>•</span>
                 <div class="flex flex-wrap gap-2">
                   {update.data.tags.map((tag) => (
-                    <span class="text-gray-500 dark:text-gray-400">{tag}</span>
+                    <span class="text-gray-500">{tag}</span>
                   ))}
                 </div>
               </>
@@ -126,7 +126,7 @@ const breadcrumbs = [
 
         {
           update.data.summary && (
-            <p class="mt-6 text-lg leading-relaxed text-gray-600 dark:text-gray-400">
+            <p class="mt-6 text-lg leading-relaxed text-gray-600">
               {update.data.summary}
             </p>
           )
@@ -139,14 +139,14 @@ const breadcrumbs = [
     </article>
 
     <nav
-      class="mt-12 flex items-center justify-between border-t border-gray-200 pt-8 dark:border-gray-700">
+      class="mt-12 flex items-center justify-between border-t border-gray-200 pt-8">
       {
         prevUpdate ? (
           <a
             href={`/projects/${update.data.project}/updates/${prevUpdate.slug}`}
             class="group flex max-w-xs flex-col">
-            <span class="text-sm text-gray-500 dark:text-gray-400">← Previous</span>
-            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+            <span class="text-sm text-gray-500">← Previous</span>
+            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent">
               {prevUpdate.data.title}
             </span>
           </a>
@@ -160,8 +160,8 @@ const breadcrumbs = [
           <a
             href={`/projects/${update.data.project}/updates/${nextUpdate.slug}`}
             class="group flex max-w-xs flex-col text-right">
-            <span class="text-sm text-gray-500 dark:text-gray-400">Next →</span>
-            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+            <span class="text-sm text-gray-500">Next →</span>
+            <span class="mt-1 font-medium text-gray-900 group-hover:text-accent">
               {nextUpdate.data.title}
             </span>
           </a>

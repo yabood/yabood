@@ -66,7 +66,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
   <main id="main" class="py-12">
     <article>
       <header class="container mx-auto max-w-3xl px-4 mb-8">
-        <div class="text-sm text-gray-600 dark:text-gray-400">
+        <div class="text-sm text-gray-600">
           <time datetime={pubDate.toISOString()}>
             {articleDate}
           </time>
@@ -82,7 +82,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
             draft && import.meta.env.DEV && (
               <>
                 <span class="mx-2">·</span>
-                <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+                <span class="text-yellow-600 font-medium">Draft</span>
               </>
             )
           }
@@ -90,17 +90,17 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
         </div>
 
         <h1
-          class="mt-2 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+          class="mt-2 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           {title}
         </h1>
 
-        <p class="mt-4 text-lg text-gray-600 dark:text-gray-400">
+        <p class="mt-4 text-lg text-gray-600">
           {description}
         </p>
 
         {
           author && (
-            <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+            <div class="mt-4 text-sm text-gray-600">
               By <span class="font-medium">{author}</span>
             </div>
           )
@@ -112,7 +112,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
               {tags.map((tag) => (
                 <a
                   href={`/tags/${tag}`}
-                  class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700">
+                  class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200">
                   #{tag}
                 </a>
               ))}
@@ -149,7 +149,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
     <!-- Author Bio Section -->
     {
       author && (
-        <section class="container mx-auto max-w-3xl px-4 mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+        <section class="container mx-auto max-w-3xl px-4 mt-12 pt-8 border-t border-gray-200">
           <div class="flex items-start gap-4">
             <div class="flex-shrink-0">
               <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl">
@@ -157,10 +157,10 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
               </div>
             </div>
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              <h3 class="text-lg font-semibold text-gray-900">
                 Written by {author}
               </h3>
-              <p class="mt-1 text-gray-600 dark:text-gray-400">
+              <p class="mt-1 text-gray-600">
                 Software engineer passionate about technology, development, and creativity. I build
                 modern web applications and explore the intersection of technology and user
                 experience.
@@ -168,14 +168,14 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
               <div class="mt-3 flex gap-4">
                 <a
                   href="/about"
-                  class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium">
+                  class="text-sm text-blue-600 hover:text-blue-800 font-medium">
                   Learn more about me →
                 </a>
                 <a
                   href="https://twitter.com/yabood"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300">
+                  class="text-sm text-gray-500 hover:text-gray-700">
                   Follow on Twitter
                 </a>
               </div>

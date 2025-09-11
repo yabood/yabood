@@ -9,7 +9,6 @@ export default {
         accent: {
           DEFAULT: 'rgb(136, 58, 234)',
           light: 'rgb(224, 204, 250)',
-          dark: 'rgb(49, 10, 101)',
         },
       },
       fontFamily: {

@@ -36,10 +36,10 @@ const projectsWithLatestUpdate = projects
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <div class="mb-12 text-center">
-      <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+      <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
         Projects
       </h1>
-      <p class="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
+      <p class="mx-auto max-w-2xl text-lg text-gray-600">
         A collection of my work, from open-source contributions to personal experiments.
       </p>
     </div>
@@ -47,13 +47,13 @@ const projectsWithLatestUpdate = projects
     <div class="grid gap-6 md:grid-cols-2">
       {
         projectsWithLatestUpdate.map((project) => (
-          <article class="group rounded-lg border border-gray-200 bg-white p-6 transition-all hover:border-accent hover:shadow-lg dark:border-gray-800 dark:bg-gray-900 dark:hover:border-accent-light">
+          <article class="group rounded-lg border border-gray-200 bg-white p-6 transition-all hover:border-accent hover:shadow-lg">
             <a href={`/projects/${project.slug}`} class="block">
-              <h2 class="mb-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+              <h2 class="mb-2 text-xl font-semibold text-gray-900 group-hover:text-accent">
                 {project.data.title}
               </h2>
 
-              <p class="mb-4 text-gray-600 dark:text-gray-400">
+              <p class="mb-4 text-gray-600">
                 {project.latestUpdate
                   ? project.latestUpdate.data.summary
                   : project.data.description}
@@ -61,13 +61,13 @@ const projectsWithLatestUpdate = projects
 
               <div class="mb-4 flex flex-wrap gap-2">
                 {project.data.tags.map((tag) => (
-                  <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                  <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700">
                     {tag}
                   </span>
                 ))}
               </div>
 
-              <div class="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
+              <div class="flex items-center justify-between text-sm text-gray-500">
                 <div class="flex items-center gap-2">
                   <time datetime={project.lastUpdatedDate.toISOString()}>
                     Updated{' '}
@@ -80,23 +80,23 @@ const projectsWithLatestUpdate = projects
                   {project.data.draft && (
                     <>
                       <span>·</span>
-                      <span class="text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+                      <span class="text-yellow-600 font-medium">Draft</span>
                     </>
                   )}
                 </div>
                 {project.updateCount > 0 && (
-                  <span class="text-accent dark:text-accent-light">
+                  <span class="text-accent">
                     {project.updateCount} update{project.updateCount !== 1 ? 's' : ''}
                   </span>
                 )}
               </div>
             </a>
 
-            <div class="mt-4 flex gap-4 border-t border-gray-100 pt-4 dark:border-gray-800">
+            <div class="mt-4 flex gap-4 border-t border-gray-100 pt-4">
               {project.data.github && (
                 <a
                   href={project.data.github}
-                  class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+                  class="inline-flex items-center text-sm font-medium text-accent "
                   target="_blank"
                   rel="noopener noreferrer"
                   onclick="(event) => event.stopPropagation()">
@@ -118,7 +118,7 @@ const projectsWithLatestUpdate = projects
               {project.data.website && (
                 <a
                   href={project.data.website}
-                  class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+                  class="inline-flex items-center text-sm font-medium text-accent "
                   target="_blank"
                   rel="noopener noreferrer"
                   onclick="(event) => event.stopPropagation()">
