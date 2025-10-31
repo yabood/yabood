@@ -13,7 +13,8 @@ const user = Astro.locals.user;
     <!-- Static sidebar for desktop -->
     <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
       <!-- Sidebar component -->
-      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+      <div
+        class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
         <div class="flex h-16 shrink-0 items-center">
           <h1 class="text-xl font-bold text-gray-900">Admin Panel</h1>
         </div>
@@ -25,8 +26,18 @@ const user = Astro.locals.user;
                   <button
                     class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left bg-gray-50 text-indigo-600"
                     data-category="all">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-indigo-600">
-                      <path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      data-slot="icon"
+                      aria-hidden="true"
+                      class="size-6 shrink-0 text-indigo-600">
+                      <path
+                        d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
                     </svg>
                     All Content
                   </button>
@@ -35,8 +46,18 @@ const user = Astro.locals.user;
                   <button
                     class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                     data-category="noise">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                      <path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      data-slot="icon"
+                      aria-hidden="true"
+                      class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                      <path
+                        d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
                     </svg>
                     Noise
                   </button>
@@ -45,8 +66,18 @@ const user = Astro.locals.user;
                   <button
                     class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                     data-category="blog">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                      <path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" stroke-linecap="round" stroke-linejoin="round" />
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      data-slot="icon"
+                      aria-hidden="true"
+                      class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                      <path
+                        d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"></path>
                     </svg>
                     Blog
                   </button>
@@ -56,8 +87,18 @@ const user = Astro.locals.user;
                     <button
                       class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                       data-category="projects">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                        <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" stroke-linecap="round" stroke-linejoin="round" />
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        data-slot="icon"
+                        aria-hidden="true"
+                        class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                        <path
+                          d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"></path>
                       </svg>
                       <span class="flex-1">Projects</span>
                       <svg
@@ -66,7 +107,11 @@ const user = Astro.locals.user;
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 5l7 7-7 7"></path>
                       </svg>
                     </button>
                     <div id="project-subnav" class="hidden mt-1">
@@ -84,8 +129,16 @@ const user = Astro.locals.user;
                 <a
                   href="/admin/compose"
                   class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                    <path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round" />
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    data-slot="icon"
+                    aria-hidden="true"
+                    class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                    <path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round"
+                    ></path>
                   </svg>
                   Compose New
                 </a>
@@ -98,11 +151,25 @@ const user = Astro.locals.user;
 
     <div class="lg:pl-72 flex-1">
       <!-- Sticky header -->
-      <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-        <button type="button" id="mobile-menu-button" class="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden">
+      <div
+        class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          id="mobile-menu-button"
+          class="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden">
           <span class="sr-only">Open sidebar</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
-            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            data-slot="icon"
+            aria-hidden="true"
+            class="size-6">
+            <path
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"></path>
           </svg>
         </button>
 
@@ -111,15 +178,24 @@ const user = Astro.locals.user;
 
         <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
           <form id="search-form" class="grid flex-1 grid-cols-1">
-            <input 
+            <input
               id="search-input"
-              name="search" 
+              name="search"
               type="search"
-              placeholder="Search content..." 
-              aria-label="Search" 
-              class="col-start-1 row-start-1 block size-full bg-white pl-8 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6" />
-            <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400">
-              <path d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" fill-rule="evenodd" />
+              placeholder="Search content..."
+              aria-label="Search"
+              class="col-start-1 row-start-1 block size-full bg-white pl-8 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6"
+            />
+            <svg
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              data-slot="icon"
+              aria-hidden="true"
+              class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400">
+              <path
+                d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z"
+                clip-rule="evenodd"
+                fill-rule="evenodd"></path>
             </svg>
           </form>
           <div class="flex items-center gap-x-4 lg:gap-x-6">
@@ -147,7 +223,7 @@ const user = Astro.locals.user;
 
             <!-- Profile dropdown -->
             <div class="relative" id="profile-dropdown">
-              <button 
+              <button
                 id="profile-button"
                 type="button"
                 class="relative flex items-center"
@@ -155,27 +231,46 @@ const user = Astro.locals.user;
                 aria-haspopup="true">
                 <span class="absolute -inset-1.5"></span>
                 <span class="sr-only">Open user menu</span>
-                <div class="size-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                <div
+                  class="size-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
                   {user?.email?.charAt(0).toUpperCase() || 'A'}
                 </div>
                 <span class="hidden lg:flex lg:items-center">
-                  <span aria-hidden="true" class="ml-4 text-sm/6 font-semibold text-gray-900">{user?.email || 'Admin'}</span>
-                  <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="ml-2 size-5 text-gray-400">
-                    <path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                  <span aria-hidden="true" class="ml-4 text-sm/6 font-semibold text-gray-900"
+                    >{user?.email || 'Admin'}</span
+                  >
+                  <svg
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                    data-slot="icon"
+                    aria-hidden="true"
+                    class="ml-2 size-5 text-gray-400">
+                    <path
+                      d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z"
+                      clip-rule="evenodd"
+                      fill-rule="evenodd"></path>
                   </svg>
                 </span>
               </button>
-              <div 
+              <div
                 id="profile-menu"
                 class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
                 role="menu"
                 aria-orientation="vertical"
                 aria-labelledby="profile-button"
                 tabindex="-1">
-                <a href="/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                <a
+                  href="/"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  role="menuitem"
+                  tabindex="-1">
                   View Site
                 </a>
-                <a href="/admin/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                <a
+                  href="/admin/logout"
+                  class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  role="menuitem"
+                  tabindex="-1">
                   Sign out
                 </a>
               </div>
@@ -209,14 +304,23 @@ const user = Astro.locals.user;
 
     <!-- Mobile sidebar -->
     <div id="mobile-sidebar" class="relative z-50 lg:hidden hidden" role="dialog" aria-modal="true">
-      <div class="fixed inset-0 bg-gray-900/80 transition-opacity" id="mobile-sidebar-backdrop"></div>
+      <div class="fixed inset-0 bg-gray-900/80 transition-opacity" id="mobile-sidebar-backdrop">
+      </div>
       <div class="fixed inset-0 flex">
         <div class="relative mr-16 flex w-full max-w-xs flex-1">
           <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
             <button type="button" id="mobile-close-button" class="-m-2.5 p-2.5">
               <span class="sr-only">Close sidebar</span>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 text-white">
-                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                data-slot="icon"
+                aria-hidden="true"
+                class="size-6 text-white">
+                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"
+                ></path>
               </svg>
             </button>
           </div>
@@ -233,8 +337,18 @@ const user = Astro.locals.user;
                       <button
                         class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left bg-gray-50 text-indigo-600"
                         data-category="all">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-indigo-600">
-                          <path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          data-slot="icon"
+                          aria-hidden="true"
+                          class="size-6 shrink-0 text-indigo-600">
+                          <path
+                            d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
                         </svg>
                         All Content
                       </button>
@@ -243,8 +357,18 @@ const user = Astro.locals.user;
                       <button
                         class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                         data-category="noise">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                          <path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          data-slot="icon"
+                          aria-hidden="true"
+                          class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path
+                            d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
                         </svg>
                         Noise
                       </button>
@@ -253,8 +377,18 @@ const user = Astro.locals.user;
                       <button
                         class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                         data-category="blog">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                          <path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          data-slot="icon"
+                          aria-hidden="true"
+                          class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path
+                            d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
                         </svg>
                         Blog
                       </button>
@@ -263,8 +397,18 @@ const user = Astro.locals.user;
                       <button
                         class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
                         data-category="projects">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                          <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" stroke-linecap="round" stroke-linejoin="round" />
+                        <svg
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          data-slot="icon"
+                          aria-hidden="true"
+                          class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path
+                            d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"></path>
                         </svg>
                         Projects
                       </button>
@@ -279,8 +423,18 @@ const user = Astro.locals.user;
                     <a
                       href="/admin/compose"
                       class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
-                        <path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round" />
+                      <svg
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        data-slot="icon"
+                        aria-hidden="true"
+                        class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                        <path
+                          d="M12 4.5v15m7.5-7.5h-15"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"></path>
                       </svg>
                       Compose New
                     </a>
@@ -776,21 +930,25 @@ const user = Astro.locals.user;
         let imageUrl = '';
         if (entry.heroImage) {
           if (typeof entry.heroImage === 'string') {
-            imageUrl = entry.heroImage.startsWith('http') 
-              ? entry.heroImage 
+            imageUrl = entry.heroImage.startsWith('http')
+              ? entry.heroImage
               : entry.heroImage.replace('../../assets/', '/src/assets/');
-          } else if (entry.heroImage && typeof entry.heroImage === 'object' && entry.heroImage.src) {
+          } else if (
+            entry.heroImage &&
+            typeof entry.heroImage === 'object' &&
+            entry.heroImage.src
+          ) {
             imageUrl = entry.heroImage.src;
           }
         }
-        
+
         // Debug: Log image info for troubleshooting
         if (entry.slug === 'draft-example') {
           console.log('Draft example entry:', {
             slug: entry.slug,
             heroImage: entry.heroImage,
             imageUrl: imageUrl,
-            heroImageType: typeof entry.heroImage
+            heroImageType: typeof entry.heroImage,
           });
         }
 
@@ -799,7 +957,9 @@ const user = Astro.locals.user;
             <div class="flex gap-4 items-center">
               <div class="flex-shrink-0">
                 <div class="w-[100px] h-[75px] bg-gray-100 rounded ${
-                  imageUrl ? 'overflow-hidden' : 'flex items-center justify-center text-gray-400 text-xs'
+                  imageUrl
+                    ? 'overflow-hidden'
+                    : 'flex items-center justify-center text-gray-400 text-xs'
                 }">
                   ${
                     imageUrl
@@ -888,7 +1048,7 @@ const user = Astro.locals.user;
       const searchInput = document.getElementById('search-input') as HTMLInputElement;
       const searchForm = document.getElementById('search-form') as HTMLFormElement;
       const searchResultsInfo = document.getElementById('search-results-info');
-      
+
       if (searchForm) {
         searchForm.addEventListener('submit', (e) => {
           e.preventDefault();
@@ -897,14 +1057,14 @@ const user = Astro.locals.user;
 
       if (searchInput) {
         let searchTimeout: ReturnType<typeof setTimeout>;
-        
+
         searchInput.addEventListener('input', (e) => {
           clearTimeout(searchTimeout);
           const query = (e.target as HTMLInputElement).value.trim();
-          
+
           searchTimeout = setTimeout(() => {
             searchQuery = query;
-            
+
             if (query) {
               // Show search results info
               if (searchResultsInfo) {
@@ -942,7 +1102,7 @@ const user = Astro.locals.user;
       const descriptionElement = document.getElementById('content-description');
       const searchResultsInfo = document.getElementById('search-results-info');
       const contentFilter = document.getElementById('content-filter');
-      
+
       if (!contentList || !titleElement || !descriptionElement) return;
 
       // Hide filters during search
@@ -955,7 +1115,9 @@ const user = Astro.locals.user;
       descriptionElement.textContent = `Searching for "${query}"`;
 
       const searchLower = query.toLowerCase();
-      const searchResults: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }> = [];
+      const searchResults: Array<
+        ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }
+      > = [];
 
       // Search through all content
       Object.entries(allContent).forEach(([collectionName, entries]) => {
@@ -963,7 +1125,7 @@ const user = Astro.locals.user;
           const titleMatch = entry.title?.toLowerCase().includes(searchLower);
           const descMatch = entry.description?.toLowerCase().includes(searchLower);
           const slugMatch = entry.slug?.toLowerCase().includes(searchLower);
-          
+
           if (titleMatch || descMatch || slugMatch) {
             searchResults.push({
               ...entry,
@@ -980,7 +1142,7 @@ const user = Astro.locals.user;
         const titleMatch = draft.title?.toLowerCase().includes(searchLower);
         const descMatch = draft.description?.toLowerCase().includes(searchLower);
         const slugMatch = draft.slug?.toLowerCase().includes(searchLower);
-        
+
         if (titleMatch || descMatch || slugMatch) {
           // Check if not already in results
           const exists = searchResults.some(
@@ -1007,12 +1169,17 @@ const user = Astro.locals.user;
     }
 
     // Render search results
-    function renderSearchResults(results: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }>) {
+    function renderSearchResults(
+      results: Array<
+        ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }
+      >
+    ) {
       const contentList = document.getElementById('content-list');
       if (!contentList) return;
 
       if (results.length === 0) {
-        contentList.innerHTML = '<div class="text-center py-8 text-gray-500">No results found</div>';
+        contentList.innerHTML =
+          '<div class="text-center py-8 text-gray-500">No results found</div>';
         return;
       }
 
@@ -1046,17 +1213,23 @@ const user = Astro.locals.user;
         }
 
         // Badge styling
-        const badgeClass = entry.isDraft ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+        const badgeClass = entry.isDraft
+          ? 'bg-yellow-100 text-yellow-800'
+          : 'bg-green-100 text-green-800';
         const badgeText = entry.isDraft ? 'Draft' : 'Published';
 
         // Process hero image
         let imageUrl = '';
         if (entry.heroImage) {
           if (typeof entry.heroImage === 'string') {
-            imageUrl = entry.heroImage.startsWith('http') 
-              ? entry.heroImage 
+            imageUrl = entry.heroImage.startsWith('http')
+              ? entry.heroImage
               : entry.heroImage.replace('../../assets/', '/src/assets/');
-          } else if (entry.heroImage && typeof entry.heroImage === 'object' && entry.heroImage.src) {
+          } else if (
+            entry.heroImage &&
+            typeof entry.heroImage === 'object' &&
+            entry.heroImage.src
+          ) {
             imageUrl = entry.heroImage.src;
           }
         }
@@ -1066,7 +1239,9 @@ const user = Astro.locals.user;
             <div class="flex gap-4 items-center">
               <div class="flex-shrink-0">
                 <div class="w-[100px] h-[75px] bg-gray-100 rounded ${
-                  imageUrl ? 'overflow-hidden' : 'flex items-center justify-center text-gray-400 text-xs'
+                  imageUrl
+                    ? 'overflow-hidden'
+                    : 'flex items-center justify-center text-gray-400 text-xs'
                 }">
                   ${
                     imageUrl
@@ -1098,8 +1273,8 @@ const user = Astro.locals.user;
                 <div class="flex gap-2 ml-4">
                   <a
                     href="/admin/compose?collection=${entry.collection}&slug=${entry.slug}${
-          entry.isGitHubDraft ? '&draft=true' : ''
-        }"
+                      entry.isGitHubDraft ? '&draft=true' : ''
+                    }"
                     class="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
                     Edit
                   </a>
@@ -1124,12 +1299,12 @@ const user = Astro.locals.user;
     function setupProfileDropdown() {
       const profileButton = document.getElementById('profile-button');
       const profileMenu = document.getElementById('profile-menu');
-      
+
       if (profileButton && profileMenu) {
         profileButton.addEventListener('click', (e) => {
           e.stopPropagation();
           const isExpanded = profileButton.getAttribute('aria-expanded') === 'true';
-          
+
           if (isExpanded) {
             profileMenu.classList.add('hidden');
             profileButton.setAttribute('aria-expanded', 'false');

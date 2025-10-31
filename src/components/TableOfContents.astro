@@ -83,9 +83,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
         <div class="toc-content" id="toc-content" role="complementary">
           <div class="toc-header">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">
-              {title}
-            </h2>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">{title}</h2>
             <button class="toc-close" id="toc-close" aria-label="Close table of contents">
               ×
             </button>
@@ -187,7 +185,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     background: rgb(59, 130, 246);
   }
 
-
   /* Content panel - hidden by default */
   .toc-content {
     position: absolute;
@@ -207,7 +204,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     overflow-y: auto;
   }
 
-
   .toc-content.expanded {
     opacity: 1;
     visibility: visible;
@@ -223,7 +219,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     padding-bottom: 8px;
     border-bottom: 1px solid rgb(229, 231, 235);
   }
-
 
   .toc-close {
     background: none;
@@ -245,7 +240,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     color: rgb(17, 24, 39);
   }
 
-
   /* Navigation links */
   .toc-link[aria-current='true'] {
     background: rgb(239, 246, 255);
@@ -253,11 +247,9 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     font-weight: 500;
   }
 
-
   .toc-link:hover {
     background: rgb(249, 250, 251);
   }
-
 
   /* Scrollbar styling */
   .toc-content::-webkit-scrollbar {
@@ -280,7 +272,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     background: rgb(107, 114, 128);
   }
 
-
   /* Mobile TOC styling */
   .toc-mobile summary {
     list-style: none;
@@ -293,7 +284,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
   .toc-mobile[open] summary {
     border-bottom: 1px solid rgb(229, 231, 235);
   }
-
 </style>
 
 <script>

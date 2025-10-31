@@ -69,9 +69,7 @@ const ogImage = extractFirstImage(noise.body) || '/og-image.jpg';
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <article class="noise-detail">
       <header class="mb-8">
-        <time
-          datetime={noise.data.publishedAt.toISOString()}
-          class="text-sm text-gray-500">
+        <time datetime={noise.data.publishedAt.toISOString()} class="text-sm text-gray-500">
           {
             noise.data.publishedAt.toLocaleTimeString('en-US', {
               hour: 'numeric',

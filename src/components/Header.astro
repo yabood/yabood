@@ -11,15 +11,10 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!-- Non-sticky name section -->
-<div
-  class="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+<div class="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
   <nav class="container mx-auto max-w-3xl px-4 pt-4">
     <div>
-      <a
-        href="/"
-        class="text-xl font-semibold text-gray-900 hover:text-accent">
-        Yousif Abood
-      </a>
+      <a href="/" class="text-xl font-semibold text-gray-900 hover:text-accent"> Yousif Abood </a>
     </div>
   </nav>
 </div>
@@ -49,9 +44,7 @@ const currentPath = Astro.url.pathname;
                 {label}
               </a>
             </li>
-            {index < navItems.length - 1 && (
-              <span class="mx-3 text-gray-400">·</span>
-            )}
+            {index < navItems.length - 1 && <span class="mx-3 text-gray-400">·</span>}
           </>
         ))
       }
@@ -81,8 +74,7 @@ const currentPath = Astro.url.pathname;
   aria-modal="true"
   aria-labelledby="search-input">
   <div class="relative mx-4 w-full max-w-2xl">
-    <div
-      class="rounded-xl bg-white shadow-2xl border border-gray-200">
+    <div class="rounded-xl bg-white shadow-2xl border border-gray-200">
       <!-- Search Input -->
       <div class="p-6 pb-3">
         <div class="relative">
@@ -118,15 +110,11 @@ const currentPath = Astro.url.pathname;
         <div class="flex items-center justify-between text-xs text-gray-500">
           <div class="flex items-center gap-4">
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded"
-                >↵</kbd
-              >
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded">↵</kbd>
               <span>to select</span>
             </span>
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded"
-                >↑↓</kbd
-              >
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded">↑↓</kbd>
               <span>to navigate</span>
             </span>
           </div>

@@ -27,16 +27,12 @@ const socialLinks = [
                   target={href.startsWith('http') ? '_blank' : undefined}>
                   {label}
                 </a>
-                {index < socialLinks.length - 1 && (
-                  <span class="mx-3 text-gray-400">·</span>
-                )}
+                {index < socialLinks.length - 1 && <span class="mx-3 text-gray-400">·</span>}
               </>
             ))
           }
           <span class="mx-3 text-gray-400">·</span>
-          <a
-            href="/contact"
-            class="text-sm text-gray-600 transition-colors hover:text-accent">
+          <a href="/contact" class="text-sm text-gray-600 transition-colors hover:text-accent">
             Contact
           </a>
         </div>

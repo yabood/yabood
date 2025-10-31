@@ -100,9 +100,7 @@ const breadcrumbs = [
         </li>
         <li>/</li>
         <li>
-          <a
-            href={`/projects/${project.slug}`}
-            class="hover:text-accent">
+          <a href={`/projects/${project.slug}`} class="hover:text-accent">
             {project.data.title}
           </a>
         </li>
@@ -123,9 +121,7 @@ const breadcrumbs = [
       <p class="text-lg text-gray-600">
         All {updates.length} update{updates.length !== 1 ? 's' : ''} from the {phaseLabels[phase]} phase
         of
-        <a
-          href={`/projects/${project.slug}`}
-          class="font-medium text-accent ">
+        <a href={`/projects/${project.slug}`} class="font-medium text-accent">
           {project.data.title}
         </a>
       </p>
@@ -138,9 +134,7 @@ const breadcrumbs = [
             <a
               href={`/projects/${project.slug}/updates/${update.slug}`}
               class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md">
-              <time
-                datetime={update.data.date.toISOString()}
-                class="text-sm text-gray-500">
+              <time datetime={update.data.date.toISOString()} class="text-sm text-gray-500">
                 {update.data.date.toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -186,9 +180,7 @@ const breadcrumbs = [
     </div>
 
     <div class="mt-12 text-center">
-      <a
-        href={`/projects/${project.slug}`}
-        class="inline-flex items-center text-accent ">
+      <a href={`/projects/${project.slug}`} class="inline-flex items-center text-accent">
         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
           ></path>
