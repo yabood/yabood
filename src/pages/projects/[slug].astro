@@ -74,28 +74,28 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
 
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <nav class="mb-8">
-      <ol class="flex items-center space-x-2 text-sm text-gray-600 dark:text-gray-400">
+      <ol class="flex items-center space-x-2 text-sm text-gray-600">
         <li>
-          <a href="/projects" class="hover:text-accent dark:hover:text-accent-light">Projects</a>
+          <a href="/projects" class="hover:text-accent">Projects</a>
         </li>
         <li>/</li>
-        <li class="font-medium text-gray-900 dark:text-white">{project.data.title}</li>
+        <li class="font-medium text-gray-900">{project.data.title}</li>
       </ol>
     </nav>
 
     <header class="mb-12">
       <div class="mb-4 flex items-center gap-3">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           {project.data.title}
         </h1>
         {
           project.data.draft && import.meta.env.DEV && (
-            <span class="text-lg text-yellow-600 dark:text-yellow-500 font-medium">Draft</span>
+            <span class="text-lg text-yellow-600 font-medium">Draft</span>
           )
         }
       </div>
 
-      <div class="mb-6 flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+      <div class="mb-6 flex flex-wrap items-center gap-4 text-sm text-gray-600">
         <time datetime={project.data.startDate.toISOString()}>
           Started {
             project.data.startDate.toLocaleDateString('en-US', {
@@ -119,31 +119,31 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
       <div class="mb-6 flex flex-wrap gap-2">
         {
           project.data.tags.map((tag) => (
-            <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            <span class="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">
               {tag}
             </span>
           ))
         }
       </div>
 
-      <div class="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-900 sm:grid-cols-4">
+      <div class="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 sm:grid-cols-4">
         <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Status</p>
-          <p class="font-semibold text-gray-900 dark:text-white capitalize">
+          <p class="text-sm text-gray-600">Status</p>
+          <p class="font-semibold text-gray-900 capitalize">
             {project.data.status}
           </p>
         </div>
         <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Releases</p>
-          <p class="font-semibold text-gray-900 dark:text-white">{project.data.releases}</p>
+          <p class="text-sm text-gray-600">Releases</p>
+          <p class="font-semibold text-gray-900">{project.data.releases}</p>
         </div>
         <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Contributors</p>
-          <p class="font-semibold text-gray-900 dark:text-white">{project.data.contributors}</p>
+          <p class="text-sm text-gray-600">Contributors</p>
+          <p class="font-semibold text-gray-900">{project.data.contributors}</p>
         </div>
         <div>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Updates</p>
-          <p class="font-semibold text-gray-900 dark:text-white">{sortedUpdates.length}</p>
+          <p class="text-sm text-gray-600">Updates</p>
+          <p class="font-semibold text-gray-900">{sortedUpdates.length}</p>
         </div>
       </div>
 
@@ -153,7 +153,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
             {project.data.github && (
               <a
                 href={project.data.github}
-                class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+                class="inline-flex items-center text-sm font-medium text-accent "
                 target="_blank"
                 rel="noopener noreferrer">
                 <svg
@@ -174,7 +174,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
             {project.data.website && (
               <a
                 href={project.data.website}
-                class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent"
+                class="inline-flex items-center text-sm font-medium text-accent "
                 target="_blank"
                 rel="noopener noreferrer">
                 <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -205,19 +205,17 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
 
           return (
             <section>
-              <div class="mb-6 border-b border-gray-200 pb-2 dark:border-gray-700">
-                <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900 dark:text-white">
+              <div class="mb-6 border-b border-gray-200 pb-2">
+                <h2 class="flex items-center gap-3 text-2xl font-bold text-gray-900">
                   {phaseLabels[phase]}
                   {phaseUpdates.length > 0 && (
-                    <span class="text-base font-normal text-gray-500 dark:text-gray-400">
-                      ({phaseUpdates.length})
-                    </span>
+                    <span class="text-base font-normal text-gray-500">({phaseUpdates.length})</span>
                   )}
                 </h2>
               </div>
 
               {phaseUpdates.length === 0 ? (
-                <p class="text-gray-500 dark:text-gray-400 italic">No updates yet in this phase.</p>
+                <p class="text-gray-500 italic">No updates yet in this phase.</p>
               ) : (
                 <>
                   <div class="space-y-6">
@@ -225,24 +223,24 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
                       <article class="group">
                         <a
                           href={`/projects/${project.slug}/updates/${update.slug}`}
-                          class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md dark:border-gray-700 dark:hover:border-accent-light">
+                          class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md">
                           <time
                             datetime={update.data.date.toISOString()}
-                            class="text-sm text-gray-500 dark:text-gray-400">
+                            class="text-sm text-gray-500">
                             {update.data.date.toLocaleDateString('en-US', {
                               month: 'long',
                               day: 'numeric',
                               year: 'numeric',
                             })}
                           </time>
-                          <h3 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                          <h3 class="mt-2 text-xl font-semibold text-gray-900 group-hover:text-accent">
                             {update.data.title}
                           </h3>
-                          <p class="mt-2 text-gray-600 dark:text-gray-400">{update.data.summary}</p>
+                          <p class="mt-2 text-gray-600">{update.data.summary}</p>
                           {update.data.tags.length > 0 && (
                             <div class="mt-4 flex flex-wrap gap-2">
                               {update.data.tags.map((tag) => (
-                                <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                                <span class="rounded-full bg-gray-100 px-2 py-1 text-xs text-gray-600">
                                   {tag}
                                 </span>
                               ))}
@@ -257,7 +255,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
                     <div class="mt-6">
                       <a
                         href={`/projects/${project.slug}/phase/${phase}`}
-                        class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+                        class="inline-flex items-center text-sm font-medium text-accent ">
                         View all {phaseUpdates.length} updates in {phaseLabels[phase]}
                         <svg
                           class="ml-1 h-4 w-4"

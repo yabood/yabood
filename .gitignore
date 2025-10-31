@@ -28,6 +28,10 @@ pnpm-debug.log*
 .amplify
 amplify_outputs*
 amplifyconfiguration*
+
+# deployment
 .vercel
+.netlify
+
 .astro
 /.env.backup

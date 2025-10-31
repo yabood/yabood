@@ -11,15 +11,10 @@ const currentPath = Astro.url.pathname;
 ---
 
 <!-- Non-sticky name section -->
-<div
-  class="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60">
+<div class="w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
   <nav class="container mx-auto max-w-3xl px-4 pt-4">
     <div>
-      <a
-        href="/"
-        class="text-xl font-semibold text-gray-900 hover:text-accent dark:text-white dark:hover:text-accent-light">
-        Yousif Abood
-      </a>
+      <a href="/" class="text-xl font-semibold text-gray-900 hover:text-accent"> Yousif Abood </a>
     </div>
   </nav>
 </div>
@@ -27,7 +22,7 @@ const currentPath = Astro.url.pathname;
 <!-- Sticky navigation links only -->
 <header
   id="sticky-header"
-  class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:bg-gray-900/95 dark:supports-[backdrop-filter]:bg-gray-900/60 border-b border-transparent transition-colors duration-200">
+  class="sticky top-0 z-40 w-full bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 border-b border-transparent transition-colors duration-200">
   <nav class="container mx-auto max-w-3xl px-4 py-3 flex items-center justify-between">
     <ul class="flex items-center leading-0">
       {
@@ -37,11 +32,11 @@ const currentPath = Astro.url.pathname;
               <a
                 href={href}
                 class:list={[
-                  'text-sm font-medium transition-colors hover:text-accent dark:hover:text-accent-light',
+                  'text-sm font-medium transition-colors hover:text-accent',
                   {
-                    'text-accent dark:text-accent-light':
+                    'text-accent':
                       currentPath === href || (href !== '/' && currentPath.startsWith(href)),
-                    'text-gray-600 dark:text-gray-400':
+                    'text-gray-600':
                       currentPath !== href && !(href !== '/' && currentPath.startsWith(href)),
                   },
                 ]}
@@ -49,9 +44,7 @@ const currentPath = Astro.url.pathname;
                 {label}
               </a>
             </li>
-            {index < navItems.length - 1 && (
-              <span class="mx-3 text-gray-400 dark:text-gray-600">·</span>
-            )}
+            {index < navItems.length - 1 && <span class="mx-3 text-gray-400">·</span>}
           </>
         ))
       }
@@ -60,7 +53,7 @@ const currentPath = Astro.url.pathname;
     <!-- Search Icon -->
     <button
       id="search-button"
-      class="p-2 text-gray-600 hover:text-accent dark:text-gray-400 dark:hover:text-accent-light transition-colors"
+      class="p-2 text-gray-600 hover:text-accent transition-colors"
       aria-label="Open search">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path
@@ -81,21 +74,20 @@ const currentPath = Astro.url.pathname;
   aria-modal="true"
   aria-labelledby="search-input">
   <div class="relative mx-4 w-full max-w-2xl">
-    <div
-      class="rounded-xl bg-gray-900/95 dark:bg-gray-950/95 shadow-2xl border border-gray-800 dark:border-gray-700">
+    <div class="rounded-xl bg-white shadow-2xl border border-gray-200">
       <!-- Search Input -->
       <div class="p-6 pb-3">
         <div class="relative">
           <input
             type="search"
             id="search-input"
-            class="block w-full bg-transparent text-gray-100 placeholder-gray-500 text-base focus:outline-none"
+            class="block w-full bg-transparent text-gray-900 placeholder-gray-500 text-base focus:outline-none"
             placeholder="What are you searching for?"
             autocomplete="off"
           />
           <button
             id="search-close"
-            class="absolute right-0 top-0 text-xs px-2 py-1 rounded bg-gray-800 dark:bg-gray-700 text-gray-400 hover:text-gray-200 transition-colors"
+            class="absolute right-0 top-0 text-xs px-2 py-1 rounded bg-gray-100 text-gray-600 hover:text-gray-900 transition-colors"
             aria-label="Close search">
             Esc
           </button>
@@ -114,19 +106,15 @@ const currentPath = Astro.url.pathname;
       </div>
 
       <!-- Footer -->
-      <div class="border-t border-gray-800 dark:border-gray-700 px-6 py-3">
+      <div class="border-t border-gray-200 px-6 py-3">
         <div class="flex items-center justify-between text-xs text-gray-500">
           <div class="flex items-center gap-4">
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
-                >↵</kbd
-              >
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded">↵</kbd>
               <span>to select</span>
             </span>
             <span class="flex items-center gap-1">
-              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-800 dark:bg-gray-700 rounded"
-                >↑↓</kbd
-              >
+              <kbd class="px-1.5 py-0.5 text-xs font-semibold bg-gray-100 rounded">↑↓</kbd>
               <span>to navigate</span>
             </span>
           </div>
@@ -142,10 +130,10 @@ const currentPath = Astro.url.pathname;
     if (header) {
       if (window.scrollY > 100) {
         header.classList.remove('border-transparent');
-        header.classList.add('border-gray-200', 'dark:border-gray-800');
+        header.classList.add('border-gray-200');
       } else {
         header.classList.add('border-transparent');
-        header.classList.remove('border-gray-200', 'dark:border-gray-800');
+        header.classList.remove('border-gray-200');
       }
     }
   }
@@ -302,7 +290,7 @@ const currentPath = Astro.url.pathname;
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     return escapedText.replace(
       regex,
-      '<mark class="bg-blue-500/30 text-blue-300 rounded px-0.5">$1</mark>'
+      '<mark class="bg-blue-100 text-blue-700 rounded px-0.5">$1</mark>'
     );
   }
 
@@ -317,7 +305,7 @@ const currentPath = Astro.url.pathname;
     if (suggestions.length === 0) {
       resultsContainer.classList.add('hidden');
       emptyState.innerHTML =
-        '<div class="p-6 text-center"><div class="text-sm text-gray-500 dark:text-gray-400">No recent content available</div></div>';
+        '<div class="p-6 text-center"><div class="text-sm text-gray-500">No recent content available</div></div>';
       emptyState.classList.remove('hidden');
       return;
     }
@@ -327,18 +315,18 @@ const currentPath = Astro.url.pathname;
 
     // Add suggestions header
     resultsContainer.innerHTML = `
-      <div class="px-6 py-2 text-xs font-medium text-gray-500 border-b border-gray-800 dark:border-gray-700">
+      <div class="px-6 py-2 text-xs font-medium text-gray-500 border-b border-gray-200">
         Suggestions
       </div>
       ${suggestions
         .map((result: any) => {
           const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
           return `
-          <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
+          <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-50 transition-colors border-b border-gray-200">
             <div class="flex items-start gap-3">
               <span class="text-base mt-0.5">${icon}</span>
               <div class="flex-1 min-w-0">
-                <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
+                <h3 class="text-sm text-gray-900 ${result.type === 'Noise' ? '' : 'truncate'}">
                   ${escapeHtml(result.title)}
                 </h3>
                 ${
@@ -383,11 +371,11 @@ const currentPath = Astro.url.pathname;
       .map((result: any) => {
         const icon = result.type === 'Blog Post' ? '📄' : result.type === 'Project' ? '📁' : '📝';
         return `
-        <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-800/50 dark:hover:bg-gray-700/50 transition-colors border-b border-gray-800/50 dark:border-gray-700/50">
+        <a href="${result.url}" class="block px-6 py-3 hover:bg-gray-50 transition-colors border-b border-gray-200">
           <div class="flex items-start gap-3">
             <span class="text-base mt-0.5">${icon}</span>
             <div class="flex-1 min-w-0">
-              <h3 class="text-sm text-gray-100 ${result.type === 'Noise' ? '' : 'truncate'}">
+              <h3 class="text-sm text-gray-900 ${result.type === 'Noise' ? '' : 'truncate'}">
                 ${highlightText(result.title, query)}
               </h3>
               ${

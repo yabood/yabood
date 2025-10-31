@@ -20,32 +20,12 @@
     --tw-prose-td-borders: 229, 231, 235;
   }
 
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --tw-prose-body: 209, 213, 219;
-      --tw-prose-headings: 243, 244, 246;
-      --tw-prose-links: 224, 204, 250;
-      --tw-prose-bold: 243, 244, 246;
-      --tw-prose-counters: 156, 163, 175;
-      --tw-prose-bullets: 75, 85, 99;
-      --tw-prose-hr: 55, 65, 81;
-      --tw-prose-quotes: 243, 244, 246;
-      --tw-prose-quote-borders: 55, 65, 81;
-      --tw-prose-captions: 156, 163, 175;
-      --tw-prose-code: 243, 244, 246;
-      --tw-prose-pre-code: 209, 213, 219;
-      --tw-prose-pre-bg: 17, 24, 39;
-      --tw-prose-th-borders: 75, 85, 99;
-      --tw-prose-td-borders: 55, 65, 81;
-    }
-  }
-
   html {
     scroll-behavior: smooth;
   }
 
   body {
-    @apply min-h-screen bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+    @apply min-h-screen bg-white text-gray-900;
     font-family:
       ui-sans-serif,
       system-ui,
@@ -70,11 +50,11 @@
   }
 
   .prose :where(pre):not(:where([class~='not-prose'] *)) {
-    @apply overflow-x-auto rounded-lg bg-gray-900 p-4 text-sm;
+    @apply overflow-x-auto rounded-lg bg-gray-100 p-4 text-sm;
   }
 
   .prose :where(code):not(:where([class~='not-prose'] *)):not(pre code) {
-    @apply rounded bg-gray-100 px-1 py-0.5 text-sm dark:bg-gray-800;
+    @apply rounded bg-gray-100 px-1 py-0.5 text-sm;
   }
 
   /* Image layout utilities */

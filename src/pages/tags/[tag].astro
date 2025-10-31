@@ -49,9 +49,7 @@ const posts = await Promise.all(
   <main id="main" class="container mx-auto max-w-3xl px-4 py-12">
     <div class="mb-12">
       <nav class="mb-6">
-        <a
-          href="/tags"
-          class="inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+        <a href="/tags" class="inline-flex items-center text-sm font-medium text-accent">
           <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               stroke-linecap="round"
@@ -64,15 +62,14 @@ const posts = await Promise.all(
       </nav>
 
       <div class="text-center">
-        <h1
-          class="mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-5xl">
+        <h1 class="mb-4 text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
           Posts tagged
           <span
             class="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2 text-white shadow-lg">
             #{tag}
           </span>
         </h1>
-        <p class="text-lg text-gray-600 dark:text-gray-400">
+        <p class="text-lg text-gray-600">
           {posts.length}
           {posts.length === 1 ? 'post' : 'posts'} found
         </p>
@@ -85,7 +82,7 @@ const posts = await Promise.all(
           <article class="group">
             <div>
               <a href={`/blog/${post.slug}`} class="block">
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-sm text-gray-600">
                   <time datetime={post.data.pubDate.toISOString()}>
                     {post.data.pubDate.toLocaleDateString('en-US', {
                       year: 'numeric',
@@ -98,14 +95,14 @@ const posts = await Promise.all(
                   {post.data.draft && (
                     <>
                       <span class="mx-2">·</span>
-                      <span class="text-amber-600 dark:text-amber-400 font-medium">Draft</span>
+                      <span class="text-amber-600 font-medium">Draft</span>
                     </>
                   )}
                 </div>
-                <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                <h2 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent">
                   {post.data.title}
                 </h2>
-                <p class="mt-2 text-gray-600 dark:text-gray-400">{post.data.description}</p>
+                <p class="mt-2 text-gray-600">{post.data.description}</p>
               </a>
 
               {post.data.tags && post.data.tags.length > 0 && (
@@ -117,7 +114,7 @@ const posts = await Promise.all(
                         'rounded-full px-3 py-1 text-xs font-medium transition-all',
                         postTag === tag
                           ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md hover:shadow-lg hover:scale-105'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200',
                       ]}>
                       #{postTag}
                     </a>
@@ -133,10 +130,8 @@ const posts = await Promise.all(
     {
       posts.length === 0 && (
         <div class="text-center">
-          <p class="text-gray-600 dark:text-gray-400">No posts found for tag "#{tag}".</p>
-          <a
-            href="/tags"
-            class="mt-4 inline-flex items-center text-sm font-medium text-accent hover:text-accent-dark dark:text-accent-light dark:hover:text-accent">
+          <p class="text-gray-600">No posts found for tag "#{tag}".</p>
+          <a href="/tags" class="mt-4 inline-flex items-center text-sm font-medium text-accent ">
             Browse all tags
           </a>
         </div>

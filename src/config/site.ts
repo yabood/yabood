@@ -24,7 +24,6 @@ export const SITE_CONFIG = {
     viewport: 'width=device-width, initial-scale=1',
     charset: 'utf-8',
     generator: 'Astro',
-    themeColor: '#000000',
   },
   // Schema.org structured data
   organization: {

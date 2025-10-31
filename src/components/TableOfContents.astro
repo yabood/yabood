@@ -19,10 +19,10 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     <>
       {/* Mobile TOC - collapsible at top */}
       <details
-        class="toc-mobile lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800"
+        class="toc-mobile lg:hidden mb-8 rounded-lg border border-gray-200 bg-gray-50"
         itemscope
         itemtype="https://schema.org/SiteNavigationElement">
-        <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+        <summary class="cursor-pointer px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-100">
           📋 {title}
         </summary>
         <nav class="px-4 pb-4" aria-label="Table of contents" role="navigation">
@@ -41,7 +41,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
                 <a
                   href={`#${heading.slug}`}
                   data-depth={heading.depth}
-                  class="block py-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+                  class="block py-1 text-gray-600 hover:text-gray-900"
                   itemprop="url"
                   title={`Navigate to ${heading.text}`}>
                   {heading.text}
@@ -83,9 +83,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
         <div class="toc-content" id="toc-content" role="complementary">
           <div class="toc-header">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-              {title}
-            </h2>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-500">{title}</h2>
             <button class="toc-close" id="toc-close" aria-label="Close table of contents">
               ×
             </button>
@@ -106,7 +104,7 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
                   <a
                     href={`#${heading.slug}`}
                     data-depth={heading.depth}
-                    class="toc-link block py-1.5 px-2 leading-tight text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 rounded"
+                    class="toc-link block py-1.5 px-2 leading-tight text-gray-600 hover:text-gray-900 rounded"
                     itemprop="url"
                     title={`Navigate to ${heading.text}`}>
                     {heading.text}
@@ -187,14 +185,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     background: rgb(59, 130, 246);
   }
 
-  .dark .toc-indicator {
-    background: rgb(75, 85, 99);
-  }
-
-  .dark .toc-indicator.active {
-    background: rgb(96, 165, 250);
-  }
-
   /* Content panel - hidden by default */
   .toc-content {
     position: absolute;
@@ -214,11 +204,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     overflow-y: auto;
   }
 
-  .dark .toc-content {
-    background: rgba(31, 41, 55, 0.95);
-    border-color: rgb(75, 85, 99);
-  }
-
   .toc-content.expanded {
     opacity: 1;
     visibility: visible;
@@ -233,10 +218,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     margin-bottom: 12px;
     padding-bottom: 8px;
     border-bottom: 1px solid rgb(229, 231, 235);
-  }
-
-  .dark .toc-header {
-    border-bottom-color: rgb(75, 85, 99);
   }
 
   .toc-close {
@@ -259,11 +240,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     color: rgb(17, 24, 39);
   }
 
-  .dark .toc-close:hover {
-    background: rgb(55, 65, 81);
-    color: rgb(243, 244, 246);
-  }
-
   /* Navigation links */
   .toc-link[aria-current='true'] {
     background: rgb(239, 246, 255);
@@ -271,17 +247,8 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     font-weight: 500;
   }
 
-  .dark .toc-link[aria-current='true'] {
-    background: rgb(30, 58, 138);
-    color: rgb(147, 197, 253);
-  }
-
   .toc-link:hover {
     background: rgb(249, 250, 251);
-  }
-
-  .dark .toc-link:hover {
-    background: rgb(55, 65, 81);
   }
 
   /* Scrollbar styling */
@@ -305,19 +272,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
     background: rgb(107, 114, 128);
   }
 
-  .dark .toc-content::-webkit-scrollbar-track {
-    background: rgba(55, 65, 81, 0.5);
-  }
-
-  .dark .toc-content::-webkit-scrollbar-thumb {
-    background: rgb(75, 85, 99);
-    border-color: rgba(0, 0, 0, 0.2);
-  }
-
-  .dark .toc-content::-webkit-scrollbar-thumb:hover {
-    background: rgb(107, 114, 128);
-  }
-
   /* Mobile TOC styling */
   .toc-mobile summary {
     list-style: none;
@@ -329,10 +283,6 @@ const filteredHeadings = headings.filter((heading) => heading.depth >= 2 && head
 
   .toc-mobile[open] summary {
     border-bottom: 1px solid rgb(229, 231, 235);
-  }
-
-  .dark .toc-mobile[open] summary {
-    border-bottom-color: rgb(75, 85, 99);
   }
 </style>
 

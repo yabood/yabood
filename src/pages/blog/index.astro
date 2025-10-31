@@ -48,13 +48,13 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
       {
         sortedYears.map((year) => (
           <section>
-            <h2 class="mb-8 text-2xl font-bold text-gray-900 dark:text-white">{year}</h2>
+            <h2 class="mb-8 text-2xl font-bold text-gray-900">{year}</h2>
 
             <div class="space-y-10">
               {postsByYear[Number(year)].map((post) => (
                 <article class="group">
                   <a href={`/blog/${post.slug}`} class="block">
-                    <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <div class="text-sm text-gray-600">
                       <time datetime={post.data.pubDate.toISOString()}>
                         {post.data.pubDate.toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -67,14 +67,14 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
                       {post.data.draft && (
                         <>
                           <span class="mx-2">·</span>
-                          <span class="text-amber-600 dark:text-amber-400 font-medium">Draft</span>
+                          <span class="text-amber-600 font-medium">Draft</span>
                         </>
                       )}
                     </div>
-                    <h3 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent dark:text-white dark:group-hover:text-accent-light">
+                    <h3 class="mt-2 text-2xl font-bold text-gray-900 group-hover:text-accent">
                       {post.data.title}
                     </h3>
-                    <p class="mt-2 text-gray-600 dark:text-gray-400">{post.data.description}</p>
+                    <p class="mt-2 text-gray-600">{post.data.description}</p>
                   </a>
 
                   {post.data.tags && post.data.tags.length > 0 && (
@@ -82,7 +82,7 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
                       {post.data.tags.map((tag) => (
                         <a
                           href={`/tags/${tag}`}
-                          class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors">
+                          class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 hover:bg-gray-200 transition-colors">
                           #{tag}
                         </a>
                       ))}
@@ -99,7 +99,7 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
     {
       postsWithReadingTime.length === 0 && (
         <div class="text-center">
-          <p class="text-gray-600 dark:text-gray-400">No posts yet. Check back soon!</p>
+          <p class="text-gray-600">No posts yet. Check back soon!</p>
         </div>
       )
     }
