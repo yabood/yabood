@@ -4,12 +4,12 @@ import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import vercel from '@astrojs/vercel';
+import netlify from '@astrojs/netlify';
 
 export default defineConfig({
   site: 'https://yabood.com',
   output: 'server',
-  adapter: vercel(),
+  adapter: netlify(),
   integrations: [
     mdx({
       remarkPlugins: [remarkMath],

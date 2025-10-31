@@ -10,97 +10,285 @@ const user = Astro.locals.user;
 
 <BaseLayout title="Admin Dashboard" description="Admin management interface">
   <div class="flex h-screen bg-gray-50">
-    <!-- Left Sidebar -->
-    <div class="w-72 bg-white shadow-lg">
-      <div class="p-8">
-        <h1 class="text-2xl font-bold text-gray-800">Admin Panel</h1>
-        <div class="mt-2 text-sm text-gray-600">
-          Logged in as: {user?.email}
+    <!-- Static sidebar for desktop -->
+    <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+      <!-- Sidebar component -->
+      <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+        <div class="flex h-16 shrink-0 items-center">
+          <h1 class="text-xl font-bold text-gray-900">Admin Panel</h1>
         </div>
-      </div>
-
-      <nav class="mt-6">
-        <button
-          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-blue-500 bg-blue-50"
-          data-category="all">
-          <span class="font-medium">All</span>
-        </button>
-        <button
-          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
-          data-category="noise">
-          <span class="font-medium">Noise</span>
-        </button>
-        <button
-          class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent"
-          data-category="blog">
-          <span class="font-medium">Blog</span>
-        </button>
-        <div class="projects-section">
-          <button
-            class="sidebar-btn w-full text-left px-6 py-3 hover:bg-gray-100 transition-colors border-l-4 border-transparent flex items-center justify-between"
-            data-category="projects">
-            <span class="font-medium">Projects</span>
-            <svg
-              id="projects-chevron"
-              class="w-4 h-4 transition-transform"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"
-              ></path>
-            </svg>
-          </button>
-          <div id="project-subnav" class="hidden bg-gray-50">
-            <!-- Project items will be populated here -->
-          </div>
-        </div>
-      </nav>
-
-      <div class="absolute bottom-0 w-72 p-6 border-t">
-        <a
-          href="/admin/compose"
-          class="block w-full px-4 py-2 bg-blue-600 text-white text-center rounded-lg hover:bg-blue-700 transition-colors">
-          Compose New
-        </a>
+        <nav class="flex flex-1 flex-col">
+          <ul role="list" class="flex flex-1 flex-col gap-y-7">
+            <li>
+              <ul role="list" class="-mx-2 space-y-1">
+                <li>
+                  <button
+                    class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left bg-gray-50 text-indigo-600"
+                    data-category="all">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-indigo-600">
+                      <path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    All Content
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                    data-category="noise">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                      <path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Noise
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                    data-category="blog">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                      <path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                    Blog
+                  </button>
+                </li>
+                <li>
+                  <div class="projects-section">
+                    <button
+                      class="sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                      data-category="projects">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                        <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                      <span class="flex-1">Projects</span>
+                      <svg
+                        id="projects-chevron"
+                        class="size-5 transition-transform"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                      </svg>
+                    </button>
+                    <div id="project-subnav" class="hidden mt-1">
+                      <!-- Project items will be populated here -->
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </li>
+            <li class="mt-auto">
+              <div class="space-y-4">
+                <div class="px-2 text-xs text-gray-500">
+                  Logged in as: {user?.email}
+                </div>
+                <a
+                  href="/admin/compose"
+                  class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                    <path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  Compose New
+                </a>
+              </div>
+            </li>
+          </ul>
+        </nav>
       </div>
     </div>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 overflow-auto">
-      <div class="p-8">
-        <div class="mb-6">
-          <div>
-            <h2 id="content-title" class="text-2xl font-bold text-gray-800">All Content</h2>
-            <div class="flex justify-between items-center mt-1">
-              <p id="content-description" class="text-sm text-gray-600">
-                Showing all published and draft content
-              </p>
-              <div id="content-filter" class="hidden">
-                <div class="flex gap-2">
-                  <button
-                    class="filter-btn px-3 py-1 text-sm rounded border bg-blue-600 text-white border-blue-600"
-                    data-filter="all">
-                    All
-                  </button>
-                  <button
-                    class="filter-btn px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50"
-                    data-filter="published">
-                    Published
-                  </button>
-                  <button
-                    class="filter-btn px-3 py-1 text-sm rounded border border-gray-300 hover:bg-gray-50"
-                    data-filter="draft">
-                    Draft
-                  </button>
+    <div class="lg:pl-72 flex-1">
+      <!-- Sticky header -->
+      <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+        <button type="button" id="mobile-menu-button" class="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden">
+          <span class="sr-only">Open sidebar</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6">
+            <path d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <!-- Separator -->
+        <div aria-hidden="true" class="h-6 w-px bg-gray-200 lg:hidden"></div>
+
+        <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+          <form id="search-form" class="grid flex-1 grid-cols-1">
+            <input 
+              id="search-input"
+              name="search" 
+              type="search"
+              placeholder="Search content..." 
+              aria-label="Search" 
+              class="col-start-1 row-start-1 block size-full bg-white pl-8 pr-3 text-base text-gray-900 outline-none placeholder:text-gray-400 sm:text-sm/6" />
+            <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="pointer-events-none col-start-1 row-start-1 size-5 self-center text-gray-400">
+              <path d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clip-rule="evenodd" fill-rule="evenodd" />
+            </svg>
+          </form>
+          <div class="flex items-center gap-x-4 lg:gap-x-6">
+            <!-- Content filters - only show when not searching -->
+            <div id="content-filter" class="flex gap-2">
+              <button
+                class="filter-btn px-3 py-1 text-sm rounded-md bg-indigo-600 text-white"
+                data-filter="all">
+                All
+              </button>
+              <button
+                class="filter-btn px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-50"
+                data-filter="published">
+                Published
+              </button>
+              <button
+                class="filter-btn px-3 py-1 text-sm rounded-md text-gray-700 hover:bg-gray-50"
+                data-filter="draft">
+                Draft
+              </button>
+            </div>
+
+            <!-- Separator -->
+            <div aria-hidden="true" class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200"></div>
+
+            <!-- Profile dropdown -->
+            <div class="relative" id="profile-dropdown">
+              <button 
+                id="profile-button"
+                type="button"
+                class="relative flex items-center"
+                aria-expanded="false"
+                aria-haspopup="true">
+                <span class="absolute -inset-1.5"></span>
+                <span class="sr-only">Open user menu</span>
+                <div class="size-8 rounded-full bg-indigo-600 flex items-center justify-center text-white font-semibold text-sm">
+                  {user?.email?.charAt(0).toUpperCase() || 'A'}
                 </div>
+                <span class="hidden lg:flex lg:items-center">
+                  <span aria-hidden="true" class="ml-4 text-sm/6 font-semibold text-gray-900">{user?.email || 'Admin'}</span>
+                  <svg viewBox="0 0 20 20" fill="currentColor" data-slot="icon" aria-hidden="true" class="ml-2 size-5 text-gray-400">
+                    <path d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" fill-rule="evenodd" />
+                  </svg>
+                </span>
+              </button>
+              <div 
+                id="profile-menu"
+                class="hidden absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+                role="menu"
+                aria-orientation="vertical"
+                aria-labelledby="profile-button"
+                tabindex="-1">
+                <a href="/" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                  View Site
+                </a>
+                <a href="/admin/logout" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem" tabindex="-1">
+                  Sign out
+                </a>
               </div>
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Content List -->
-        <div id="content-list" class="grid grid-cols-1 gap-4">
-          <div class="text-center py-8 text-gray-500">Loading content...</div>
+      <!-- Main content -->
+      <main class="py-6">
+        <div class="px-4 sm:px-6 lg:px-8">
+          <div class="mb-4 flex justify-between items-center">
+            <div>
+              <h2 id="content-title" class="text-2xl font-bold text-gray-900">All Content</h2>
+              <p id="content-description" class="text-sm text-gray-600 mt-1">
+                Showing all published and draft content
+              </p>
+            </div>
+            <div id="search-results-info" class="hidden text-sm text-gray-600">
+              <!-- Search results count will be displayed here -->
+            </div>
+          </div>
+
+          <!-- Content List -->
+          <div id="content-list" class="grid grid-cols-1 gap-4">
+            <div class="text-center py-8 text-gray-500">Loading content...</div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Mobile sidebar -->
+    <div id="mobile-sidebar" class="relative z-50 lg:hidden hidden" role="dialog" aria-modal="true">
+      <div class="fixed inset-0 bg-gray-900/80 transition-opacity" id="mobile-sidebar-backdrop"></div>
+      <div class="fixed inset-0 flex">
+        <div class="relative mr-16 flex w-full max-w-xs flex-1">
+          <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
+            <button type="button" id="mobile-close-button" class="-m-2.5 p-2.5">
+              <span class="sr-only">Close sidebar</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 text-white">
+                <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </button>
+          </div>
+          <!-- Mobile sidebar content -->
+          <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
+            <div class="flex h-16 shrink-0 items-center">
+              <h1 class="text-xl font-bold text-gray-900">Admin Panel</h1>
+            </div>
+            <nav class="flex flex-1 flex-col">
+              <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <ul role="list" class="-mx-2 space-y-1">
+                    <li>
+                      <button
+                        class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left bg-gray-50 text-indigo-600"
+                        data-category="all">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-indigo-600">
+                          <path d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        All Content
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                        data-category="noise">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 0 1 .865-.501 48.172 48.172 0 0 0 3.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Noise
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                        data-category="blog">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Blog
+                      </button>
+                    </li>
+                    <li>
+                      <button
+                        class="mobile-sidebar-btn group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
+                        data-category="projects">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                          <path d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                        Projects
+                      </button>
+                    </li>
+                  </ul>
+                </li>
+                <li class="mt-auto">
+                  <div class="space-y-4">
+                    <div class="px-2 text-xs text-gray-500">
+                      Logged in as: {user?.email}
+                    </div>
+                    <a
+                      href="/admin/compose"
+                      class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" data-slot="icon" aria-hidden="true" class="size-6 shrink-0 text-gray-400 group-hover:text-indigo-600">
+                        <path d="M12 4.5v15m7.5-7.5h-15" stroke-linecap="round" stroke-linejoin="round" />
+                      </svg>
+                      Compose New
+                    </a>
+                  </div>
+                </li>
+              </ul>
+            </nav>
+          </div>
         </div>
       </div>
     </div>
@@ -134,6 +322,7 @@ const user = Astro.locals.user;
     let allDrafts: DraftEntry[] = [];
     let allProjects: ContentEntry[] = [];
     let allUpdates: ContentEntry[] = [];
+    let searchQuery = '';
 
     // Load all content
     async function loadAllContent() {
@@ -172,7 +361,7 @@ const user = Astro.locals.user;
       allProjects.forEach((project) => {
         html += `
           <button
-            class="project-item w-full text-left px-12 py-3 hover:bg-gray-100 transition-colors"
+            class="project-item group flex gap-x-3 rounded-md p-2 pl-11 text-sm/6 font-semibold w-full text-left text-gray-700 hover:bg-gray-50 hover:text-indigo-600"
             data-project="${project.slug}">
             ${project.title}
           </button>
@@ -199,18 +388,20 @@ const user = Astro.locals.user;
       currentCategory = 'project-updates';
 
       // Update sidebar active state
-      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
-        btn.classList.remove('border-blue-500', 'bg-blue-50');
-        btn.classList.add('border-transparent');
+      document.querySelectorAll('.sidebar-btn, .mobile-sidebar-btn').forEach((btn) => {
+        btn.classList.remove('bg-gray-50', 'text-indigo-600');
+        btn.classList.add('text-gray-700');
       });
 
       // Highlight selected project
       document.querySelectorAll('.project-item').forEach((item) => {
         const itemElement = item as HTMLElement;
         if (itemElement.dataset.project === projectSlug) {
-          itemElement.classList.add('bg-blue-50', 'font-medium');
+          itemElement.classList.add('bg-gray-50', 'text-indigo-600');
+          itemElement.classList.remove('text-gray-700');
         } else {
-          itemElement.classList.remove('bg-blue-50', 'font-medium');
+          itemElement.classList.remove('bg-gray-50', 'text-indigo-600');
+          itemElement.classList.add('text-gray-700');
         }
       });
 
@@ -259,7 +450,7 @@ const user = Astro.locals.user;
                 <div class="flex-1 flex justify-between items-center">
                   <div class="flex-1">
                     <div class="flex items-center gap-3">
-                      <h4 class="text-base font-semibold text-gray-800">${update.title}</h4>
+                      <h4 class="text-base font-semibold text-gray-900">${update.title}</h4>
                       <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
                         ${badgeText}
                       </span>
@@ -273,13 +464,13 @@ const user = Astro.locals.user;
                   <div class="flex gap-2 ml-4">
                     <a
                       href="/admin/compose?collection=updates&slug=${update.slug}"
-                      class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                      class="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
                       Edit
                     </a>
                     <a
                       href="/projects/${projectSlug}/updates/${update.slug}"
                       target="_blank"
-                      class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+                      class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
                       View
                     </a>
                   </div>
@@ -306,9 +497,12 @@ const user = Astro.locals.user;
       currentCategory = category;
       currentFilter = 'all'; // Reset filter when switching categories
 
-      // Show/hide content filter based on category
+      // Show/hide content filter based on category and search state
       if (contentFilter) {
-        if (
+        if (searchQuery) {
+          // Hide filters during search
+          contentFilter.classList.add('hidden');
+        } else if (
           category === 'all' ||
           category === 'blog' ||
           category === 'noise' ||
@@ -320,24 +514,48 @@ const user = Astro.locals.user;
         }
       }
 
+      // Clear search when switching categories
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      if (searchInput && searchQuery) {
+        searchInput.value = '';
+        searchQuery = '';
+        const searchResultsInfo = document.getElementById('search-results-info');
+        if (searchResultsInfo) {
+          searchResultsInfo.classList.add('hidden');
+        }
+      }
+
       // Reset filter buttons
       updateFilterButtons();
 
       // Update sidebar active state
-      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+      document.querySelectorAll('.sidebar-btn, .mobile-sidebar-btn').forEach((btn) => {
         const btnElement = btn as HTMLElement;
         if (btnElement.dataset.category === category) {
-          btnElement.classList.add('border-blue-500', 'bg-blue-50');
-          btnElement.classList.remove('border-transparent');
+          btnElement.classList.add('bg-gray-50', 'text-indigo-600');
+          btnElement.classList.remove('text-gray-700');
+          // Update icon color
+          const icon = btnElement.querySelector('svg');
+          if (icon) {
+            icon.classList.add('text-indigo-600');
+            icon.classList.remove('text-gray-400');
+          }
         } else {
-          btnElement.classList.remove('border-blue-500', 'bg-blue-50');
-          btnElement.classList.add('border-transparent');
+          btnElement.classList.remove('bg-gray-50', 'text-indigo-600');
+          btnElement.classList.add('text-gray-700');
+          // Update icon color
+          const icon = btnElement.querySelector('svg');
+          if (icon) {
+            icon.classList.remove('text-indigo-600');
+            icon.classList.add('text-gray-400');
+          }
         }
       });
 
       // Clear project selection
       document.querySelectorAll('.project-item').forEach((item) => {
-        item.classList.remove('bg-blue-50', 'font-medium');
+        item.classList.remove('bg-gray-50', 'text-indigo-600');
+        item.classList.add('text-gray-700');
       });
 
       // Handle projects expand/collapse
@@ -410,11 +628,11 @@ const user = Astro.locals.user;
       document.querySelectorAll('.filter-btn').forEach((btn) => {
         const btnElement = btn as HTMLElement;
         if (btnElement.dataset.filter === currentFilter) {
-          btnElement.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-          btnElement.classList.remove('border-gray-300', 'hover:bg-gray-50');
+          btnElement.classList.add('bg-indigo-600', 'text-white');
+          btnElement.classList.remove('text-gray-700', 'hover:bg-gray-50');
         } else {
-          btnElement.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-          btnElement.classList.add('border-gray-300', 'hover:bg-gray-50');
+          btnElement.classList.remove('bg-indigo-600', 'text-white');
+          btnElement.classList.add('text-gray-700', 'hover:bg-gray-50');
         }
       });
     }
@@ -557,57 +775,46 @@ const user = Astro.locals.user;
         // Process hero image path if it exists
         let imageUrl = '';
         if (entry.heroImage) {
-          // Handle relative paths from content files
           if (typeof entry.heroImage === 'string') {
-            // If it starts with http, use as is
-            if (entry.heroImage.startsWith('http')) {
-              imageUrl = entry.heroImage;
-            } else {
-              // For relative paths, we need to construct the proper URL
-              // This is a simplified approach - in production you might need more robust handling
-              imageUrl = entry.heroImage.replace('../../assets/', '/src/assets/');
-            }
-          } else if (
-            entry.heroImage &&
-            typeof entry.heroImage === 'object' &&
-            entry.heroImage.src
-          ) {
+            imageUrl = entry.heroImage.startsWith('http') 
+              ? entry.heroImage 
+              : entry.heroImage.replace('../../assets/', '/src/assets/');
+          } else if (entry.heroImage && typeof entry.heroImage === 'object' && entry.heroImage.src) {
             imageUrl = entry.heroImage.src;
           }
+        }
+        
+        // Debug: Log image info for troubleshooting
+        if (entry.slug === 'draft-example') {
+          console.log('Draft example entry:', {
+            slug: entry.slug,
+            heroImage: entry.heroImage,
+            imageUrl: imageUrl,
+            heroImageType: typeof entry.heroImage
+          });
         }
 
         html += `
           <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
             <div class="flex gap-4 items-center">
-              ${
-                imageUrl
-                  ? `
-                <div class="flex-shrink-0">
-                  <div class="w-[100px] h-[75px] bg-gray-100 rounded overflow-hidden">
-                    <img
-                      src="${imageUrl}"
-                      alt="${entry.title}"
-                      class="w-full h-full object-cover"
-                      onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>No image</div>'"
-                    />
-                  </div>
+              <div class="flex-shrink-0">
+                <div class="w-[100px] h-[75px] bg-gray-100 rounded ${
+                  imageUrl ? 'overflow-hidden' : 'flex items-center justify-center text-gray-400 text-xs'
+                }">
+                  ${
+                    imageUrl
+                      ? `<img src="${imageUrl}" alt="${entry.title}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>No image</div>'" />`
+                      : 'No image'
+                  }
                 </div>
-              `
-                  : `
-                <div class="flex-shrink-0">
-                  <div class="w-[100px] h-[75px] bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
-                    No image
-                  </div>
-                </div>
-              `
-              }
+              </div>
               <div class="flex-1 flex justify-between items-center">
                 <div class="flex-1">
                   ${
                     entry.collection === 'noise'
                       ? `
                     <div class="flex items-center gap-3">
-                      <p class="text-gray-800 text-sm line-clamp-2">${entry.description || 'No content'}</p>
+                      <p class="text-gray-900 text-sm line-clamp-2">${entry.description || 'No content'}</p>
                       <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
                         ${badgeText}
                       </span>
@@ -619,7 +826,7 @@ const user = Astro.locals.user;
                   `
                       : `
                     <div class="flex items-center gap-3">
-                      <h4 class="text-base font-semibold text-gray-800">${entry.title}</h4>
+                      <h4 class="text-base font-semibold text-gray-900">${entry.title}</h4>
                       <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
                         ${badgeText}
                       </span>
@@ -635,13 +842,13 @@ const user = Astro.locals.user;
                 <div class="flex gap-2 ml-4">
                   <a
                     href="/admin/compose?collection=${entry.collection}&slug=${entry.slug}${entry.isGitHubDraft ? '&draft=true' : ''}"
-                    class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors">
+                    class="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
                     Edit
                   </a>
                   <a
                     href="${viewUrl}"
                     target="_blank"
-                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700 transition-colors">
+                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
                     ${entry.isGitHubDraft && entry.branch !== 'main' ? 'Preview' : 'View'}
                   </a>
                 </div>
@@ -668,7 +875,7 @@ const user = Astro.locals.user;
         contentList.innerHTML = `
           <div class="text-center py-8 text-red-600">
             <p class="text-lg">${message}</p>
-            <button onclick="loadAllContent()" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <button onclick="loadAllContent()" class="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
               Retry
             </button>
           </div>
@@ -676,9 +883,317 @@ const user = Astro.locals.user;
       }
     }
 
+    // Setup search functionality
+    function setupSearch() {
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
+      const searchForm = document.getElementById('search-form') as HTMLFormElement;
+      const searchResultsInfo = document.getElementById('search-results-info');
+      
+      if (searchForm) {
+        searchForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+        });
+      }
+
+      if (searchInput) {
+        let searchTimeout: ReturnType<typeof setTimeout>;
+        
+        searchInput.addEventListener('input', (e) => {
+          clearTimeout(searchTimeout);
+          const query = (e.target as HTMLInputElement).value.trim();
+          
+          searchTimeout = setTimeout(() => {
+            searchQuery = query;
+            
+            if (query) {
+              // Show search results info
+              if (searchResultsInfo) {
+                searchResultsInfo.classList.remove('hidden');
+              }
+              performSearch(query);
+            } else {
+              // Hide search results info and show normal content
+              if (searchResultsInfo) {
+                searchResultsInfo.classList.add('hidden');
+              }
+              displayContent(currentCategory);
+            }
+          }, 300); // Debounce search
+        });
+
+        // Clear search on Escape key
+        searchInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Escape') {
+            searchInput.value = '';
+            searchQuery = '';
+            if (searchResultsInfo) {
+              searchResultsInfo.classList.add('hidden');
+            }
+            displayContent(currentCategory);
+          }
+        });
+      }
+    }
+
+    // Perform search across all content
+    function performSearch(query: string) {
+      const contentList = document.getElementById('content-list');
+      const titleElement = document.getElementById('content-title');
+      const descriptionElement = document.getElementById('content-description');
+      const searchResultsInfo = document.getElementById('search-results-info');
+      const contentFilter = document.getElementById('content-filter');
+      
+      if (!contentList || !titleElement || !descriptionElement) return;
+
+      // Hide filters during search
+      if (contentFilter) {
+        contentFilter.classList.add('hidden');
+      }
+
+      // Update title and description
+      titleElement.textContent = 'Search Results';
+      descriptionElement.textContent = `Searching for "${query}"`;
+
+      const searchLower = query.toLowerCase();
+      const searchResults: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }> = [];
+
+      // Search through all content
+      Object.entries(allContent).forEach(([collectionName, entries]) => {
+        entries.forEach((entry) => {
+          const titleMatch = entry.title?.toLowerCase().includes(searchLower);
+          const descMatch = entry.description?.toLowerCase().includes(searchLower);
+          const slugMatch = entry.slug?.toLowerCase().includes(searchLower);
+          
+          if (titleMatch || descMatch || slugMatch) {
+            searchResults.push({
+              ...entry,
+              isDraft: entry.draft === true,
+              isGitHubDraft: false,
+              collection: collectionName,
+            });
+          }
+        });
+      });
+
+      // Search through drafts
+      allDrafts.forEach((draft) => {
+        const titleMatch = draft.title?.toLowerCase().includes(searchLower);
+        const descMatch = draft.description?.toLowerCase().includes(searchLower);
+        const slugMatch = draft.slug?.toLowerCase().includes(searchLower);
+        
+        if (titleMatch || descMatch || slugMatch) {
+          // Check if not already in results
+          const exists = searchResults.some(
+            (r) => r.collection === draft.collection && r.slug === draft.slug
+          );
+          if (!exists) {
+            searchResults.push({
+              ...draft,
+              isDraft: true,
+              isGitHubDraft: true,
+              draft: true,
+            });
+          }
+        }
+      });
+
+      // Update search results info
+      if (searchResultsInfo) {
+        searchResultsInfo.textContent = `Found ${searchResults.length} result${searchResults.length !== 1 ? 's' : ''}`;
+      }
+
+      // Display search results
+      renderSearchResults(searchResults);
+    }
+
+    // Render search results
+    function renderSearchResults(results: Array<ContentEntry & { isDraft: boolean; collection: string; isGitHubDraft?: boolean }>) {
+      const contentList = document.getElementById('content-list');
+      if (!contentList) return;
+
+      if (results.length === 0) {
+        contentList.innerHTML = '<div class="text-center py-8 text-gray-500">No results found</div>';
+        return;
+      }
+
+      // Sort results - drafts first, then by date
+      results.sort((a, b) => {
+        if (a.isDraft && !b.isDraft) return -1;
+        if (!a.isDraft && b.isDraft) return 1;
+        const dateA = a.pubDate ? new Date(a.pubDate).getTime() : 0;
+        const dateB = b.pubDate ? new Date(b.pubDate).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      let html = '<div class="bg-white rounded-lg shadow divide-y divide-gray-200">';
+
+      results.forEach((entry) => {
+        // Build view URL
+        let viewUrl;
+        if (entry.isGitHubDraft && entry.branch !== 'main') {
+          viewUrl = entry.previewUrl;
+        } else if (entry.collection === 'blog') {
+          viewUrl = `/blog/${entry.slug}`;
+        } else if (entry.collection === 'noise') {
+          viewUrl = `/noise/${entry.slug}`;
+        } else if (entry.collection === 'projects') {
+          viewUrl = `/projects/${entry.slug}`;
+        } else if (entry.collection === 'updates') {
+          const projectSlug = (entry as any).project;
+          viewUrl = projectSlug ? `/projects/${projectSlug}/updates/${entry.slug}` : '#';
+        } else {
+          viewUrl = `/${entry.collection}/${entry.slug}`;
+        }
+
+        // Badge styling
+        const badgeClass = entry.isDraft ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800';
+        const badgeText = entry.isDraft ? 'Draft' : 'Published';
+
+        // Process hero image
+        let imageUrl = '';
+        if (entry.heroImage) {
+          if (typeof entry.heroImage === 'string') {
+            imageUrl = entry.heroImage.startsWith('http') 
+              ? entry.heroImage 
+              : entry.heroImage.replace('../../assets/', '/src/assets/');
+          } else if (entry.heroImage && typeof entry.heroImage === 'object' && entry.heroImage.src) {
+            imageUrl = entry.heroImage.src;
+          }
+        }
+
+        html += `
+          <div class="px-6 py-4 hover:bg-gray-50 transition-colors">
+            <div class="flex gap-4 items-center">
+              <div class="flex-shrink-0">
+                <div class="w-[100px] h-[75px] bg-gray-100 rounded ${
+                  imageUrl ? 'overflow-hidden' : 'flex items-center justify-center text-gray-400 text-xs'
+                }">
+                  ${
+                    imageUrl
+                      ? `<img src="${imageUrl}" alt="${entry.title}" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full bg-gray-200 flex items-center justify-center\\'>No image</div>'" />`
+                      : 'No image'
+                  }
+                </div>
+              </div>
+              <div class="flex-1 flex justify-between items-center">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3">
+                    <h4 class="text-base font-semibold text-gray-900">${entry.title || 'Untitled'}</h4>
+                    <span class="inline-flex items-center px-2 py-0.5 ${badgeClass} rounded-full text-xs font-medium">
+                      ${badgeText}
+                    </span>
+                    <span class="text-xs text-gray-500">${entry.collection}</span>
+                  </div>
+                  <div class="mt-1 flex items-center gap-4">
+                    <p class="text-gray-600 text-sm">${entry.description || 'No description'}</p>
+                    ${
+                      entry.pubDate
+                        ? `<span class="text-xs text-gray-400">${new Date(
+                            entry.pubDate
+                          ).toLocaleDateString()}</span>`
+                        : ''
+                    }
+                  </div>
+                </div>
+                <div class="flex gap-2 ml-4">
+                  <a
+                    href="/admin/compose?collection=${entry.collection}&slug=${entry.slug}${
+          entry.isGitHubDraft ? '&draft=true' : ''
+        }"
+                    class="px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors">
+                    Edit
+                  </a>
+                  <a
+                    href="${viewUrl}"
+                    target="_blank"
+                    class="px-3 py-1 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
+                    ${entry.isGitHubDraft && entry.branch !== 'main' ? 'Preview' : 'View'}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      contentList.innerHTML = html;
+    }
+
+    // Setup profile dropdown
+    function setupProfileDropdown() {
+      const profileButton = document.getElementById('profile-button');
+      const profileMenu = document.getElementById('profile-menu');
+      
+      if (profileButton && profileMenu) {
+        profileButton.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const isExpanded = profileButton.getAttribute('aria-expanded') === 'true';
+          
+          if (isExpanded) {
+            profileMenu.classList.add('hidden');
+            profileButton.setAttribute('aria-expanded', 'false');
+          } else {
+            profileMenu.classList.remove('hidden');
+            profileButton.setAttribute('aria-expanded', 'true');
+          }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', () => {
+          profileMenu.classList.add('hidden');
+          profileButton.setAttribute('aria-expanded', 'false');
+        });
+
+        // Prevent menu clicks from closing dropdown
+        profileMenu.addEventListener('click', (e) => {
+          e.stopPropagation();
+        });
+      }
+    }
+
+    // Setup mobile menu handlers
+    function setupMobileMenu() {
+      const mobileMenuButton = document.getElementById('mobile-menu-button');
+      const mobileCloseButton = document.getElementById('mobile-close-button');
+      const mobileSidebar = document.getElementById('mobile-sidebar');
+      const mobileBackdrop = document.getElementById('mobile-sidebar-backdrop');
+
+      if (mobileMenuButton && mobileSidebar) {
+        mobileMenuButton.addEventListener('click', () => {
+          mobileSidebar.classList.remove('hidden');
+        });
+      }
+
+      if (mobileCloseButton && mobileSidebar) {
+        mobileCloseButton.addEventListener('click', () => {
+          mobileSidebar.classList.add('hidden');
+        });
+      }
+
+      if (mobileBackdrop && mobileSidebar) {
+        mobileBackdrop.addEventListener('click', () => {
+          mobileSidebar.classList.add('hidden');
+        });
+      }
+
+      // Close mobile menu when clicking on a menu item
+      document.querySelectorAll('.mobile-sidebar-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          if (mobileSidebar) {
+            mobileSidebar.classList.add('hidden');
+          }
+        });
+      });
+    }
+
     // Add click handlers for sidebar buttons
     document.addEventListener('DOMContentLoaded', () => {
-      document.querySelectorAll('.sidebar-btn').forEach((btn) => {
+      setupSearch();
+      setupProfileDropdown();
+      setupMobileMenu();
+
+      document.querySelectorAll('.sidebar-btn, .mobile-sidebar-btn').forEach((btn) => {
         btn.addEventListener('click', (e) => {
           const target = e.currentTarget as HTMLElement;
           const category = target.dataset.category;
