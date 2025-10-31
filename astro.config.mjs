@@ -9,7 +9,9 @@ import netlify from '@astrojs/netlify';
 export default defineConfig({
   site: 'https://yabood.com',
   output: 'server',
-  adapter: netlify(),
+  adapter: netlify({
+    edgeMiddleware: false,
+  }),
   integrations: [
     mdx({
       remarkPlugins: [remarkMath],
