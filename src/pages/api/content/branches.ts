@@ -4,7 +4,7 @@ import { GitHubService } from '../../../services/github-service';
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
-const VERCEL_PROJECT_NAME = import.meta.env.VERCEL_PROJECT_NAME || 'yabood';
+const NETLIFY_SITE_NAME = import.meta.env.NETLIFY_SITE_NAME || import.meta.env.SITE_URL || 'yabood';
 
 export const GET: APIRoute = async ({ url }) => {
   if (!GITHUB_TOKEN || !GITHUB_OWNER || !GITHUB_REPO) {
@@ -15,11 +15,12 @@ export const GET: APIRoute = async ({ url }) => {
   }
 
   // Determine the base URL for preview links
-  // In development, use localhost; in production, use Vercel preview URLs
+  // In development, use localhost; in production, use Netlify preview URLs
+  // Netlify preview URLs: https://[branch]--[site-name].netlify.app
   const isLocalDev = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
   const baseUrl = isLocalDev
     ? `${url.protocol}//${url.host}`
-    : `https://${VERCEL_PROJECT_NAME}-{branch}.vercel.app`;
+    : `https://{branch}--${NETLIFY_SITE_NAME}.netlify.app`;
 
   try {
     const github = new GitHubService({
@@ -104,7 +105,7 @@ export const GET: APIRoute = async ({ url }) => {
                     if (branchName === 'main') {
                       previewUrl = isLocalDev
                         ? `${baseUrl}/projects/${projectSlug}/updates/${slug}`
-                        : `https://${VERCEL_PROJECT_NAME}.vercel.app/projects/${projectSlug}/updates/${slug}`;
+                        : `https://${NETLIFY_SITE_NAME}.netlify.app/projects/${projectSlug}/updates/${slug}`;
                     } else {
                       previewUrl = isLocalDev
                         ? `${baseUrl}/projects/${projectSlug}/updates/${slug}`
@@ -115,7 +116,7 @@ export const GET: APIRoute = async ({ url }) => {
                     // For main branch drafts, use the regular production URL
                     previewUrl = isLocalDev
                       ? `${baseUrl}/${collection}/${slug}`
-                      : `https://${VERCEL_PROJECT_NAME}.vercel.app/${collection}/${slug}`;
+                      : `https://${NETLIFY_SITE_NAME}.netlify.app/${collection}/${slug}`;
                   } else {
                     // For feature branches, use preview URLs
                     previewUrl = isLocalDev
