@@ -4,11 +4,14 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
+
 const projects = await getCollection(
   'projects',
-  ({ data }) => (!data.status || data.status !== 'archived') && (import.meta.env.DEV || !data.draft)
+  ({ data }) => (!data.status || data.status !== 'archived') && (canViewDrafts || !data.draft)
 );
-const updates = await getCollection('updates', ({ data }) => !data.draft);
+const updates = await getCollection('updates', ({ data }) => canViewDrafts || !data.draft);
 
 const projectsWithLatestUpdate = projects
   .map((project) => {

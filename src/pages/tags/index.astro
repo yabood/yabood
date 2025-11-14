@@ -4,7 +4,10 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
-const posts = (await getCollection('blog')).filter((post) => !post.data.draft);
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
+
+const posts = (await getCollection('blog')).filter((post) => canViewDrafts || !post.data.draft);
 
 // Get all unique tags with post counts
 const tagCounts = posts.reduce(

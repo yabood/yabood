@@ -12,26 +12,41 @@ const user = Astro.locals.user;
 const collection = Astro.url.searchParams.get('collection');
 const slug = Astro.url.searchParams.get('slug');
 const isDraft = Astro.url.searchParams.get('draft') === 'true';
+const branchIdParam = Astro.url.searchParams.get('branchId');
 
 let initialContent = '';
 let editingExistingContent = false;
 let contentData: any = null;
 let branchName: string | null = null;
 let previewUrl: string | null = null;
+let branchId: string | null = branchIdParam;
 
 // If collection and slug are provided, load the existing content
 if (collection && slug) {
   try {
-    const url = isDraft
-      ? `${Astro.url.origin}/api/content/${collection}/${slug}?draft=true`
-      : `${Astro.url.origin}/api/content/${collection}/${slug}`;
+    const apiUrl = new URL(
+      isDraft
+        ? `/api/content/${collection}/${slug}?draft=true`
+        : `/api/content/${collection}/${slug}`,
+      Astro.url
+    );
+    if (isDraft && branchIdParam) {
+      apiUrl.searchParams.set('branchId', branchIdParam);
+    }
 
-    const response = await fetch(url);
+    const response = await fetch(apiUrl.toString());
     if (response.ok) {
       contentData = await response.json();
       initialContent = contentData.content;
       editingExistingContent = true;
       branchName = contentData.branch || null;
+      branchId =
+        contentData.branchId ||
+        (branchName && branchName.startsWith('draft/') ? branchName.replace('draft/', '') : null) ||
+        branchId;
+      if (!branchName && branchId) {
+        branchName = `draft/${branchId}`;
+      }
       previewUrl = contentData.previewUrl || null;
     }
   } catch (error) {
@@ -178,20 +193,25 @@ Start writing your content here...`;
 
       <div
         class="mt-6 flex gap-4 flex-wrap"
-        data-branch={branchName}
-        data-collection={collection}
-        data-slug={slug}>
+        data-branch={branchName || ''}
+        data-branch-id={branchId || ''}
+        data-collection={collection || ''}
+        data-slug={slug || ''}
+        data-is-draft={isDraft}
+        data-editing={editingExistingContent}>
         <button
           id="save-button"
           class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          data-editing={editingExistingContent}>
+          data-editing={editingExistingContent}
+          disabled={!editingExistingContent}>
           Save Draft
         </button>
         {
           isDraft && (
             <button
               id="publish-button"
-              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+              class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!editingExistingContent || !branchName}>
               Publish to Production
             </button>
           )
@@ -200,7 +220,8 @@ Start writing your content here...`;
           isDraft && (
             <button
               id="delete-button"
-              class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+              class="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!editingExistingContent || !branchName}>
               Delete Draft
             </button>
           )
@@ -227,6 +248,8 @@ Start writing your content here...`;
       title: string;
       description: string;
       previewUrl: string;
+      branch?: string;
+      branchId?: string;
     }
 
     interface PublishedEntry {
@@ -296,7 +319,7 @@ Start writing your content here...`;
         (data.drafts as Draft[]).forEach((draft) => {
           html += `
             <div class="border rounded-lg p-3 hover:bg-gray-50 cursor-pointer draft-item" 
-                 data-collection="${draft.collection}" data-slug="${draft.slug}">
+                 data-collection="${draft.collection}" data-slug="${draft.slug}" data-branch="${draft.branch || ''}" data-branch-id="${draft.branchId || ''}">
               <h4 class="font-medium text-sm mb-1">${draft.title}</h4>
               <p class="text-xs text-gray-600 mb-2">${draft.description || 'No description'}</p>
               <div class="flex items-center justify-between">
@@ -315,8 +338,15 @@ Start writing your content here...`;
             const target = e.currentTarget as HTMLElement;
             const collection = target.dataset.collection;
             const slug = target.dataset.slug;
+            const branchId = target.dataset.branchId;
+            const branch = target.dataset.branch;
             if (collection && slug) {
-              window.location.href = `/admin/compose?collection=${collection}&slug=${slug}&draft=true`;
+              const branchQuery = branchId
+                ? `&branchId=${branchId}`
+                : branch
+                  ? `&branch=${encodeURIComponent(branch)}`
+                  : '';
+              window.location.href = `/admin/compose?collection=${collection}&slug=${slug}&draft=true${branchQuery}`;
             }
           });
         });
@@ -399,7 +429,8 @@ Start writing your content here...`;
         if (response.ok) {
           showStatus('Draft created successfully!', 'success');
           setTimeout(() => {
-            window.location.href = `/admin/compose?collection=${collection}&slug=${result.slug}&draft=true`;
+            const branchQuery = result.branchId ? `&branchId=${result.branchId}` : '';
+            window.location.href = `/admin/compose?collection=${collection}&slug=${result.slug}&draft=true${branchQuery}`;
           }, 1000);
         } else {
           showStatus(result.error || 'Failed to create draft', 'error');
@@ -430,33 +461,60 @@ Start writing your content here...`;
 
     // Save button handler
     document.getElementById('save-button')?.addEventListener('click', async () => {
-      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
       const container = document.querySelector('[data-branch]') as HTMLElement;
-      const branch = container?.dataset.branch;
-      const collection = container?.dataset.collection;
-      const slug = container?.dataset.slug;
+      if (!container) {
+        showStatus('Unable to locate editor state', 'error');
+        return;
+      }
 
-      if (!branch || !collection || !slug) {
-        showStatus('Missing required data', 'error');
+      const collection = container.dataset.collection || '';
+      const slug = container.dataset.slug || '';
+      const branch = container.dataset.branch || '';
+      const branchId = container.dataset.branchId || '';
+      const isDraftContext = container.dataset.isDraft === 'true';
+      const isEditing = container.dataset.editing === 'true';
+
+      if (!isEditing) {
+        showStatus('Create or open a draft before saving', 'error');
+        return;
+      }
+
+      if (!collection || !slug) {
+        showStatus('Missing collection or slug', 'error');
+        return;
+      }
+
+      if (isDraftContext && !branch && !branchId) {
+        showStatus('Missing draft branch information', 'error');
+        return;
+      }
+
+      const content = (window as Window & { mdxEditorContent?: string }).mdxEditorContent || '';
+      if (!content.trim()) {
+        showStatus('Content cannot be empty', 'error');
         return;
       }
 
       try {
-        showStatus('Saving draft...', 'info');
+        showStatus(isDraftContext ? 'Saving draft...' : 'Saving changes...', 'info');
+        const payload: Record<string, string> = { content };
+        if (branch) payload.branch = branch;
+        if (branchId) payload.branchId = branchId;
+
         const response = await fetch(`/api/content/${collection}/${slug}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content, branch }),
+          body: JSON.stringify(payload),
         });
 
         const result = await response.json();
         if (response.ok) {
-          showStatus('Draft saved successfully!', 'success');
+          showStatus('Saved successfully!', 'success');
           if (result.previewUrl) {
             console.log('Preview URL:', result.previewUrl);
           }
         } else {
-          showStatus(result.error || 'Failed to save draft', 'error');
+          showStatus(result.error || 'Failed to save', 'error');
         }
       } catch (error) {
         console.error('Error saving draft:', error);
@@ -469,9 +527,11 @@ Start writing your content here...`;
       const container = document.querySelector('[data-branch]') as HTMLElement;
       const collection = container?.dataset.collection;
       const slug = container?.dataset.slug;
+      const branchId = container?.dataset.branchId;
+      const branch = container?.dataset.branch;
 
-      if (!collection || !slug) {
-        showStatus('Missing required data', 'error');
+      if (!collection || !slug || (!branch && !branchId)) {
+        showStatus('Missing draft metadata', 'error');
         return;
       }
 
@@ -484,6 +544,10 @@ Start writing your content here...`;
         const response = await fetch(`/api/content/${collection}/${slug}/publish`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            branchId: branchId || undefined,
+            branch: branchId ? undefined : branch,
+          }),
         });
 
         const result = await response.json();
@@ -510,9 +574,11 @@ Start writing your content here...`;
       const container = document.querySelector('[data-branch]') as HTMLElement;
       const collection = container?.dataset.collection;
       const slug = container?.dataset.slug;
+      const branchId = container?.dataset.branchId;
+      const branch = container?.dataset.branch;
 
-      if (!collection || !slug) {
-        showStatus('Missing required data', 'error');
+      if (!collection || !slug || (!branch && !branchId)) {
+        showStatus('Missing draft metadata', 'error');
         return;
       }
 
@@ -525,6 +591,10 @@ Start writing your content here...`;
         const response = await fetch(`/api/content/${collection}/${slug}/delete`, {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            branchId: branchId || undefined,
+            branch: branchId ? undefined : branch,
+          }),
         });
 
         const result = await response.json();

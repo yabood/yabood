@@ -5,7 +5,7 @@ const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
 const GITHUB_REPO = import.meta.env.GITHUB_REPO;
 
-export const DELETE: APIRoute = async ({ params }) => {
+export const DELETE: APIRoute = async ({ params, request }) => {
   const { collection, slug } = params;
 
   if (!collection || !slug) {
@@ -23,13 +23,30 @@ export const DELETE: APIRoute = async ({ params }) => {
   }
 
   try {
+    const body = await request.json().catch(() => ({}));
+    const { branchId, branch } = body;
+
     const github = new GitHubService({
       token: GITHUB_TOKEN,
       owner: GITHUB_OWNER,
       repo: GITHUB_REPO,
     });
 
-    const branchName = `draft/${slug}`;
+    let branchName: string | null = null;
+    if (branchId) {
+      branchName = `draft/${branchId}`;
+    } else if (branch && typeof branch === 'string') {
+      branchName = branch.startsWith('draft/') ? branch : `draft/${branch}`;
+    } else {
+      branchName = `draft/${slug}`;
+    }
+
+    if (!branchName) {
+      return new Response(JSON.stringify({ error: 'Draft branch identifier missing' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     // Check if draft branch exists
     const branchExists = await github.branchExists(branchName);

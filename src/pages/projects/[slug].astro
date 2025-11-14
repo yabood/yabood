@@ -1,36 +1,35 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { validateContentSEO, PROJECT_SEO_REQUIREMENTS } from '../../utils/seoValidation';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const projects = await getCollection(
-    'projects',
-    ({ data }) => import.meta.env.DEV || !data.draft
-  );
-  const updates = await getCollection('updates');
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
 
-  // Validate SEO fields during build
-  validateContentSEO(projects, 'project', PROJECT_SEO_REQUIREMENTS);
+const slugParam = Astro.params.slug;
 
-  return projects.map((project) => ({
-    params: { slug: project.slug },
-    props: {
-      project,
-      updates: updates.filter((update) => update.data.project === project.slug),
-    },
-  }));
+if (!slugParam) {
+  return new Response('Not found', { status: 404 });
 }
 
-const { project, updates } = Astro.props;
+const project = await getEntry('projects', slugParam);
 
-const sortedUpdates = updates
-  .filter((update) => import.meta.env.DEV || !update.data.draft)
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+if (!project || (!canViewDrafts && project.data.draft)) {
+  return new Response('Not found', { status: 404 });
+}
+
+validateContentSEO([project], 'project', PROJECT_SEO_REQUIREMENTS);
+
+const updates = await getCollection(
+  'updates',
+  ({ data }) => data.project === project.slug && (canViewDrafts || !data.draft)
+);
+
+const sortedUpdates = updates.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
 const phases = ['idea', 'research', 'implementation', 'release', 'iteration', 'archived'] as const;
 
@@ -89,7 +88,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
           {project.data.title}
         </h1>
         {
-          project.data.draft && import.meta.env.DEV && (
+          project.data.draft && canViewDrafts && (
             <span class="text-lg text-yellow-600 font-medium">Draft</span>
           )
         }

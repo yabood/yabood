@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { GitHubService } from '../../../services/github-service';
-import { generateSlug, ensureUniqueSlug, generateShortGuid } from '../../../utils/slug';
+import { generateSlug, generateShortGuid } from '../../../utils/slug';
 
 const GITHUB_TOKEN = import.meta.env.GITHUB_TOKEN;
 const GITHUB_OWNER = import.meta.env.GITHUB_OWNER;
@@ -41,12 +41,37 @@ export const POST: APIRoute = async ({ request, url }) => {
     });
 
     // Generate slug from title for the file name
-    let slug = generateSlug(title);
+    let slugBase = generateSlug(title);
+    if (!slugBase) {
+      slugBase = generateShortGuid();
+    }
+    let slug = slugBase;
 
     // Get existing draft branches to ensure unique slug
     const draftBranches = await github.listBranches('draft/');
-    const existingSlugs = draftBranches.map((branch) => branch.replace('draft/', ''));
-    slug = ensureUniqueSlug(slug, existingSlugs);
+
+    const filePathForSlug = (candidate: string) => `src/content/${collection}/${candidate}.mdx`;
+    const slugExists = async (candidate: string) => {
+      // Check published content on main branch
+      if (await github.pathExists(filePathForSlug(candidate), 'main')) {
+        return true;
+      }
+
+      // Check any existing draft branches
+      for (const branchName of draftBranches) {
+        if (await github.pathExists(filePathForSlug(candidate), branchName)) {
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    let counter = 2;
+    while (await slugExists(slug)) {
+      slug = `${slugBase}-${counter}`;
+      counter++;
+    }
 
     // Create branch name with short GUID
     const branchId = generateShortGuid();

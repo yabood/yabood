@@ -24,7 +24,7 @@ export const POST: APIRoute = async ({ params, request }) => {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const { branchId } = body;
+    const { branchId, branch } = body;
 
     const github = new GitHubService({
       token: GITHUB_TOKEN,
@@ -32,8 +32,22 @@ export const POST: APIRoute = async ({ params, request }) => {
       repo: GITHUB_REPO,
     });
 
-    // Use branchId if provided (new GUID system), otherwise fall back to slug (legacy)
-    const branchName = branchId ? `draft/${branchId}` : `draft/${slug}`;
+    // Use explicit identifiers when available
+    let branchName: string | null = null;
+    if (branchId) {
+      branchName = `draft/${branchId}`;
+    } else if (branch && typeof branch === 'string') {
+      branchName = branch.startsWith('draft/') ? branch : `draft/${branch}`;
+    } else {
+      branchName = `draft/${slug}`;
+    }
+
+    if (!branchName) {
+      return new Response(JSON.stringify({ error: 'Draft branch identifier missing' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
     const filePath = `src/content/${collection}/${slug}.mdx`;
 
     // Check if draft branch exists
@@ -100,6 +114,7 @@ This pull request publishes the draft content from the \`${branchName}\` branch 
           message: 'Content published successfully',
           slug,
           collection,
+          branchId: branchName.replace('draft/', ''),
           pullRequest: prNumber,
           productionUrl: `/${collection}/${slug}`,
         }),
@@ -114,6 +129,7 @@ This pull request publishes the draft content from the \`${branchName}\` branch 
           slug,
           collection,
           pullRequest: prNumber,
+          branchId: branchName.replace('draft/', ''),
           requiresManualMerge: true,
           mergeError: mergeError.message,
         }),
