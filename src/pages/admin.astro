@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
 // Get the user from middleware (middleware handles auth check)
 const user = Astro.locals.user;
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
 
 // The middleware already handles authentication and admin check
 // If we reach here, the user is authenticated and is an admin
@@ -294,6 +295,44 @@ const user = Astro.locals.user;
             </div>
           </div>
 
+          <div class="mb-6">
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h3 class="text-lg font-semibold text-gray-900">Draft visibility</h3>
+                  <p class="text-sm text-gray-600">
+                    Control whether drafts appear on the public site when you're signed in. Guests
+                    never see drafts.
+                  </p>
+                </div>
+                <label class="inline-flex items-center cursor-pointer gap-3">
+                  <span id="preview-drafts-label" class="text-sm font-medium text-gray-900">
+                    {previewDraftsEnabled ? 'Visible' : 'Hidden'}
+                  </span>
+                  <div class="relative">
+                    <input
+                      type="checkbox"
+                      id="preview-drafts-toggle"
+                      class="sr-only peer"
+                      checked={previewDraftsEnabled}
+                    />
+                    <div
+                      class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-indigo-600 transition-colors">
+                    </div>
+                    <div
+                      class="absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition peer-checked:translate-x-5">
+                    </div>
+                  </div>
+                </label>
+              </div>
+              <p class="mt-2 text-sm text-gray-500">
+                Toggle on to preview drafts across blog, noise, and project pages without leaving
+                the admin area.
+              </p>
+              <p id="preview-drafts-message" class="mt-2 text-sm text-gray-600 hidden"></p>
+            </div>
+          </div>
+
           <!-- Content List -->
           <div id="content-list" class="grid grid-cols-1 gap-4">
             <div class="text-center py-8 text-gray-500">Loading content...</div>
@@ -477,6 +516,57 @@ const user = Astro.locals.user;
     let allProjects: ContentEntry[] = [];
     let allUpdates: ContentEntry[] = [];
     let searchQuery = '';
+
+    const previewDraftsToggle = document.getElementById(
+      'preview-drafts-toggle'
+    ) as HTMLInputElement | null;
+    const previewDraftsLabel = document.getElementById('preview-drafts-label');
+    const previewDraftsMessage = document.getElementById('preview-drafts-message');
+
+    function updatePreviewDraftsLabel(enabled: boolean) {
+      if (previewDraftsLabel) {
+        previewDraftsLabel.textContent = enabled ? 'Visible' : 'Hidden';
+      }
+    }
+
+    function setPreviewDraftsMessage(type: 'success' | 'error' | 'info', text: string) {
+      if (!previewDraftsMessage) return;
+      const baseClasses = 'mt-2 text-sm';
+      const colorClass =
+        type === 'success' ? 'text-green-600' : type === 'error' ? 'text-red-600' : 'text-gray-600';
+      previewDraftsMessage.className = `${baseClasses} ${colorClass}`;
+      previewDraftsMessage.textContent = text;
+    }
+
+    previewDraftsToggle?.addEventListener('change', async () => {
+      if (!previewDraftsToggle) return;
+      const enabled = previewDraftsToggle.checked;
+      updatePreviewDraftsLabel(enabled);
+      setPreviewDraftsMessage('info', 'Saving preference...');
+      try {
+        const response = await fetch('/api/settings/preview-drafts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Request failed');
+        }
+
+        const data = await response.json();
+        setPreviewDraftsMessage(
+          'success',
+          data.enabled
+            ? 'Draft previews enabled on public pages.'
+            : 'Draft previews disabled on public pages.'
+        );
+      } catch (error) {
+        previewDraftsToggle.checked = !enabled;
+        updatePreviewDraftsLabel(previewDraftsToggle.checked);
+        setPreviewDraftsMessage('error', 'Unable to update preference. Please try again.');
+      }
+    });
 
     // Load all content
     async function loadAllContent() {

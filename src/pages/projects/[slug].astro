@@ -8,7 +8,8 @@ import { validateContentSEO, PROJECT_SEO_REQUIREMENTS } from '../../utils/seoVal
 export const prerender = false;
 
 const user = Astro.locals.user;
-const canViewDrafts = import.meta.env.DEV || Boolean(user);
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
 
 const slugParam = Astro.params.slug;
 
