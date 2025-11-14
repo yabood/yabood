@@ -7,7 +7,8 @@ import { calculateReadingTime } from '../../utils/readingTime';
 import { validateContentSEO, BLOG_SEO_REQUIREMENTS } from '../../utils/seoValidation';
 
 const user = Astro.locals.user;
-const canViewDrafts = import.meta.env.DEV || Boolean(user);
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
 
 const posts = (await getCollection('blog'))
   .filter((post) => canViewDrafts || !post.data.draft)
