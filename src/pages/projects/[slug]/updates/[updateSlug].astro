@@ -5,39 +5,41 @@ import Header from '../../../../components/Header.astro';
 import Footer from '../../../../components/Footer.astro';
 import Prose from '../../../../components/Prose.astro';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const updates = await getCollection('updates');
-  const projects = await getCollection('projects');
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
 
-  return updates.map((update) => {
-    const project = projects.find((p) => p.slug === update.data.project);
-    const allProjectUpdates = updates
-      .filter((u) => u.data.project === update.data.project && !u.data.draft)
-      .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const slugParam = Astro.params.slug;
+const updateSlugParam = Astro.params.updateSlug;
 
-    const currentIndex = allProjectUpdates.findIndex((u) => u.slug === update.slug);
-    const prevUpdate =
-      currentIndex < allProjectUpdates.length - 1 ? allProjectUpdates[currentIndex + 1] : null;
-    const nextUpdate = currentIndex > 0 ? allProjectUpdates[currentIndex - 1] : null;
-
-    return {
-      params: {
-        slug: update.data.project,
-        updateSlug: update.slug,
-      },
-      props: {
-        update,
-        project,
-        prevUpdate,
-        nextUpdate,
-      },
-    };
-  });
+if (!slugParam || !updateSlugParam) {
+  return new Response('Not found', { status: 404 });
 }
 
-const { update, project, prevUpdate, nextUpdate } = Astro.props;
+const projectSlug = slugParam!;
+const updateSlugValue = updateSlugParam!;
+
+const allUpdates = await getCollection('updates');
+const update = allUpdates.find((entry) => entry.slug === updateSlugValue) || null;
+
+if (!update || update.data.project !== projectSlug || (!canViewDrafts && update.data.draft)) {
+  return new Response('Not found', { status: 404 });
+}
+
+const allProjects = await getCollection('projects');
+const project = allProjects.find((p) => p.slug === projectSlug) || null;
+
+const sortedUpdates = allUpdates
+  .filter(
+    (entry) => entry.data.project === update.data.project && (canViewDrafts || !entry.data.draft)
+  )
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const currentIndex = sortedUpdates.findIndex((u) => u.slug === update.slug);
+const prevUpdate = currentIndex < sortedUpdates.length - 1 ? sortedUpdates[currentIndex + 1] : null;
+const nextUpdate = currentIndex > 0 ? sortedUpdates[currentIndex - 1] : null;
+
 const { Content } = await update.render();
 
 const phaseLabels = {

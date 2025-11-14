@@ -5,9 +5,11 @@ import Header from '../../components/Header.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const PAGE_SIZE = 20;
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
 
 const noiseList = (await getCollection('noise'))
-  .filter((noise) => import.meta.env.DEV || !noise.data.draft)
+  .filter((noise) => canViewDrafts || !noise.data.draft)
   .filter((noise) => noise.data.visibility === 'public')
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf());
 

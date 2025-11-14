@@ -259,4 +259,24 @@ export class GitHubService {
   }
 
   async ensureDraftsBranch(): Promise<void> {}
+
+  /**
+   * Check if a path exists in a branch
+   */
+  async pathExists(path: string, branch: string): Promise<boolean> {
+    try {
+      await this.octokit.repos.getContent({
+        owner: this.owner,
+        repo: this.repo,
+        path,
+        ref: branch,
+      });
+      return true;
+    } catch (error: any) {
+      if (error.status === 404) {
+        return false;
+      }
+      throw error;
+    }
+  }
 }

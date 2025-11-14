@@ -1,24 +1,22 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content';
+import { getEntry } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const posts = (await getCollection('blog')).filter(
-    (post) => import.meta.env.DEV || !post.data.draft
-  );
+const user = Astro.locals.user;
+const canViewDrafts = import.meta.env.DEV || Boolean(user);
 
-  return posts.map((post) => ({
-    params: { slug: post.slug },
-    props: post,
-  }));
+const slugParam = Astro.params.slug;
+const slug = Array.isArray(slugParam) ? slugParam.join('/') : slugParam;
+
+const post = slug ? await getEntry('blog', slug) : null;
+
+if (!post || (!canViewDrafts && post.data.draft)) {
+  return new Response('Not found', { status: 404 });
 }
 
-type Props = CollectionEntry<'blog'>;
-
-const post = Astro.props;
 const { Content, headings } = await post.render();
 const readingTime = calculateReadingTime(post.body);
 ---

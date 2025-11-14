@@ -28,8 +28,10 @@ export const GET: APIRoute = async ({ params, request, url }) => {
     : `https://{branch}--${NETLIFY_SITE_NAME}.netlify.app`;
 
   try {
-    // Check if this is a draft (from a draft branch)
-    const isDraft = request.url.includes('draft=true');
+    const searchParams = new URL(request.url).searchParams;
+    const isDraft = searchParams.get('draft') === 'true';
+    const branchIdParam = searchParams.get('branchId');
+    const branchParam = searchParams.get('branch');
 
     if (isDraft && GITHUB_TOKEN && GITHUB_OWNER && GITHUB_REPO) {
       // Get content from GitHub draft branch
@@ -39,43 +41,44 @@ export const GET: APIRoute = async ({ params, request, url }) => {
         repo: GITHUB_REPO,
       });
 
-      // Find the correct draft branch by scanning all draft branches
-      const draftBranches = await github.listBranches('draft/');
-      let foundBranch: string | null = null;
-      let foundContent: string | null = null;
+      // Prefer explicit branch information when available
+      const preferredBranch = branchIdParam
+        ? `draft/${branchIdParam}`
+        : branchParam && branchParam.startsWith('draft/')
+          ? branchParam
+          : null;
+
+      const draftBranches = preferredBranch
+        ? [preferredBranch]
+        : await github.listBranches('draft/');
 
       for (const branchName of draftBranches) {
         try {
           const filePath = `src/content/${collection}/${slug}.mdx`;
           const content = await github.getFileContent(filePath, branchName);
-          foundBranch = branchName;
-          foundContent = content;
-          break;
+          const previewUrl = isLocalDev
+            ? `${baseUrl}/${collection}/${slug}`
+            : baseUrl.replace('{branch}', branchName.replace('/', '-')) + `/${collection}/${slug}`;
+
+          return new Response(
+            JSON.stringify({
+              slug,
+              collection,
+              content,
+              branch: branchName,
+              branchId: branchName.replace('draft/', ''),
+              previewUrl,
+              isDraft: true,
+            }),
+            {
+              status: 200,
+              headers: { 'Content-Type': 'application/json' },
+            }
+          );
         } catch (error: any) {
-          // Continue searching other branches
+          // Try the next branch
           continue;
         }
-      }
-
-      if (foundBranch && foundContent) {
-        const previewUrl = isLocalDev
-          ? `${baseUrl}/${collection}/${slug}`
-          : baseUrl.replace('{branch}', foundBranch.replace('/', '-')) + `/${collection}/${slug}`;
-
-        return new Response(
-          JSON.stringify({
-            slug,
-            collection,
-            content: foundContent,
-            branch: foundBranch,
-            previewUrl,
-            isDraft: true,
-          }),
-          {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
       }
 
       // If not found in any draft branch, fall back to local file system
@@ -136,17 +139,19 @@ export const PUT: APIRoute = async ({ params, request, url }) => {
     : `https://{branch}--${NETLIFY_SITE_NAME}.netlify.app`;
 
   try {
-    const { content, branch } = await request.json();
+    const { content, branch, branchId } = await request.json();
 
-    if (typeof content !== 'string') {
-      return new Response(JSON.stringify({ error: 'Content must be a string' }), {
+    if (typeof content !== 'string' || content.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Content must be a non-empty string' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
       });
     }
 
+    const resolvedBranch = branch ?? (branchId ? `draft/${branchId}` : null);
+
     // If branch is specified and GitHub is configured, update via GitHub
-    if (branch && GITHUB_TOKEN && GITHUB_OWNER && GITHUB_REPO) {
+    if (resolvedBranch && GITHUB_TOKEN && GITHUB_OWNER && GITHUB_REPO) {
       const github = new GitHubService({
         token: GITHUB_TOKEN,
         owner: GITHUB_OWNER,
@@ -159,12 +164,12 @@ export const PUT: APIRoute = async ({ params, request, url }) => {
         path: filePath,
         content,
         message: `Update draft: ${slug}`,
-        branch,
+        branch: resolvedBranch,
       });
 
       const previewUrl = isLocalDev
         ? `${baseUrl}/${collection}/${slug}`
-        : baseUrl.replace('{branch}', branch.replace('/', '-')) + `/${collection}/${slug}`;
+        : baseUrl.replace('{branch}', resolvedBranch.replace('/', '-')) + `/${collection}/${slug}`;
 
       return new Response(
         JSON.stringify({
@@ -172,7 +177,8 @@ export const PUT: APIRoute = async ({ params, request, url }) => {
           message: 'Draft updated successfully',
           slug,
           collection,
-          branch,
+          branch: resolvedBranch,
+          branchId: resolvedBranch.replace('draft/', ''),
           previewUrl,
         }),
         {

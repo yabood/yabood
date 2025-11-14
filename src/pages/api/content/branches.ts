@@ -36,7 +36,7 @@ export const GET: APIRoute = async ({ url }) => {
     // For each branch, get the content metadata
     const drafts = await Promise.all(
       allBranches.map(async (branchName) => {
-        const branchId = branchName.replace('draft/', '');
+        const branchId = branchName.startsWith('draft/') ? branchName.replace('draft/', '') : null;
 
         try {
           // Try to find the MDX file in different collections
