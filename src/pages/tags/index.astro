@@ -4,7 +4,9 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 
-const posts = (await getCollection('blog')).filter((post) => import.meta.env.DEV || !post.data.draft);
+const posts = (await getCollection('blog')).filter(
+  (post) => import.meta.env.DEV || !post.data.draft
+);
 
 // Get all unique tags with post counts
 const tagCounts = posts.reduce(
