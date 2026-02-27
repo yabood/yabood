@@ -5,7 +5,6 @@ import Header from '../../components/Header.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 
 const PAGE_SIZE = 20;
-
 const noiseList = (await getCollection('noise'))
   .filter((noise) => import.meta.env.DEV || !noise.data.draft)
   .filter((noise) => noise.data.visibility === 'public')
