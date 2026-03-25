@@ -1,16 +1,16 @@
 export const SITE_CONFIG = {
-  name: 'Yabood',
+  name: 'Yousif Abood',
   url: 'https://yabood.com',
-  title: 'Yousif Abood - Software Engineer',
+  title: 'Yousif Abood',
   description:
-    'Personal website of Yousif Abood, a software engineer passionate about technology, development, and creativity. Sharing insights, tutorials, and thoughts on building better software.',
+    'Personal website of Yousif Abood. Writing about building products, side projects, cooking, and whatever else I find interesting.',
   author: {
     name: 'Yousif Abood',
     email: 'hello@yabood.com',
     twitter: '@yabood',
     github: 'https://github.com/yabood',
-    jobTitle: 'Software Engineer',
-    bio: 'Software engineer passionate about technology, development, and creativity. I build modern web applications and explore the intersection of technology and user experience.',
+    jobTitle: 'Founder, Product Leader',
+    bio: 'Technical founder and product leader with 15+ years building enterprise SaaS products. Currently fractional Head of Customer Success at Elastio.',
     image: '/author-avatar.jpg', // Add when available
   },
   social: {
@@ -29,8 +29,6 @@ export const SITE_CONFIG = {
   organization: {
     '@type': 'Organization' as const,
     name: 'Yabood',
-    description:
-      'Personal technology blog and portfolio showcasing software engineering insights, tutorials, and creative projects.',
     url: 'https://yabood.com',
     logo: {
       '@type': 'ImageObject' as const,
