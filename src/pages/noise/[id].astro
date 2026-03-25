@@ -1,25 +1,29 @@
 ---
-import { type CollectionEntry, getCollection } from 'astro:content';
+import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import Seo from '../../components/Seo.astro';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const noiseList = (await getCollection('noise')).filter(
-    (noise) => import.meta.env.DEV || !noise.data.draft
-  );
-  return noiseList.map((noise) => ({
-    params: { id: noise.data.id },
-    props: noise,
-  }));
+const user = Astro.locals.user;
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
+
+const idParam = Astro.params.id;
+
+if (!idParam) {
+  return new Response('Not found', { status: 404 });
 }
 
-type Props = CollectionEntry<'noise'>;
+const noiseEntries = await getCollection('noise');
+const noise = noiseEntries.find((entry) => entry.data.id === idParam);
 
-const noise = Astro.props;
+if (!noise || (!canViewDrafts && noise.data.draft)) {
+  return new Response('Not found', { status: 404 });
+}
+
 const { Content } = await noise.render();
 
 // Helper to extract first 80 chars of text for title fallback

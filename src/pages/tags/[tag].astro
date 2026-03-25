@@ -5,27 +5,22 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  const posts = (await getCollection('blog')).filter(
-    (post) => import.meta.env.DEV || !post.data.draft
-  );
-  const tags = [...new Set(posts.flatMap((post) => post.data.tags))];
+const user = Astro.locals.user;
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
 
-  return tags.map((tag) => ({
-    params: { tag },
-    props: { tag },
-  }));
+const tagParam = Astro.params.tag;
+
+if (!tagParam) {
+  return Astro.redirect('/tags');
 }
 
-type Props = {
-  tag: string;
-};
+const tag = Array.isArray(tagParam) ? tagParam[0] : tagParam;
 
-const { tag } = Astro.props;
 const allPosts = (await getCollection('blog'))
-  .filter((post) => (import.meta.env.DEV || !post.data.draft) && post.data.tags.includes(tag))
+  .filter((post) => post.data.tags.includes(tag) && (canViewDrafts || !post.data.draft))
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const posts = await Promise.all(

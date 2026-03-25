@@ -5,9 +5,13 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { calculateReadingTime } from '../utils/readingTime';
 
+const user = Astro.locals.user;
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
+
 // Fetch recent blog posts
 const recentBlogPosts = (await getCollection('blog'))
-  .filter((post) => import.meta.env.DEV || !post.data.draft)
+  .filter((post) => canViewDrafts || !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
   .slice(0, 3);
 
@@ -32,7 +36,7 @@ const blogPostsWithReadingTime = await Promise.all(
 
 // Fetch recent project updates
 const recentUpdates = (await getCollection('updates'))
-  .filter((update) => import.meta.env.DEV || !update.data.draft)
+  .filter((update) => canViewDrafts || !update.data.draft)
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3)
   .map((update) => ({
@@ -52,7 +56,7 @@ const recentUpdates = (await getCollection('updates'))
 
 // Fetch recent noise
 const recentNoise = (await getCollection('noise'))
-  .filter((noise) => import.meta.env.DEV || !noise.data.draft)
+  .filter((noise) => canViewDrafts || !noise.data.draft)
   .filter((noise) => noise.data.visibility === 'public')
   .sort((a, b) => b.data.publishedAt.valueOf() - a.data.publishedAt.valueOf())
   .slice(0, 3);

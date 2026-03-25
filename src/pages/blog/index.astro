@@ -6,8 +6,12 @@ import Footer from '../../components/Footer.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 import { validateContentSEO, BLOG_SEO_REQUIREMENTS } from '../../utils/seoValidation';
 
+const user = Astro.locals.user;
+const previewDraftsEnabled = Astro.cookies.get('previewDrafts')?.value === 'true';
+const canViewDrafts = import.meta.env.DEV || (Boolean(user) && previewDraftsEnabled);
+
 const posts = (await getCollection('blog'))
-  .filter((post) => import.meta.env.DEV || !post.data.draft)
+  .filter((post) => canViewDrafts || !post.data.draft)
   .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 // Validate SEO fields during build (only run once, not in individual post pages)
