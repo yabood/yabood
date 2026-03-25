@@ -11,6 +11,6 @@ These days, I focus on building enterprise SaaS products and embedding customer 
 
 ---
 
-I hold a B.S. in Computer Science from the University of Virginia and speak English and Arabic.
+I hold a B.S. in Computer Science from the University of Virginia.
 
 Explore my work: [yabood.com/projects](https://yabood.com/projects)

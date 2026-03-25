@@ -197,9 +197,8 @@ if (type === 'website') {
     url: `${siteUrl}/about`,
     image: imageURL,
     sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
-    jobTitle: 'Software Engineer',
-    description: 'Software engineer passionate about technology, development, and creativity',
-    knowsAbout: ['Software Development', 'Web Development', 'Technology', 'Programming'],
+    jobTitle: SITE_CONFIG.author.jobTitle,
+    description: SITE_CONFIG.author.bio,
     mainEntityOfPage: {
       '@type': 'WebPage',
       '@id': `${siteUrl}/`,
@@ -314,7 +313,7 @@ if (type === 'website') {
       url: `${siteUrl}/about`,
       image: imageURL,
       sameAs: ['https://twitter.com/yabood', 'https://github.com/yabood'],
-      jobTitle: 'Software Engineer',
+      jobTitle: SITE_CONFIG.author.jobTitle,
       worksFor: {
         '@id': `${siteUrl}/#organization`,
       },
