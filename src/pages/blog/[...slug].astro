@@ -1,5 +1,5 @@
 ---
-import { getEntry } from 'astro:content';
+import { getEntry, render } from 'astro:content';
 import PostLayout from '../../layouts/PostLayout.astro';
 import { calculateReadingTime } from '../../utils/readingTime';
 
@@ -18,8 +18,8 @@ if (!post || (!canViewDrafts && post.data.draft)) {
   return new Response('Not found', { status: 404 });
 }
 
-const { Content, headings } = await post.render();
-const readingTime = calculateReadingTime(post.body);
+const { Content, headings } = await render(post);
+const readingTime = calculateReadingTime(post.body ?? '');
 ---
 
 <PostLayout {...post.data} headings={headings} currentPost={post} readingTime={readingTime}>

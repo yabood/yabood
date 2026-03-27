@@ -13,7 +13,7 @@ const allPosts = await getCollection('blog');
 
 // Filter out current post and published posts only
 const otherPosts = allPosts
-  .filter((post) => post.slug !== currentPost.slug && (import.meta.env.DEV || !post.data.draft))
+  .filter((post) => post.id !== currentPost.id && (import.meta.env.DEV || !post.data.draft))
   .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime());
 
 // Find related posts based on shared tags
@@ -68,7 +68,7 @@ const formatDate = (date: Date) => {
         <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {relatedPosts.map((post) => (
             <article class="group">
-              <a href={`/blog/${post.slug}`} class="block">
+              <a href={`/blog/${post.id}`} class="block">
                 {post.data.heroImage && (
                   <div class="aspect-video mb-4 overflow-hidden rounded-lg bg-gray-100">
                     <img

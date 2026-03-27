@@ -41,8 +41,8 @@ function extractAndTruncateText(content: string, maxLength: number = 280): strin
 }
 
 const noiseListWithMeta = noiseList.map((noise) => {
-  const firstImage = extractFirstImage(noise.body);
-  const truncatedText = extractAndTruncateText(noise.body);
+  const firstImage = extractFirstImage(noise.body ?? '');
+  const truncatedText = extractAndTruncateText(noise.body ?? '');
 
   return {
     ...noise,

@@ -1,7 +1,18 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
+import { z } from 'zod';
+import { glob } from 'astro/loaders';
+
+const phaseEnum = z.enum([
+  'idea',
+  'research',
+  'implementation',
+  'release',
+  'iteration',
+  'archived',
+]);
 
 const blog = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/blog' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -16,17 +27,8 @@ const blog = defineCollection({
     }),
 });
 
-const phaseEnum = z.enum([
-  'idea',
-  'research',
-  'implementation',
-  'release',
-  'iteration',
-  'archived',
-]);
-
 const projects = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/projects' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -46,7 +48,7 @@ const projects = defineCollection({
 });
 
 const updates = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/updates' }),
   schema: ({ image }) =>
     z.object({
       title: z.string(),
@@ -61,7 +63,7 @@ const updates = defineCollection({
 });
 
 const noise = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/noise' }),
   schema: z.object({
     id: z.string(),
     publishedAt: z.coerce.date(),

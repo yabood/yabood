@@ -14,7 +14,7 @@ export const GET: APIRoute = async () => {
     const blogData = blogPosts.map((post) => ({
       title: post.data.title,
       description: post.data.description,
-      slug: post.slug,
+      slug: post.id,
       pubDate: post.data.pubDate,
       tags: post.data.tags || [],
     }));
@@ -22,7 +22,7 @@ export const GET: APIRoute = async () => {
     const projectData = projects.map((project) => ({
       title: project.data.title,
       description: project.data.description,
-      slug: project.slug,
+      slug: project.id,
       startDate: project.data.startDate,
       tags: project.data.tags || [],
     }));

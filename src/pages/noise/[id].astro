@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
@@ -24,7 +24,7 @@ if (!noise || (!canViewDrafts && noise.data.draft)) {
   return new Response('Not found', { status: 404 });
 }
 
-const { Content } = await noise.render();
+const { Content } = await render(noise);
 
 // Helper to extract first 80 chars of text for title fallback
 function extractFirstChars(content: string, length: number = 80): string {
@@ -50,13 +50,13 @@ function extractFirstImage(content: string): string | null {
 // Generate title for SEO
 const pageTitle = noise.data.summary
   ? `Noise · ${noise.data.summary}`
-  : `Noise · ${extractFirstChars(noise.body) || noise.data.publishedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
+  : `Noise · ${extractFirstChars(noise.body ?? '') || noise.data.publishedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`;
 
 // Generate description for SEO
-const pageDescription = noise.data.summary || extractFirstChars(noise.body, 160);
+const pageDescription = noise.data.summary || extractFirstChars(noise.body ?? '', 160);
 
 // Extract OG image
-const ogImage = extractFirstImage(noise.body) || '/og-image.jpg';
+const ogImage = extractFirstImage(noise.body ?? '') || '/og-image.jpg';
 ---
 
 <BaseLayout title={pageTitle} description={pageDescription}>

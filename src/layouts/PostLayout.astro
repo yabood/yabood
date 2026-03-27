@@ -58,7 +58,7 @@ const updatedDateFormatted = updatedDate?.toLocaleDateString('en-US', {
   image={typeof heroImage === 'object' ? heroImage.src : heroImage}
   breadcrumbs={[
     { name: 'Blog', url: '/blog' },
-    { name: title, url: `/blog/${currentPost?.slug || ''}` },
+    { name: title, url: `/blog/${currentPost?.id || ''}` },
   ]}
   headings={headings}>
   <Header />

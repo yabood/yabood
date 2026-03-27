@@ -21,7 +21,7 @@ if (posts.length > 0) {
 
 const postsWithReadingTime = await Promise.all(
   posts.map(async (post) => {
-    const content = post.body;
+    const content = post.body ?? '';
     const readingTime = calculateReadingTime(content);
     return { ...post, readingTime };
   })
@@ -57,7 +57,7 @@ const sortedYears = Object.keys(postsByYear).sort((a, b) => Number(b) - Number(a
             <div class="space-y-10">
               {postsByYear[Number(year)].map((post) => (
                 <article class="group">
-                  <a href={`/blog/${post.slug}`} class="block">
+                  <a href={`/blog/${post.id}`} class="block">
                     <div class="text-sm text-gray-600">
                       <time datetime={post.data.pubDate.toISOString()}>
                         {post.data.pubDate.toLocaleDateString('en-US', {
