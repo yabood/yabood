@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../../../layouts/BaseLayout.astro';
 import Header from '../../../../components/Header.astro';
 import Footer from '../../../../components/Footer.astro';
@@ -22,14 +22,14 @@ const projectSlug = slugParam!;
 const updateSlugValue = updateSlugParam!;
 
 const allUpdates = await getCollection('updates');
-const update = allUpdates.find((entry) => entry.slug === updateSlugValue) || null;
+const update = allUpdates.find((entry) => entry.id === updateSlugValue) || null;
 
 if (!update || update.data.project !== projectSlug || (!canViewDrafts && update.data.draft)) {
   return new Response('Not found', { status: 404 });
 }
 
 const allProjects = await getCollection('projects');
-const project = allProjects.find((p) => p.slug === projectSlug) || null;
+const project = allProjects.find((p) => p.id === projectSlug) || null;
 
 const sortedUpdates = allUpdates
   .filter(
@@ -37,11 +37,11 @@ const sortedUpdates = allUpdates
   )
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-const currentIndex = sortedUpdates.findIndex((u) => u.slug === update.slug);
+const currentIndex = sortedUpdates.findIndex((u) => u.id === update.id);
 const prevUpdate = currentIndex < sortedUpdates.length - 1 ? sortedUpdates[currentIndex + 1] : null;
 const nextUpdate = currentIndex > 0 ? sortedUpdates[currentIndex - 1] : null;
 
-const { Content } = await update.render();
+const { Content } = await render(update);
 
 const phaseLabels = {
   idea: 'Idea',
@@ -55,7 +55,7 @@ const phaseLabels = {
 const breadcrumbs = [
   { name: 'Projects', url: '/projects' },
   { name: project?.data.title || update.data.project, url: `/projects/${update.data.project}` },
-  { name: update.data.title, url: `/projects/${update.data.project}/updates/${update.slug}` },
+  { name: update.data.title, url: `/projects/${update.data.project}/updates/${update.id}` },
 ];
 ---
 
@@ -139,7 +139,7 @@ const breadcrumbs = [
       {
         prevUpdate ? (
           <a
-            href={`/projects/${update.data.project}/updates/${prevUpdate.slug}`}
+            href={`/projects/${update.data.project}/updates/${prevUpdate.id}`}
             class="group flex max-w-xs flex-col">
             <span class="text-sm text-gray-500">← Previous</span>
             <span class="mt-1 font-medium text-gray-900 group-hover:text-accent">
@@ -154,7 +154,7 @@ const breadcrumbs = [
       {
         nextUpdate ? (
           <a
-            href={`/projects/${update.data.project}/updates/${nextUpdate.slug}`}
+            href={`/projects/${update.data.project}/updates/${nextUpdate.id}`}
             class="group flex max-w-xs flex-col text-right">
             <span class="text-sm text-gray-500">Next →</span>
             <span class="mt-1 font-medium text-gray-900 group-hover:text-accent">

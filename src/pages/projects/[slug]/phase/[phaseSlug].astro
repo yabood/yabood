@@ -25,7 +25,7 @@ export async function getStaticPaths() {
 
   for (const project of projects) {
     const projectUpdates = updates.filter(
-      (update) => update.data.project === project.slug && !update.data.draft
+      (update) => update.data.project === project.id && !update.data.draft
     );
 
     for (const phase of phases) {
@@ -36,7 +36,7 @@ export async function getStaticPaths() {
       if (phaseUpdates.length > 0) {
         paths.push({
           params: {
-            slug: project.slug,
+            slug: project.id,
             phaseSlug: phase,
           },
           props: {
@@ -66,14 +66,14 @@ const phaseLabels: Record<string, string> = {
 const collectionItems = updates.map((update) => ({
   title: update.data.title,
   description: update.data.summary,
-  url: `https://yabood.com/projects/${project.slug}/updates/${update.slug}`,
+  url: `https://yabood.com/projects/${project.id}/updates/${update.id}`,
   publishedDate: update.data.date,
 }));
 
 const breadcrumbs = [
   { name: 'Projects', url: '/projects' },
-  { name: project.data.title, url: `/projects/${project.slug}` },
-  { name: `${phaseLabels[phase]} Phase`, url: `/projects/${project.slug}/phase/${phase}` },
+  { name: project.data.title, url: `/projects/${project.id}` },
+  { name: `${phaseLabels[phase]} Phase`, url: `/projects/${project.id}/phase/${phase}` },
 ];
 ---
 
@@ -86,7 +86,7 @@ const breadcrumbs = [
     items: collectionItems,
     parentEntity: {
       name: project.data.title,
-      url: `/projects/${project.slug}`,
+      url: `/projects/${project.id}`,
       type: 'CreativeWork',
     },
   }}>
@@ -100,7 +100,7 @@ const breadcrumbs = [
         </li>
         <li>/</li>
         <li>
-          <a href={`/projects/${project.slug}`} class="hover:text-accent">
+          <a href={`/projects/${project.id}`} class="hover:text-accent">
             {project.data.title}
           </a>
         </li>
@@ -121,7 +121,7 @@ const breadcrumbs = [
       <p class="text-lg text-gray-600">
         All {updates.length} update{updates.length !== 1 ? 's' : ''} from the {phaseLabels[phase]} phase
         of
-        <a href={`/projects/${project.slug}`} class="font-medium text-accent">
+        <a href={`/projects/${project.id}`} class="font-medium text-accent">
           {project.data.title}
         </a>
       </p>
@@ -132,7 +132,7 @@ const breadcrumbs = [
         updates.map((update) => (
           <article class="group">
             <a
-              href={`/projects/${project.slug}/updates/${update.slug}`}
+              href={`/projects/${project.id}/updates/${update.id}`}
               class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md">
               <time datetime={update.data.date.toISOString()} class="text-sm text-gray-500">
                 {update.data.date.toLocaleDateString('en-US', {
@@ -180,7 +180,7 @@ const breadcrumbs = [
     </div>
 
     <div class="mt-12 text-center">
-      <a href={`/projects/${project.slug}`} class="inline-flex items-center text-accent">
+      <a href={`/projects/${project.id}`} class="inline-flex items-center text-accent">
         <svg class="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
           ></path>

@@ -17,7 +17,7 @@ const recentBlogPosts = (await getCollection('blog'))
 
 const blogPostsWithReadingTime = await Promise.all(
   recentBlogPosts.map(async (post) => {
-    const content = post.body;
+    const content = post.body ?? '';
     const readingTime = calculateReadingTime(content);
     return {
       ...post,
@@ -26,7 +26,7 @@ const blogPostsWithReadingTime = await Promise.all(
       date: post.data.pubDate,
       title: post.data.title,
       description: post.data.description,
-      url: `/blog/${post.slug}`,
+      url: `/blog/${post.id}`,
       tags: post.data.tags,
       draft: post.data.draft,
       status: undefined,
@@ -45,7 +45,7 @@ const recentUpdates = (await getCollection('updates'))
     date: update.data.date,
     title: update.data.title,
     description: update.data.summary,
-    url: `/projects/${update.data.project}/updates/${update.slug}`,
+    url: `/projects/${update.data.project}/updates/${update.id}`,
     tags: update.data.tags,
     draft: update.data.draft,
     projectSlug: update.data.project,
@@ -79,8 +79,8 @@ const noiseListWithMeta = recentNoise.map((noise) => ({
   ...noise,
   type: 'noise' as const,
   date: noise.data.publishedAt,
-  title: noise.data.summary || extractFirstChars(noise.body, 80),
-  description: extractFirstChars(noise.body, 160),
+  title: noise.data.summary || extractFirstChars(noise.body ?? '', 80),
+  description: extractFirstChars(noise.body ?? '', 160),
   url: `/noise/${noise.data.id}`,
   draft: noise.data.draft,
   tags: undefined,

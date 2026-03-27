@@ -27,7 +27,7 @@ validateContentSEO([project], 'project', PROJECT_SEO_REQUIREMENTS);
 
 const updates = await getCollection(
   'updates',
-  ({ data }) => data.project === project.slug && (canViewDrafts || !data.draft)
+  ({ data }) => data.project === project.id && (canViewDrafts || !data.draft)
 );
 
 const sortedUpdates = updates.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
@@ -62,7 +62,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
   modifiedDate={lastUpdatedDate}
   breadcrumbs={[
     { name: 'Projects', url: '/projects' },
-    { name: project.data.title, url: `/projects/${project.slug}` },
+    { name: project.data.title, url: `/projects/${project.id}` },
   ]}
   projectData={{
     status: project.data.status,
@@ -222,7 +222,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
                     {displayedUpdates.map((update) => (
                       <article class="group">
                         <a
-                          href={`/projects/${project.slug}/updates/${update.slug}`}
+                          href={`/projects/${project.id}/updates/${update.id}`}
                           class="block rounded-lg border border-gray-200 p-6 transition-all hover:border-accent hover:shadow-md">
                           <time
                             datetime={update.data.date.toISOString()}
@@ -254,7 +254,7 @@ const lastUpdatedDate = sortedUpdates[0]?.data.date || project.data.startDate;
                   {hasMore && (
                     <div class="mt-6">
                       <a
-                        href={`/projects/${project.slug}/phase/${phase}`}
+                        href={`/projects/${project.id}/phase/${phase}`}
                         class="inline-flex items-center text-sm font-medium text-accent ">
                         View all {phaseUpdates.length} updates in {phaseLabels[phase]}
                         <svg

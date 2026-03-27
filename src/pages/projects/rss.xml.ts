@@ -13,12 +13,12 @@ export async function GET(context: APIContext) {
     description: 'Latest updates from my project journal',
     site: context.site!,
     items: sortedUpdates.map((update) => {
-      const project = projects.find((p) => p.slug === update.data.project);
+      const project = projects.find((p) => p.id === update.data.project);
       return {
         title: `${update.data.title} - ${project?.data.title || update.data.project}`,
         description: update.data.summary,
         pubDate: update.data.date,
-        link: `/projects/${update.data.project}/updates/${update.slug}/`,
+        link: `/projects/${update.data.project}/updates/${update.id}/`,
         categories: [update.data.phase, ...update.data.tags],
         author: 'Yousif Abood',
       };

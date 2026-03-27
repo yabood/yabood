@@ -25,7 +25,7 @@ const allPosts = (await getCollection('blog'))
 
 const posts = await Promise.all(
   allPosts.map(async (post) => {
-    const content = post.body;
+    const content = post.body ?? '';
     const readingTime = calculateReadingTime(content);
     return { ...post, readingTime };
   })
@@ -76,7 +76,7 @@ const posts = await Promise.all(
         posts.map((post) => (
           <article class="group">
             <div>
-              <a href={`/blog/${post.slug}`} class="block">
+              <a href={`/blog/${post.id}`} class="block">
                 <div class="text-sm text-gray-600">
                   <time datetime={post.data.pubDate.toISOString()}>
                     {post.data.pubDate.toLocaleDateString('en-US', {
