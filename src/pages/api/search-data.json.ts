@@ -7,7 +7,7 @@ export const GET: APIRoute = async () => {
     // Include drafts only in development mode
     const isDev = import.meta.env.DEV;
     const blogPosts = await getCollection('blog', ({ data }) => isDev || !data.draft);
-    const projects = await getCollection('projects');
+    const projects = await getCollection('projects', ({ data }) => isDev || !data.draft);
     const noiseEntries = await getCollection('noise', ({ data }) => isDev || !data.draft);
 
     // Transform data for the search functionality
