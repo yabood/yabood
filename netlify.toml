@@ -1,3 +1,16 @@
 [build]
-  command = "npm run build"
+  command = "pnpm run build"
   publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+  PNPM_VERSION = "latest"
+
+[context.production]
+  command = "pnpm run build"
+
+[context.deploy-preview]
+  command = "pnpm run build"
+
+[context.branch-deploy]
+  ignore = "exit 0"
