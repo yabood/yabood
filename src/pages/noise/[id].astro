@@ -48,9 +48,14 @@ function extractFirstImage(content: string): string | null {
 }
 
 // Generate title for SEO
-const pageTitle = noise.data.summary
-  || extractFirstChars(noise.body ?? '')
-  || noise.data.publishedAt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+const pageTitle =
+  noise.data.summary ||
+  extractFirstChars(noise.body ?? '') ||
+  noise.data.publishedAt.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
 
 // Generate description for SEO
 const pageDescription = noise.data.summary || extractFirstChars(noise.body ?? '', 160);
