@@ -1,5 +1,5 @@
 import { defineCollection } from 'astro:content';
-import { z } from 'zod';
+import { z } from 'astro/zod';
 import { glob } from 'astro/loaders';
 
 const phaseEnum = z.enum([
@@ -38,8 +38,8 @@ const projects = defineCollection({
       tags: z.array(z.string()).default([]),
       status: z.enum(['active', 'completed', 'paused', 'archived']).default('active'),
       currentPhase: phaseEnum,
-      github: z.string().url().optional(),
-      website: z.string().url().optional(),
+      github: z.url().optional(),
+      website: z.url().optional(),
       cover: image().optional(),
       releases: z.number().default(0),
       contributors: z.number().default(1),

@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/typography';
 
+@theme {
+  --color-accent: rgb(136, 58, 234);
+  --color-accent-light: rgb(224, 204, 250);
+}
+
 @layer base {
   :root {
     --tw-prose-body: 31, 41, 55;
